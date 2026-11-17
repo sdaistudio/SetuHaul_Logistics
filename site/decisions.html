@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Decision register — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1040px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="prototype.html">Prototype</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Decision register (hand-in #2)</h1>
+<p>Every decision the brief lists, with the answer, the reason and the evidence. Code references point into <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/setuhaul/"><code>setuhaul/</code></a>.</p>
+<h2>Understand</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Answer</th>
+<th>Reason</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>What must we collect before showing options?</td>
+<td>Only two things the backend cannot know: <strong>which shipment</strong> (only if the driver has more than one live trip and the evidence cannot narrow it) and <strong>a clock-time ETA</strong> (exact, approximate or a range). Everything else (dock type, weight, priority, unload time, current booking, rules) is looked up, never asked. Optional constraints ("after 12", "must leave by 1:30") are used if offered, never requested.</td>
+<td>Asking for a fact the backend holds wastes the driver's time; asking nothing produces wrong options.</td>
+<td><a href="scenarios.html"><code>scenarios/transcript.md</code></a>: S-D (two trips, one question), S-G (vague "thoda late", one question), S-A (ETA + constraint in one message, zero questions). 3 clarification questions across 12 cases.</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>How does a conversation link to driver, shipment, appointment?</td>
+<td>Phone → <code>drivers.phone</code> → driver. Shipment: explicit reference (SHP id, order number or its last 3 digits) &gt; the thread's existing shipment &gt; the only live trip &gt; the only <em>in-transit</em> trip for a delay / the only <em>at-gate</em> trip for an early-arrival message &gt; ask. Appointment = the shipment's <code>is_current</code> active appointment.</td>
+<td>Deterministic narrowing with evidence, never a guess between equals.</td>
+<td>S-F: DRV007 is on two in-transit trucks (audit A05) so the agent asks; "016 wala" resolves by order suffix. <code>workflow._resolve_shipment</code>.</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>How do we set the revised ETA and say how sure we are?</td>
+<td>Gate check-in beats everything (fact). Otherwise newest ETA record wins. Confidence becomes a <em>planning ETA</em>: HIGH = point, MEDIUM = +15 min, LOW = upper edge of the window (or +30). "Late by X" is anchored to the original plan and the assumption is stated back to the driver.</td>
+<td>Plan for the late edge so we do not promise a slot the truck will probably miss; say the assumption so the driver can correct it without an extra question.</td>
+<td>ETA rule applied to two messages: SHP1013 "late by one hour" → 11:00, planned 11:15 (S-C); SHP1017 "between 12:30 and 13:00" → planning 13:00 (eval F11). <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/eta.py"><code>eta.py</code></a>.</td>
+</tr>
+</tbody>
+</table>
+<h2>Decide</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Answer</th>
+<th>Reason</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D4</td>
+<td>What makes a slot feasible for this shipment?</td>
+<td>Rules R1–R8 in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/feasibility.py"><code>feasibility.py</code></a>: active shipment; dock type (reefer → refrigerated dock, &gt; 25 t → heavy dock, standard → standard only); load ≤ dock limit; slot OPEN; start inside the window after ETA + 15 min gate-to-dock; no overlap with in-progress overruns, other bookings (at <em>their</em> trucks' expected start), live holds or dock events; facility hours (start after 21:00 → approval); driver deadlines. One booking per slot.</td>
+<td>Many rules apply at the same time; each failure has a reason code a person can read.</td>
+<td>Written check on three shipments: SHP1016 heavy → D6 only from 12:40 (F02); SHP1014 21 t → never D1/D3 (F03, flags its own pending D1 request, audit A07); SHP1015 reefer → none (F01). 11/11 feasibility cases pass.</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>What does "available" mean while another driver is deciding?</td>
+<td><strong>Shown ≠ reserved.</strong> An option is available to everyone until somebody commits it. Shown options are re-checked at commit; if gone, the driver is told plainly and gets fresh options in the same reply. A short <strong>hold</strong> (5 min) exists only between "driver picked" and "commit finished / coordinator decides".</td>
+<td>Reserving on display would let one slow driver block scarce capacity during a spike; re-checking keeps promises true.</td>
+<td>S-B: DRV012 was shown D4 12:30, DRV006 committed it first, DRV012 sees "taken by another truck" (1 of 23 shown options went stale). State needed: <code>slot_holds</code> (+ unique partial indexes), <code>shown_at</code> per thread.</td>
+</tr>
+</tbody>
+</table>
+<h2>Commit</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Answer</th>
+<th>Reason</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D6</td>
+<td>When does an option become a hold, request, reservation, confirmed booking?</td>
+<td>SHOWN (nothing reserved) → driver picks → HELD (row in <code>slot_holds</code>, 5-min TTL, unique per slot) → if any approval trigger fires: PENDING_CONFIRMATION (appointment occupies the slot; coordinator has 20 min) else CONFIRMED (written in the system of record, old appointment cancelled in the same transaction). Code moves every state; the coordinator moves PENDING. The driver sees "Nothing is booked until you choose" / "NOT confirmed yet" / "Booking confirmed".</td>
+<td>Showing is not reserving; reserving is not confirming.</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/capacity.py"><code>capacity.py</code></a>; tests <code>test_hold_blocks_then_expires</code>, <code>test_pending_confirmation_times_out</code>; S-F pending → approved at 09:56.</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>How do we order simultaneous requests when capacity is short?</td>
+<td>Options are ranked by a <strong>deterministic branch-and-bound look-ahead</strong> over every truck still needing a dock (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/solver.py"><code>solver.py</code></a>, costs in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a>): a slot that would strand another truck is ranked down (S-A/S-B: DRV006 steered off the only slot DRV012 can use). At commit: <strong>first valid commit wins</strong>, serialised per facility (BEGIN IMMEDIATE / SQS FIFO + Postgres advisory lock), always re-checked. (With <code>option_ranking: earliest</code> in rules.yaml the fallback is earliest start, no-approval first.) Priority comes only from <code>shipments.priority_code</code>; claims in text ("urgent", "VIP") are logged and ignored. Facility-wide fairness is the optimal re-plan's job: moving a promise that still works costs <code>move_kept_promise</code> and is only ever proposed to a coordinator.</td>
+<td>Chat-level FCFS is simple and predictable for drivers; facility-level priority needs the whole picture and breaks promises, so a person approves it.</td>
+<td>Policy test on competing trucks (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scenarios/scheduler_runs.json"><code>scenarios/scheduler_runs.json</code></a>, 09:30): the proven-optimal plan gives the critical load 0 min waiting vs 40 under FCFS, 6 changes to promises vs 9, and 3,625 priority-weighted waiting minutes vs 5,825. Priority-claim test passes.</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>(Optional) When does the facility schedule recalculate, what is fixed, what is the objective?</td>
+<td>Triggers: ETA update, gate check-in, dock event, every 15 min. Fixed: trucks on a dock, dock events (a closed dock is closed). Objective = the cost function in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a> (priority-weighted waiting, lateness vs promise, moving a promise, approval, no dock). Solved <strong>exactly</strong> by branch and bound with an admissible bound, anytime with a proven gap; cross-checked against OR-Tools CP-SAT. Engine ladder: B&amp;B → CP-SAT → OptaPlanner/Timefold as facilities grow (<a href="solver.html"><code>docs/03_solver_design.md</code></a>).</td>
+<td>8/8 instances identical to CP-SAT (<a href="evals.html"><code>evals/report.md</code></a>); full 16-truck re-plan proven optimal in 0.1–1.1 s.</td>
+<td>Replay before/after the spike and after SHP1007 check-in (S-run 09:30 and 10:00).</td>
+</tr>
+<tr>
+<td>D9b</td>
+<td>When does a booking stop blocking capacity?</td>
+<td>When even the optimistic ETA cannot reach its window (certain miss). The commit that takes the slot cancels the dead booking in the same transaction and notifies dispatch; the truck is re-planned.</td>
+<td>Same rule in feasibility, solver and commit, so options never contradict the plan.</td>
+<td></td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Stale options, cancellations, duplicates, retries?</td>
+<td>Stale: re-check at commit + <code>shown_at</code>. Cancellation: frees the slot immediately; cancelled shipment → "contact dispatch". Duplicates: exact external id <strong>or</strong> same driver + same normalised text (≥ 4 words) within 10 min; short answers like "1" are never content-deduped. Retries: idempotency key per commit; SQS FIFO dedupe.</td>
+<td>Chat channels repeat messages (THR001/THR009 retry has a <em>new</em> message id).</td>
+<td>S-A 09:35 retry suppressed; <code>test_duplicate_retry_is_suppressed</code>; <code>test_idempotent_commit</code>; S-I cancelled shipment.</td>
+</tr>
+</tbody>
+</table>
+<h2>Fail safely</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Answer</th>
+<th>Reason</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D10</td>
+<td>No feasible slot?</td>
+<td>Do not invent one. Escalate with a complete record (facts, ETA, every option tried and why it failed, recommendation), route to a contact with a working channel, tell the driver not to go to the dock until contacted.</td>
+<td>An invented answer is worse than an escalation.</td>
+<td>S-K reefer SHP1015 and S-B DRV012 deadline: 2/2 hand-off records complete.</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>What do we say when the preferred slot is refused?</td>
+<td>Say what happened and what is possible, in the driver's language, without blame: "Sorry, dock D4 at 12:30 was just taken by another truck" + fresh options; "Arriving early does not move you ahead of trucks already scheduled…".</td>
+<td>Refusals without a reason cost trust.</td>
+<td>Two refusal messages in <a href="scenarios.html"><code>scenarios/transcript.md</code></a> (S-B, S-EARLY).</td>
+</tr>
+<tr>
+<td>D12b</td>
+<td>Is a person's approval re-checked?</td>
+<td>Yes. <code>decide_pending</code> re-runs feasibility; an infeasible approval is refused with reasons.</td>
+<td>Scenario 09:49: coordinator's approval of APT1014A (21 t on a 20 t dock) refused.</td>
+<td></td>
+</tr>
+<tr>
+<td>D12</td>
+<td>Which decisions need human approval or takeover?</td>
+<td>Safety incident (immediate, shift manager); no feasible slot; driver asks for a person; start after 21:00; low-confidence ETA booking; contradictory data (driver on two trucks, vehicle shared); clarification limit (2); guardrail block; any swap that breaks a promise; penalties/compensation/disputes.</td>
+<td>Safety, penalties and disputes carry risk.</td>
+<td><code>escalation.TRIGGERS</code>; S-J safety, S-F data conflict, S-C pending.</td>
+</tr>
+</tbody>
+</table>
+<h2>Prove</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Answer</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D13</td>
+<td>How do we prove there is no double booking?</td>
+<td>Four layers: re-check inside the write transaction; one live hold per slot (unique index); one active appointment per slot and per shipment (supplied unique indexes); in production a Postgres EXCLUDE constraint on (dock, time range). Proof: 10 threads released by a barrier on one slot → exactly 1 winner, 9 clean refusals; 8 threads × 25 random bookings → no overlapping intervals on any dock.</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a> (12/12 pass). During development the unique index caught a real bug (two trucks sequenced into one slot) before the feasibility rule was fixed: the last line of defence worked.</td>
+</tr>
+</tbody>
+</table></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

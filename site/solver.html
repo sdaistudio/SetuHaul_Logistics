@@ -1,0 +1,192 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Solver design — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1040px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="prototype.html">Prototype</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>The deterministic solver: the heart of SetuHaul</h1>
+<p><strong>Principle.</strong> No model chooses a slot. Ever. A driver's words are turned into numbers (ETA, deadline, "after 12"); from that point everything is a search over a decision tree with a score, configured in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a>, repeatable to the last minute.</p>
+<h2>1. The problem, stated as a solver sees it</h2>
+<table>
+<thead>
+<tr>
+<th>Business word</th>
+<th>Solver object</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Truck needing a dock</td>
+<td>job</td>
+<td>shipments with no reachable booking (chat mode) or all open trucks (plan mode)</td>
+</tr>
+<tr>
+<td>Dock door</td>
+<td>machine</td>
+<td><code>docks</code></td>
+</tr>
+<tr>
+<td>Appointment slot</td>
+<td>start window on a machine; one job per window</td>
+<td><code>appointment_slots</code></td>
+</tr>
+<tr>
+<td>Latest ETA + gate-to-dock</td>
+<td>release time</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/eta.py"><code>eta.py</code></a> + <code>timing.gate_to_dock_min</code></td>
+</tr>
+<tr>
+<td>Unload minutes</td>
+<td>processing time</td>
+<td><code>shipments.expected_unload_min</code></td>
+</tr>
+<tr>
+<td>Truck already unloading, dock breakdown, maintenance</td>
+<td>fixed blocks on a machine: a closed toll lane</td>
+<td><code>facility_checkins</code>, <code>dock_status_events</code></td>
+</tr>
+<tr>
+<td>Reefer / heavy / weight</td>
+<td>which machines a job may use</td>
+<td><code>compatibility.rules</code></td>
+</tr>
+<tr>
+<td>Driver "must leave by 13:30"</td>
+<td>hard deadline</td>
+<td>chat → <code>driver_exceptions</code></td>
+</tr>
+<tr>
+<td>Promise already made</td>
+<td>soft: costs to move</td>
+<td><code>costs.move_kept_promise</code></td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>weight on every minute of waiting</td>
+<td><code>priority_weight</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hard constraints (never traded):</strong> compatible dock, weight limit, slot open, one booking per slot, start inside the window, no overlap with fixed blocks or other jobs, finish before close, driver deadline. A closed dock is closed: no amount of queue opens it.</p>
+<p><strong>Objective (lower is better), all weights in YAML:</strong></p>
+<pre><code>cost = Σ trucks  weight × wait_per_min × (dock start − arrival)
+              + weight × late_per_min × max(0, start − promise − grace)
+              + move_kept_promise       if a booking that still worked is moved
+              + needs_approval          if start after LAST_NEW_START_TIME
+              + weight × unscheduled    if no dock today (→ a person decides)
+</code></pre>
+<h2>2. The algorithm: branch and bound (a chess engine for docks)</h2>
+<ol>
+<li><strong>Tree.</strong> Level <em>i</em> = truck <em>i</em>. Branches = its feasible slots, cheapest first, plus "no dock today". Most constrained trucks first (fewest options), then higher priority.</li>
+<li><strong>Leaf score.</strong> Assignments are swept dock by dock in time order; each truck starts at the earliest moment its window, its arrival, the fixed blocks and the trucks before it allow. Costs are added.</li>
+<li><strong>Bound.</strong> Cost so far + for every unplaced truck the cheapest it could ever do alone. Other trucks can only delay it, so the bound never over-estimates (admissible, the same property that makes A* optimal).</li>
+<li><strong>Prune.</strong> If the bound is not better than the best complete plan found, cut the branch. The greedy plan is the first incumbent, so cutting starts immediately.</li>
+<li><strong>Anytime.</strong> Stops at <code>solver.plan_time_budget_ms</code> / <code>node_limit</code>. Fully explored → <code>PROVEN_OPTIMAL</code>. Budget hit → <code>BEST_WITHIN_BUDGET</code> with a proven lower bound, so the gap is known.</li>
+<li><strong>Deterministic.</strong> No randomness, every tie broken by (cost, time, dock, id). Same state + same YAML = same plan.</li>
+</ol>
+<p><strong>Look-ahead for one driver (chat).</strong> For each slot the driver could take, pin it, solve the rest of the facility optimally, and score the whole board. Rank the driver's options by total facility cost. This is the chess move: "if I play this, what is the best the rest of the board can do?"</p>
+<p><strong>Proof it is optimal.</strong> <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_solver.py"><code>tests/test_solver.py</code></a> compares B&amp;B with exhaustive enumeration on a trimmed instance, and with Google OR-Tools CP-SAT (single worker, fixed seed) on the full facility. Eval gate <code>solver_optimality</code>: 8/8 instances identical cost.</p>
+<table>
+<thead>
+<tr>
+<th>Instance (Jaipur)</th>
+<th style="text-align: right;">Trucks</th>
+<th>B&amp;B</th>
+<th style="text-align: right;">Nodes</th>
+<th style="text-align: right;">ms</th>
+<th style="text-align: right;">CP-SAT ms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>09:45 chat (who still needs a dock)</td>
+<td style="text-align: right;">4</td>
+<td>proven optimal</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">9</td>
+</tr>
+<tr>
+<td>09:45 full re-plan</td>
+<td style="text-align: right;">16</td>
+<td>proven optimal</td>
+<td style="text-align: right;">12,091</td>
+<td style="text-align: right;">226</td>
+<td style="text-align: right;">495</td>
+</tr>
+<tr>
+<td>10:30 full re-plan</td>
+<td style="text-align: right;">16</td>
+<td>proven optimal</td>
+<td style="text-align: right;">56,554</td>
+<td style="text-align: right;">1,144</td>
+<td style="text-align: right;">2,773</td>
+</tr>
+<tr>
+<td>12:00 full re-plan (hard)</td>
+<td style="text-align: right;">16</td>
+<td>best within 5 s (2.4% above optimum); proven optimal at 10 s</td>
+<td style="text-align: right;">525,298</td>
+<td style="text-align: right;">10,259</td>
+<td style="text-align: right;">35,707</td>
+</tr>
+</tbody>
+</table>
+<h2>3. What it changed in the replay</h2>
+<p>Earliest-first offered DRV006 the D4 12:30 slot, the only slot DRV012 (tyre repaired, must leave by 13:30) could use. DRV006 took it and DRV012 had to be escalated. With look-ahead, DRV006 is offered D2 first because taking D4 would strand DRV012; DRV012 gets D4 12:30 and the only remaining escalation is the reefer that truly has no dock. The CRITICAL load is offered D2 13:15 rather than D4 12:30 for the same reason: 45 more minutes for one truck beats leaving another truck with no dock (cost 4,500 vs 15,000 under the YAML weights; a coordinator can still approve a swap).</p>
+<h2>4. Engine ladder (when to change engine)</h2>
+<table>
+<thead>
+<tr>
+<th>Size</th>
+<th>Engine</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≤ ~20 trucks per facility window (SetuHaul today)</td>
+<td>Branch and bound (ours)</td>
+<td>explainable line by line, proven optimal in ms–s</td>
+</tr>
+<tr>
+<td>Larger, or more constraint types (labour, yard lanes)</td>
+<td>OR-Tools CP-SAT</td>
+<td>industrial solver, same model already written (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/cpsat_check.py"><code>cpsat_check.py</code></a>)</td>
+</tr>
+<tr>
+<td>JVM shops, continuous re-planning</td>
+<td>OptaPlanner / Timefold</td>
+<td>constraint streams, incremental score, real-time planning</td>
+</tr>
+</tbody>
+</table>
+<p>The model and the YAML stay the same; only <code>solver.algorithm</code> changes.</p>
+<h2>5. Location on demand (no polling)</h2>
+<p>Polling every truck's GPS every minute is the classic way to burn a maps/telematics budget; teams that fixed it computed locally and called paid APIs only on triggers. SetuHaul does the same, deterministically:</p>
+<ul>
+<li><strong>Value of information.</strong> For each truck with an uncertain ETA, solve the facility at its early and late ETA edge. Same plan → a position is worth nothing, do not buy it. Different plan, big enough cost difference → buy one fix, within the daily budget. At 09:50 on 4 Aug: 6 uncertain trucks, <strong>1 fix bought</strong> (₹1.5).</li>
+<li><strong>Source ladder:</strong> GPS / telematics first; FASTag last-toll (ULIP) second, which still works in GPS dead zones and when a device is switched off; driver-shared WhatsApp live location last (free, needs the driver).</li>
+<li><strong>Toll-checkpoint watchdog.</strong> Trucks on tolled corridors cross FASTag plazas at predictable times. Next crossing overdue beyond tolerance → ETA downgraded to LOW. Overdue and GPS silent → ops review (breakdown, dead zone, or a toll bypass that will add 15–20 minutes of city traffic). The system never accuses a driver; a person looks.</li>
+<li><strong>Free routing.</strong> A position becomes an ETA through self-hosted OSRM on OpenStreetMap data: no per-call map fees.</li>
+</ul>
+<p>Corridor data in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/data/corridors_sim.yaml"><code>data/corridors_sim.yaml</code></a> is simulated for the demo (plaza names real, timings illustrative). Production: NHAI plaza master + segment times learned from historical FASTag crossings.</p>
+<p>Common cases first: most trucks never trigger either rule and cost nothing.</p></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

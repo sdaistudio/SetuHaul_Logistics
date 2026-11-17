@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SetuHaul — ER Diagram and Data Browser</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--a:#b45309;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:1360px;margin:auto;padding:24px 22px 60px}h1{font-size:23px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 8px}.sub{color:var(--mu);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:16px}
+.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}@media(max-width:900px){.g4,.g2{grid-template-columns:1fr 1fr}}
+.kpi .v{font-size:24px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.er{overflow-x:auto}.er svg{min-width:1100px;width:100%;height:auto;display:block}
+.tbl{cursor:pointer}.tbl:hover rect,.tbl:focus rect,.tbl.on rect{stroke-width:3}.tbl:focus{outline:none}
+.edge.hl{stroke:#1d5fa8;stroke-width:2.2}.dim{opacity:.25}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.links a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--ln);border-radius:99px;padding:3px 10px;background:#fff}
+.links a.on{background:var(--ink);color:#fff;border-color:var(--ink)}.links a i{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:6px;vertical-align:1px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--ln);vertical-align:top;white-space:nowrap}
+th{background:#faf9f7;font-weight:600;position:sticky;top:0;z-index:1}td.null{color:#b9b3aa;font-style:italic}
+.scroll{overflow:auto;max-height:560px;border:1px solid var(--ln);border-radius:8px}
+.k{font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:4px}.k.pk{background:#fff4e5;color:var(--a)}.k.fk{background:#e8f1fb;color:var(--b)}
+a.fkv{color:var(--b);text-decoration:none;border-bottom:1px dotted var(--b)}tr.hit td{background:#fff7cc}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.tools input{font:inherit;padding:6px 10px;border:1px solid var(--ln);border-radius:8px;min-width:240px}
+pre{font:12px/1.5 'JetBrains Mono',monospace;background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto;white-space:pre}
+details summary{cursor:pointer;font-weight:600;margin:8px 0}.muted{color:var(--mu)}.allowed{font-size:11.5px;color:var(--mu);white-space:normal}
+.step{display:flex;gap:10px;margin:6px 0}.step b{flex:none;width:22px;height:22px;border-radius:99px;background:var(--ink);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.warn{border-left:4px solid var(--a)}
+</style>
+</head>
+<body><div class="wrap">
+<h1>SetuHaul database: ER diagram and data browser</h1>
+<p class="sub">Click any table in the diagram, or a link below it, to open its full data. Foreign-key values are links: click one to jump to the row it points at. Each table has its own link (e.g. <code>#t-shipments</code>) you can bookmark or share.</p>
+
+<h2>What the SQL file contains</h2>
+<div class="grid g4" id="sqlk"></div>
+<div class="grid g2" style="margin-top:12px">
+<div class="card"><b>Structure, in file order</b>
+<div class="step"><b>1</b><div>Header comments (snapshot date, how to rebuild) and <code>BEGIN TRANSACTION</code>.</div></div>
+<div class="step"><b>2</b><div>For each of the 18 tables: a <code>CREATE TABLE</code> with primary key, <code>NOT NULL</code>, <code>CHECK</code> rules (allowed codes, e.g. dock_type IN STANDARD/REEFER/HEAVY; end after start), <code>UNIQUE</code> rules and <code>FOREIGN KEY</code>s, followed straight away by that table's <code>INSERT</code> rows (the seed data).</div></div>
+<div class="step"><b>3</b><div>Seven indexes, including the two partial unique indexes that stop double booking (one active booking per slot; one current booking per shipment).</div></div>
+<div class="step"><b>4</b><div>Four views that answer common questions (latest ETA, slot availability, inbound state, yard queue).</div></div>
+<div class="step"><b>5</b><div><code>COMMIT</code>. Running the file on an empty SQLite database produces a database identical to the supplied <code>.db</code> (checked row by row).</div></div>
+</div>
+<div class="card warn"><b>Worth knowing</b>
+<ul style="margin:6px 0 0;padding-left:18px">
+<li>The file never runs <code>PRAGMA foreign_keys = ON</code>. SQLite leaves foreign-key checking off by default, so the 30 foreign keys are declared but only enforced if the application turns them on per connection (our prototype does). Today's data has no violations.</li>
+<li>No triggers and no <code>DROP</code> statements: run it on an empty database, or it fails on the first existing table.</li>
+<li>Timestamps are ISO-8601 text with <code>+05:30</code>; comparisons work only because every value uses the same format.</li>
+<li>The CHECK rules protect codes and simple ranges, not cross-table rules: nothing stops an overweight truck being booked on a weak dock, or a booking inside a breakdown window.</li>
+</ul>
+<details><summary>All index statements</summary><pre id="idxs"></pre></details>
+<details><summary>File header</summary><pre id="hdr"></pre></details>
+</div>
+</div>
+
+<h2>Entity relationship diagram</h2>
+<div class="card"><div class="er" id="er"><!--SVG--></div>
+<p class="muted" style="margin:8px 0 0">Arrows point from the many side (the table holding the foreign key) to the one side. PK = primary key, FK = foreign key. Hover a table to highlight its relationships.</p>
+<div class="links" id="links"></div></div>
+
+<h2 id="viewer-h">Table data</h2>
+<div class="card" id="viewer"><p class="muted">Select a table above.</p></div>
+</div>
+<script>
+const D=/*DATA*/null;
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const slug=n=>n.replace(/_/g,'-'), unslug=s=>s.replace(/-/g,'_');
+const laneOf={};D.lanes.forEach((l,i)=>l[1].forEach(t=>laneOf[t]=i));
+// SQL summary
+const S=D.sql;
+$('#sqlk').innerHTML=[[S.create_table,'CREATE TABLE statements'],[S.inserts,'INSERT rows (seed data)'],[S.unique_indexes+S.indexes,'indexes ('+S.unique_indexes+' unique, partial)'],[S.views,'views'],[S.checks,'CHECK rules'],[S.fks,'FOREIGN KEY declarations'],[S.lines,'lines'],[Math.round(S.bytes/1024)+' KB','file size']]
+ .map(([v,l])=>`<div class="card kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+$('#idxs').textContent=S.all_indexes.join('\n\n');$('#hdr').textContent=S.header;
+// links
+const all=Object.keys(D.tables);
+$('#links').innerHTML=all.map(t=>`<a href="#t-${slug(t)}" data-t="${t}"><i style="background:${D.laneColor[laneOf[t]]}"></i>${t} <span class="muted">${D.tables[t].rows.length}</span></a>`).join('')+
+ Object.keys(D.views).map(v=>`<a href="#v-${slug(v)}" data-v="${v}"><i style="background:#a8a29e"></i>${v} <span class="muted">view</span></a>`).join('');
+// diagram interaction
+document.querySelectorAll('.tbl').forEach(g=>{
+ const t=g.dataset.t;
+ g.addEventListener('click',()=>{location.hash='t-'+slug(t)});
+ g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();location.hash='t-'+slug(t)}});
+ g.addEventListener('mouseenter',()=>hl(t));g.addEventListener('mouseleave',()=>hl(null));
+});
+function hl(t){const rel=new Set([t]);document.querySelectorAll('.edge').forEach(e=>{const on=t&&(e.dataset.a===t||e.dataset.b===t);e.classList.toggle('hl',!!on);if(on){rel.add(e.dataset.a);rel.add(e.dataset.b)}});
+ document.querySelectorAll('.tbl').forEach(g=>g.classList.toggle('dim',!!t&&!rel.has(g.dataset.t)));}
+// referenced-by map
+const refBy={};D.edges.forEach(e=>(refBy[e.parent] ||= []).push(e));
+function cell(v,col){if(v===null||v===undefined)return '<td class="null">null</td>';
+ if(col&&col.fk){const [pt]=col.fk.split('.');return `<td><a class="fkv" href="#t-${slug(pt)}" data-goto="${esc(pt)}" data-val="${esc(v)}">${esc(v)}</a></td>`}
+ return `<td>${esc(v)}</td>`}
+let pendingFocus=null;
+function showTable(t){
+ const T=D.tables[t]; if(!T)return;
+ document.querySelectorAll('.tbl').forEach(g=>g.classList.toggle('on',g.dataset.t===t));
+ document.querySelectorAll('#links a').forEach(a=>a.classList.toggle('on',a.dataset.t===t));
+ const pkCol=T.cols.find(c=>c.pk);
+ const refs=(refBy[t]||[]).map(e=>`<a href="#t-${slug(e.child)}">${e.child}.${e.ccol}</a>`).join(', ')||'none';
+ const fkOut=T.cols.filter(c=>c.fk).map(c=>`<a href="#t-${slug(c.fk.split('.')[0])}">${c.name} → ${c.fk}</a>`).join(', ')||'none';
+ $('#viewer').innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h3 style="margin:0;font-size:17px"><span style="display:inline-block;width:10px;height:10px;border-radius:99px;background:${D.laneColor[laneOf[t]]};margin-right:6px"></span>${t}</h3><div class="muted">${esc(T.desc)}</div></div>
+ <div class="muted" style="text-align:right">${T.rows.length} rows · ${T.cols.length} columns · ${T.inserts} INSERTs in the SQL file</div></div>
+ <p style="margin:10px 0 0"><b>Points to:</b> ${fkOut}<br><b>Referenced by:</b> ${refs}</p>
+ <div class="tools"><input id="q" type="search" placeholder="Filter rows (any column)…"><span class="muted" id="cnt"></span></div>
+ <div class="scroll" id="rowsbox"><table id="rows"><thead><tr>${T.cols.map(c=>`<th>${c.pk?'<span class="k pk">PK</span> ':''}${c.fk?'<span class="k fk">FK</span> ':''}${esc(c.name)}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
+ <details open><summary>Columns</summary><table><tr><th>Column</th><th>Type</th><th>Key</th><th>Required</th><th>References</th><th>Allowed values (CHECK)</th></tr>${T.cols.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.type)}</td><td>${c.pk?'<span class="k pk">PK</span>':''}${c.fk?'<span class="k fk">FK</span>':''}</td><td>${c.notnull||c.pk?'yes':''}</td><td>${c.fk?`<a href="#t-${slug(c.fk.split('.')[0])}">${esc(c.fk)}</a>`:''}</td><td class="allowed">${c.allowed?esc(c.allowed.join(', ')):''}</td></tr>`).join('')}</table></details>
+ <details><summary>CREATE statement (from the SQL file)</summary><pre>${esc(T.ddl)}${T.indexes.length?'\n\n'+T.indexes.map(i=>esc(i.sql)).join('\n\n'):''}</pre></details>`;
+ const body=$('#rows tbody');
+ const draw=f=>{const q=(f||'').toLowerCase();let n=0;body.innerHTML=T.rows.filter(r=>!q||r.some(v=>String(v??'').toLowerCase().includes(q))).map(r=>{n++;const pk=pkCol?r[T.cols.indexOf(pkCol)]:'';return `<tr data-pk="${esc(pk)}">${r.map((v,i)=>cell(v,T.cols[i])).join('')}</tr>`}).join('');$('#cnt').textContent=`${n} of ${T.rows.length} rows`;};
+ draw('');$('#q').addEventListener('input',e=>draw(e.target.value));
+ body.addEventListener('click',e=>{const a=e.target.closest('a.fkv');if(!a)return;e.preventDefault();pendingFocus=a.dataset.val;location.hash='t-'+slug(a.dataset.goto)});
+ if(pendingFocus!=null){const tr=[...body.querySelectorAll('tr')].find(r=>r.dataset.pk===pendingFocus);if(tr){tr.classList.add('hit');setTimeout(()=>tr.scrollIntoView({block:'center'}),50)}pendingFocus=null}
+}
+function showView(v){const V=D.views[v];if(!V)return;
+ document.querySelectorAll('.tbl').forEach(g=>g.classList.remove('on'));document.querySelectorAll('#links a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+ $('#viewer').innerHTML=`<h3 style="margin:0;font-size:17px">${v} <span class="muted" style="font-weight:400">(view, computed from the tables)</span></h3><p class="muted">${V.rows.length} rows · ${V.cols.length} columns</p>
+ <div class="tools"><input id="q" type="search" placeholder="Filter rows…"><span class="muted" id="cnt"></span></div>
+ <div class="scroll"><table><thead><tr>${V.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody id="vb"></tbody></table></div>
+ <details><summary>View definition</summary><pre>${esc(V.sql)}</pre></details>`;
+ const draw=f=>{const q=(f||'').toLowerCase();let n=0;$('#vb').innerHTML=V.rows.filter(r=>!q||r.some(x=>String(x??'').toLowerCase().includes(q))).map(r=>{n++;return '<tr>'+r.map(x=>x==null?'<td class="null">null</td>':`<td>${esc(x)}</td>`).join('')+'</tr>'}).join('');$('#cnt').textContent=`${n} of ${V.rows.length} rows`};
+ draw('');$('#q').addEventListener('input',e=>draw(e.target.value));}
+function route(){const h=location.hash.slice(1);
+ if(h.startsWith('t-')){showTable(unslug(h.slice(2)));$('#viewer-h').scrollIntoView({behavior:'smooth'})}
+ else if(h.startsWith('v-')){showView(unslug(h.slice(2)));$('#viewer-h').scrollIntoView({behavior:'smooth'})}
+ else showTable('shipments');}
+window.addEventListener('hashchange',route);route();
+</script>
+</body></html>

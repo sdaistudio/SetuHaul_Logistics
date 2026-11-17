@@ -1,0 +1,27 @@
+{
+  "note": "Held-out set written after the parser was tuned on nlu_golden.json. Not used for tuning. Failures are reported, not fixed, so this number estimates real-world accuracy.",
+  "now": "2026-08-04T09:30:00+05:30",
+  "reference_eta": "2026-08-04T10:00:00+05:30",
+  "cases": [
+    {"id": "ho01", "lang": "en", "text": "stuck in jam near Kotputli, will be there by 12.30", "expect": {"intent": "REPORT_DELAY", "eta": "12:30", "delay_reason": "TRAFFIC"}},
+    {"id": "ho02", "lang": "en", "text": "running 40 mins behind schedule", "expect": {"intent": "REPORT_DELAY", "delay_min": 40}},
+    {"id": "ho03", "lang": "en", "text": "ETA 2pm", "expect": {"eta": "14:00"}},
+    {"id": "ho04", "lang": "en", "text": "can I get something after lunch, like 2 or later", "expect": {"earliest_start": "14:00"}},
+    {"id": "ho05", "lang": "en", "text": "go with the first one", "expect": {"intent": "SELECT_OPTION", "option_choice": 1}},
+    {"id": "ho06", "lang": "en", "text": "my truck broke down, mechanic says 3 hours", "expect": {"intent": "REPORT_DELAY", "delay_reason": "BREAKDOWN"}},
+    {"id": "ho07", "lang": "en", "text": "please connect me to someone", "expect": {"intent": "HUMAN"}},
+    {"id": "ho08", "lang": "en", "text": "will reach between 1 and 2", "expect": {"eta_window": ["13:00", "14:00"]}},
+    {"id": "ho09", "lang": "hi", "text": "जाम लगा है, एक घंटा और लगेगा", "expect": {"intent": "REPORT_DELAY", "delay_reason": "TRAFFIC"}},
+    {"id": "ho10", "lang": "hi", "text": "मैं 12:40 तक पहुँच जाऊँगा", "expect": {"eta": "12:40"}},
+    {"id": "ho11", "lang": "hi", "text": "पहला विकल्प", "expect": {"intent": "SELECT_OPTION", "option_choice": 1}},
+    {"id": "ho12", "lang": "hi", "text": "ढाई बजे के बाद का स्लॉट चाहिए", "expect": {"earliest_start": "14:30"}},
+    {"id": "ho13", "lang": "hi", "text": "गाड़ी में आग लग गई", "expect": {"intent": "SAFETY"}},
+    {"id": "ho14", "lang": "hinglish", "text": "bhai 1 ghanta lagega abhi", "expect": {"eta": "10:30"}},
+    {"id": "ho15", "lang": "hinglish", "text": "teesra wala de do", "expect": {"intent": "SELECT_OPTION", "option_choice": 3}},
+    {"id": "ho16", "lang": "hinglish", "text": "barish bahut hai, 30 min late", "expect": {"delay_min": 30, "delay_reason": "WEATHER"}},
+    {"id": "ho17", "lang": "hinglish", "text": "mera dock kaunsa hai?", "expect": {"intent": "CHECK_STATUS"}},
+    {"id": "ho18", "lang": "hinglish", "text": "4 baje tak khali hona hai", "expect": {"latest_gate_out": "16:00"}},
+    {"id": "ho19", "lang": "hinglish", "text": "nahi chahiye ye slot", "expect": {"intent": "DECLINE"}},
+    {"id": "ho20", "lang": "hinglish", "text": "police ne roka hai checking ke liye", "expect": {"intent": "SAFETY"}}
+  ]
+}

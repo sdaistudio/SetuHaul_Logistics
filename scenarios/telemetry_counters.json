@@ -1,0 +1,13 @@
+{
+  "MessagesReceived": 24,
+  "HoldPlaced": 5,
+  "BookingCommitted{status=CONFIRMED}": 4,
+  "SolverRanked": 10,
+  "OptionsShown": 25,
+  "DuplicateSuppressed": 1,
+  "ClarificationQuestion": 3,
+  "OptionGone{reason=OPTION_GONE}": 1,
+  "BookingCommitted{status=PENDING_CONFIRMATION}": 1,
+  "Escalation{reason=SAFETY}": 1,
+  "Escalation{reason=NO_FEASIBLE_SLOT}": 1
+}

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 900" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#57534e"/></marker><marker id="mp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6d4fd8"/></marker><marker id="mg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f7a5a"/></marker><marker id="mo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d5fa8"/></marker></defs>
+<rect width="1320" height="900" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="700" fill="#1c1917">SetuHaul driver exception service on AWS: language at the edges, code decides capacity</text>
+<text x="24" y="58" font-size="12.5" fill="#57534e">Every booking passes deterministic feasibility + a database constraint. The optional LLM only parses text; it never ranks, books or writes driver replies. Region ap-south-1 (Mumbai).</text>
+<rect x="24" y="96" width="170" height="74" rx="8" fill="#eef2f7" stroke="#475569" stroke-width="1.4"/>
+<text x="36" y="117" font-size="13" font-weight="600" fill="#1c1917">Driver</text>
+<text x="36" y="135" font-size="11.5" fill="#44403c">WhatsApp / SMS</text>
+<text x="36" y="150" font-size="11.5" fill="#44403c">EN · हिंदी · Hinglish</text>
+<rect x="24" y="630" width="170" height="74" rx="8" fill="#eef2f7" stroke="#475569" stroke-width="1.4"/>
+<text x="36" y="651" font-size="13" font-weight="600" fill="#1c1917">Warehouse coordinator</text>
+<text x="36" y="669" font-size="11.5" fill="#44403c">Ops console + email</text>
+<text x="36" y="684" font-size="11.5" fill="#44403c">approves / takes over</text>
+<rect x="222" y="86" width="220" height="58" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="234" y="107" font-size="13" font-weight="600" fill="#1c1917">API Gateway (HTTP API)</text>
+<text x="234" y="125" font-size="11.5" fill="#44403c">throttling, WAF</text>
+<rect x="222" y="162" width="220" height="74" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="234" y="183" font-size="13" font-weight="600" fill="#1c1917">WebhookFn</text>
+<text x="234" y="201" font-size="11.5" fill="#44403c">verify Meta HMAC signature</text>
+<text x="234" y="216" font-size="11.5" fill="#44403c">normalise WhatsApp payload</text>
+<rect x="222" y="254" width="220" height="74" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="234" y="275" font-size="13" font-weight="600" fill="#1c1917">SQS FIFO + DLQ</text>
+<text x="234" y="293" font-size="11.5" fill="#44403c">group = driver (ordered)</text>
+<text x="234" y="308" font-size="11.5" fill="#44403c">dedupe = message id (5 min)</text>
+<rect x="222" y="590" width="220" height="58" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="234" y="611" font-size="13" font-weight="600" fill="#1c1917">Cognito</text>
+<text x="234" y="629" font-size="11.5" fill="#44403c">coordinator login, MFA</text>
+<rect x="222" y="700" width="220" height="58" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="234" y="721" font-size="13" font-weight="600" fill="#1c1917">OpsApiFn</text>
+<text x="234" y="739" font-size="11.5" fill="#44403c">list queue, approve / reject</text>
+<rect x="472" y="80" width="450" height="330" rx="10" fill="none" stroke="#1f7a5a" stroke-width="1.6"/>
+<rect x="472" y="80" width="450" height="26" rx="10" fill="#1f7a5a"/><rect x="472" y="94" width="450" height="12" fill="#1f7a5a"/>
+<text x="484" y="98" font-size="12.5" font-weight="600" fill="#fff">WorkerFn: deterministic conversation workflow</text>
+<rect x="488" y="116" width="418" height="54" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="137" font-size="13" font-weight="600" fill="#1c1917">1  Input guardrails</text>
+<text x="500" y="155" font-size="11.5" fill="#44403c">length cap · injection flag · PII redaction · SAFETY -&gt; person now</text>
+<rect x="488" y="178" width="418" height="54" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="199" font-size="13" font-weight="600" fill="#1c1917">2  Rule-based NLU (EN / Hindi / Hinglish)</text>
+<text x="500" y="217" font-size="11.5" fill="#44403c">intents, clock + relative times, windows, deadlines, evidence spans</text>
+<rect x="488" y="240" width="418" height="76" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="261" font-size="13" font-weight="600" fill="#1c1917">3  State machine (workflow, not an agent)</text>
+<text x="500" y="279" font-size="11.5" fill="#44403c">NEW &gt; NEED_SHIPMENT &gt; NEED_ETA &gt; OPTIONS_SHOWN</text>
+<text x="500" y="294" font-size="11.5" fill="#44403c">&gt; PENDING_WAREHOUSE / CONFIRMED | ESCALATED</text>
+<text x="500" y="309" font-size="11.5" fill="#44403c">dedupe · clarification limit · optimistic lock</text>
+<rect x="488" y="324" width="418" height="74" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="345" font-size="13" font-weight="600" fill="#1c1917">4  Output guardrails + reply templates</text>
+<text x="500" y="363" font-size="11.5" fill="#44403c">no "confirmed" unless committed · every time grounded</text>
+<text x="500" y="378" font-size="11.5" fill="#44403c">no internal IDs / PII · language match · else -&gt; person</text>
+<text x="500" y="393" font-size="11.5" fill="#44403c">reviewed EN/HI/Hinglish templates, no free generation</text>
+<rect x="472" y="430" width="450" height="232" rx="10" fill="none" stroke="#1f7a5a" stroke-width="1.6"/>
+<rect x="472" y="430" width="450" height="26" rx="10" fill="#1f7a5a"/><rect x="472" y="444" width="450" height="12" fill="#1f7a5a"/>
+<text x="484" y="448" font-size="12.5" font-weight="600" fill="#fff">Deterministic decision core (tools the workflow calls)</text>
+<rect x="488" y="466" width="204" height="84" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="487" font-size="13" font-weight="600" fill="#1c1917">ETA + location on demand</text>
+<text x="500" y="505" font-size="11.5" fill="#44403c">gate-in &gt; newest record</text>
+<text x="500" y="520" font-size="11.5" fill="#44403c">buy a fix only if plan changes</text>
+<text x="500" y="535" font-size="11.5" fill="#44403c">GPS &gt; FASTag &gt; WhatsApp</text>
+<rect x="702" y="466" width="204" height="84" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="714" y="487" font-size="13" font-weight="600" fill="#1c1917">Solver (branch &amp; bound)</text>
+<text x="714" y="505" font-size="11.5" fill="#44403c">rules.yaml: hard rules + costs</text>
+<text x="714" y="520" font-size="11.5" fill="#44403c">look-ahead over all trucks</text>
+<text x="714" y="535" font-size="11.5" fill="#44403c">proven optimal; CP-SAT check</text>
+<rect x="488" y="560" width="204" height="86" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="500" y="581" font-size="13" font-weight="600" fill="#1c1917">Capacity layer</text>
+<text x="500" y="599" font-size="11.5" fill="#44403c">SHOWN &gt; HELD (5 min)</text>
+<text x="500" y="614" font-size="11.5" fill="#44403c">&gt; PENDING (20 min) &gt; CONFIRMED</text>
+<text x="500" y="629" font-size="11.5" fill="#44403c">re-check inside BEGIN IMMEDIATE</text>
+<rect x="702" y="560" width="204" height="86" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="714" y="581" font-size="13" font-weight="600" fill="#1c1917">Escalation router</text>
+<text x="714" y="599" font-size="11.5" fill="#44403c">complete hand-off record</text>
+<text x="714" y="614" font-size="11.5" fill="#44403c">skips vacant / no-channel</text>
+<text x="714" y="629" font-size="11.5" fill="#44403c">contacts; SLA per trigger</text>
+<rect x="956" y="86" width="340" height="58" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="968" y="107" font-size="13" font-weight="600" fill="#1c1917">AWS End User Messaging Social</text>
+<text x="968" y="125" font-size="11.5" fill="#44403c">WhatsApp reply to the driver</text>
+<rect x="956" y="170" width="340" height="74" rx="8" fill="#f1edff" stroke="#6d4fd8" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="968" y="191" font-size="13" font-weight="600" fill="#1c1917">Optional: Bedrock fallback parser</text>
+<text x="968" y="209" font-size="11.5" fill="#44403c">only when rules return UNKNOWN; temperature 0,</text>
+<text x="968" y="224" font-size="11.5" fill="#44403c">JSON schema; Bedrock Guardrails (prompt attack, PII)</text>
+<rect x="956" y="270" width="340" height="90" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="968" y="291" font-size="13" font-weight="600" fill="#1c1917">SchedulerFn: optimal facility plan</text>
+<text x="968" y="309" font-size="11.5" fill="#44403c">same solver, plan mode; vs FCFS / EDD / rules</text>
+<text x="968" y="324" font-size="11.5" fill="#44403c">proposals only; swaps need coordinator</text>
+<text x="968" y="339" font-size="11.5" fill="#44403c">toll watchdog: overdue + GPS silent -&gt; ops</text>
+<rect x="956" y="380" width="340" height="58" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="968" y="401" font-size="13" font-weight="600" fill="#1c1917">EventBridge</text>
+<text x="968" y="419" font-size="11.5" fill="#44403c">ETA update · gate check-in · dock event · 15 min</text>
+<rect x="956" y="458" width="340" height="58" rx="8" fill="#e7f4ee" stroke="#1f7a5a" stroke-width="1.4"/>
+<text x="968" y="479" font-size="13" font-weight="600" fill="#1c1917">SweeperFn (every minute)</text>
+<text x="968" y="497" font-size="11.5" fill="#44403c">expire holds and pending confirmations</text>
+<rect x="956" y="560" width="340" height="86" rx="8" fill="#fff4e5" stroke="#b45309" stroke-width="1.4"/>
+<text x="968" y="581" font-size="13" font-weight="600" fill="#1c1917">SNS + email</text>
+<text x="968" y="599" font-size="11.5" fill="#44403c">escalations, safety page, swap proposals</text>
+<text x="968" y="614" font-size="11.5" fill="#44403c">alarms from CloudWatch</text>
+<rect x="472" y="700" width="450" height="92" rx="8" fill="#e8f1fb" stroke="#1d5fa8" stroke-width="1.4"/>
+<text x="484" y="721" font-size="13" font-weight="600" fill="#1c1917">System of record</text>
+<text x="484" y="739" font-size="11.5" fill="#44403c">Demo: SQLite on EFS, single writer (reserved concurrency 1)</text>
+<text x="484" y="754" font-size="11.5" fill="#44403c">Prod: Aurora PostgreSQL + RDS Proxy, advisory lock per facility</text>
+<text x="484" y="769" font-size="11.5" fill="#44403c">unique: 1 booking/slot, 1 current/shipment · EXCLUDE: no overlap on a dock</text>
+<rect x="956" y="664" width="340" height="58" rx="8" fill="#e8f1fb" stroke="#1d5fa8" stroke-width="1.4"/>
+<text x="968" y="685" font-size="13" font-weight="600" fill="#1c1917">S3 (KMS)</text>
+<text x="968" y="703" font-size="11.5" fill="#44403c">scheduler proposals · eval reports</text>
+<rect x="24" y="800" width="418" height="84" rx="8" fill="#f6f6f4" stroke="#57534e" stroke-width="1.4"/>
+<text x="36" y="821" font-size="13" font-weight="600" fill="#1c1917">Observability</text>
+<text x="36" y="839" font-size="11.5" fill="#44403c">JSON spans per message (trace id) -&gt; CloudWatch Logs</text>
+<text x="36" y="854" font-size="11.5" fill="#44403c">EMF metrics · X-Ray · dashboard · alarms</text>
+<rect x="472" y="800" width="450" height="84" rx="8" fill="#f6f6f4" stroke="#57534e" stroke-width="1.4"/>
+<text x="484" y="821" font-size="13" font-weight="600" fill="#1c1917">CI/CD gate (CodeBuild)</text>
+<text x="484" y="839" font-size="11.5" fill="#44403c">unit + integrity tests · 72 NLU cases (EN/HI/Hinglish) · feasibility</text>
+<text x="484" y="854" font-size="11.5" fill="#44403c">guardrail cases · cfn-lint · evals must pass -&gt; sam deploy</text>
+<rect x="956" y="742" width="340" height="142" rx="8" fill="#eef2f7" stroke="#475569" stroke-width="1.4"/>
+<text x="968" y="763" font-size="13" font-weight="600" fill="#1c1917">Human approval triggers</text>
+<text x="968" y="781" font-size="11.5" fill="#44403c">safety incident · no feasible slot</text>
+<text x="968" y="796" font-size="11.5" fill="#44403c">driver asks for a person · start after 21:00</text>
+<text x="968" y="811" font-size="11.5" fill="#44403c">low-confidence ETA · contradictory data</text>
+<text x="968" y="826" font-size="11.5" fill="#44403c">unclear after 2 questions · guardrail block</text>
+<text x="968" y="841" font-size="11.5" fill="#44403c">swap that breaks a promise</text>
+<path d="M194 125 H222" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M332 144 V162" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M332 236 V254" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M442 291 H458 V143 H488" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<text x="232" y="344" font-size="11" fill="#b45309" text-anchor="start">ordered per driver</text>
+<path d="M906 361 H938 V115 H956" fill="none" stroke="#1f7a5a" stroke-width="1.4" marker-end="url(#mg)"/>
+<path d="M1126 86 V70 H109 V96" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<text x="226" y="82" font-size="11" fill="#b45309" text-anchor="start">reply to driver</text>
+<path d="M906 205 H956" fill="none" stroke="#6d4fd8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#mp)"/>
+<path d="M697 410 V430" fill="none" stroke="#1f7a5a" stroke-width="1.4" marker-end="url(#mg)"/>
+<text x="705" y="424" font-size="11" fill="#1f7a5a" text-anchor="start">tool calls</text>
+<path d="M697 662 V700" fill="none" stroke="#1d5fa8" stroke-width="1.4" marker-end="url(#mb)"/>
+<text x="705" y="686" font-size="11" fill="#1d5fa8" text-anchor="start">read / commit</text>
+<path d="M1126 380 V360" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M1126 458 V438" fill="none" stroke="#1f7a5a" stroke-width="1.4" marker-end="url(#mg)"/>
+<path d="M956 487 H936 V720 H922" fill="none" stroke="#1d5fa8" stroke-width="1.4" marker-end="url(#mb)"/>
+<path d="M956 315 H940 V745 H922" fill="none" stroke="#1d5fa8" stroke-width="1.4" marker-end="url(#mb)"/>
+<path d="M1296 315 H1310 V693 H1296" fill="none" stroke="#1d5fa8" stroke-width="1.4" marker-end="url(#mb)"/>
+<path d="M1296 330 H1316 V603 H1296" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M906 603 H956" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M956 630 H944 V672 H194" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<text x="800" y="686" font-size="11" fill="#b45309" text-anchor="start">email / page</text>
+<path d="M194 640 H222" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M332 648 V700" fill="none" stroke="#b45309" stroke-width="1.4" marker-end="url(#mo)"/>
+<path d="M442 729 H458 V610 H488" fill="none" stroke="#1f7a5a" stroke-width="1.4" marker-end="url(#mg)"/>
+<text x="232" y="776" font-size="11" fill="#1f7a5a" text-anchor="start">approve / reject a pending booking</text>
+<text x="24" y="212" font-size="12" font-weight="600" fill="#1c1917">Legend</text>
+<rect x="24" y="224" width="18" height="14" rx="3" fill="#e7f4ee" stroke="#1f7a5a"/><text x="50" y="235" font-size="11.5" fill="#44403c">deterministic code (decides)</text>
+<rect x="24" y="246" width="18" height="14" rx="3" fill="#fff4e5" stroke="#b45309"/><text x="50" y="257" font-size="11.5" fill="#44403c">AWS managed service</text>
+<rect x="24" y="268" width="18" height="14" rx="3" fill="#f1edff" stroke="#6d4fd8" stroke-dasharray="4 3"/><text x="50" y="279" font-size="11.5" fill="#44403c">optional LLM (parses only)</text>
+<rect x="24" y="290" width="18" height="14" rx="3" fill="#e8f1fb" stroke="#1d5fa8"/><text x="50" y="301" font-size="11.5" fill="#44403c">data / storage</text>
+<rect x="24" y="312" width="18" height="14" rx="3" fill="#eef2f7" stroke="#475569"/><text x="50" y="323" font-size="11.5" fill="#44403c">people</text>
+<rect x="24" y="334" width="18" height="14" rx="3" fill="#f6f6f4" stroke="#57534e"/><text x="50" y="345" font-size="11.5" fill="#44403c">operations</text>
+</svg>

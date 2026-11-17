@@ -1,0 +1,17 @@
+# SIMULATED corridor data for the classroom demo. Plaza names follow the real
+# NH-48 Delhi-Jaipur road, but positions and segment minutes are ILLUSTRATIVE.
+# In production, load the NHAI plaza master and learn segment times from
+# historical FASTag crossings (median per hour-of-day).
+corridors:
+  NH48_GGN_JAI:
+    destination_facility: FAC-JAI-01
+    plazas:                       # in travel order; minutes = typical truck time from previous point
+      - {name: Kherki Daula, minutes_from_prev: 0}
+      - {name: Shahjahanpur, minutes_from_prev: 150}
+      - {name: Manoharpur, minutes_from_prev: 110}
+      - {name: Jaipur DC gate, minutes_from_prev: 70}
+# Simulated recent signals for three trucks on the snapshot day
+signals:
+  SHP1006: {corridor: NH48_GGN_JAI, last_toll: Shahjahanpur, last_toll_ts: "2026-08-04T08:40:00+05:30", gps_last_fix_ts: "2026-08-04T09:30:00+05:30"}
+  SHP1013: {corridor: NH48_GGN_JAI, last_toll: Shahjahanpur, last_toll_ts: "2026-08-04T07:30:00+05:30", gps_last_fix_ts: "2026-08-04T08:05:00+05:30"}
+  SHP1014: {corridor: NH48_GGN_JAI, last_toll: Manoharpur, last_toll_ts: "2026-08-04T09:20:00+05:30", gps_last_fix_ts: "2026-08-04T09:40:00+05:30"}

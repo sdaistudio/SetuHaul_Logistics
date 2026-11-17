@@ -1,0 +1,439 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SetuHaul driver exception service (demo profile). WhatsApp webhook -> SQS FIFO ->
+  deterministic workflow on Lambda; SQLite on EFS with a single writer; holds sweeper;
+  facility scheduler; coordinator approval API; CloudWatch EMF metrics, X-Ray, alarms;
+  optional Bedrock fallback behind a Bedrock Guardrail. Region: ap-south-1 (Mumbai).
+
+Parameters:
+  Stage:
+    Type: String
+    Default: demo
+    AllowedValues: [demo, prod]
+  VpcSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Two private subnets (EFS mount targets + Lambda ENIs)
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  EscalationEmail:
+    Type: String
+    Description: Coordinator mailbox for escalations and swap proposals
+  EnableLLMFallback:
+    Type: String
+    Default: "0"
+    AllowedValues: ["0", "1"]
+  FallbackModelId:
+    Type: String
+    Default: anthropic.claude-haiku
+    Description: Bedrock model id or inference profile for the parsing fallback
+  WhatsAppPhoneNumberId:
+    Type: String
+    Default: ""
+    Description: AWS End User Messaging Social phone number id (blank = stub replies to logs)
+  SimulatedNow:
+    Type: String
+    Default: "2026-08-04T09:45:00+05:30"
+    Description: Replay clock for the classroom demo. Blank in prod.
+
+Conditions:
+  UseLLM: !Equals [!Ref EnableLLMFallback, "1"]
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [arm64]
+    MemorySize: 512
+    Timeout: 20
+    Tracing: Active
+    CodeUri: ../
+    Environment:
+      Variables:
+        DB_PATH: /mnt/data/setuhaul.db
+        SIMULATED_NOW: !Ref SimulatedNow
+        POWERTOOLS_SERVICE_NAME: setuhaul-driver-agent
+        LOG_LEVEL: INFO
+
+Resources:
+  # ---------------------------------------------------------------- network/storage
+  LambdaSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda ENIs
+      VpcId: !Ref VpcId
+  EfsSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS NFS from Lambda only
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref LambdaSG
+  DataFs:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      BackupPolicy: {Status: ENABLED}
+  MountA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref DataFs
+      SubnetId: !Select [0, !Ref VpcSubnetIds]
+      SecurityGroups: [!Ref EfsSG]
+  MountB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref DataFs
+      SubnetId: !Select [1, !Ref VpcSubnetIds]
+      SecurityGroups: [!Ref EfsSG]
+  EfsAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref DataFs
+      PosixUser: {Uid: "1000", Gid: "1000"}
+      RootDirectory:
+        Path: /setuhaul
+        CreationInfo: {OwnerUid: "1000", OwnerGid: "1000", Permissions: "750"}
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: {SSEAlgorithm: aws:kms}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-proposals
+            Status: Enabled
+            ExpirationInDays: 90
+
+  WhatsAppSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: WhatsApp app secret (webhook HMAC) - set the value after deploy
+      GenerateSecretString: {PasswordLength: 32, ExcludePunctuation: true}
+
+  # ---------------------------------------------------------------- messaging
+  InboundDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: true
+      MessageRetentionPeriod: 1209600
+  InboundQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      VisibilityTimeout: 60
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt InboundDLQ.Arn
+        maxReceiveCount: 3
+
+  EscalationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId: alias/aws/sns
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref EscalationEmail
+
+  OpsBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub setuhaul-ops-${Stage}
+
+  # ---------------------------------------------------------------- auth for ops API
+  OpsUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub setuhaul-coordinators-${Stage}
+      AdminCreateUserConfig: {AllowAdminCreateUserOnly: true}
+      UsernameAttributes: [email]
+      MfaConfiguration: "OPTIONAL"
+      EnabledMfas: [SOFTWARE_TOKEN_MFA]
+  OpsUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref OpsUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 50
+        ThrottlingRateLimit: 20
+      Auth:
+        Authorizers:
+          Coordinators:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${OpsUserPool}
+              audience: [!Ref OpsUserPoolClient]
+
+  # ---------------------------------------------------------------- functions
+  WebhookFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: infra.aws_lambda.handlers.webhook_handler
+      Description: WhatsApp webhook - verify HMAC, enqueue to FIFO
+      Environment:
+        Variables:
+          INBOUND_QUEUE_URL: !Ref InboundQueue
+          APP_SECRET_ARN: !Ref WhatsAppSecret
+          VERIFY_TOKEN: !Sub "{{resolve:secretsmanager:${WhatsAppSecret}}}"
+      Policies:
+        - SQSSendMessagePolicy: {QueueName: !GetAtt InboundQueue.QueueName}
+        - AWSSecretsManagerGetSecretValuePolicy: {SecretArn: !Ref WhatsAppSecret}
+      Events:
+        Inbound:
+          Type: HttpApi
+          Properties: {ApiId: !Ref Api, Method: POST, Path: /webhook/whatsapp}
+        Verify:
+          Type: HttpApi
+          Properties: {ApiId: !Ref Api, Method: GET, Path: /webhook/whatsapp}
+
+  WorkerFn:
+    Type: AWS::Serverless::Function
+    DependsOn: [MountA, MountB]
+    Properties:
+      Handler: infra.aws_lambda.handlers.worker_handler
+      VpcConfig:
+        SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: [!Ref LambdaSG]
+      FileSystemConfigs:
+        - Arn: !GetAtt EfsAccessPoint.Arn
+          LocalMountPath: /mnt/data
+      Description: Deterministic driver workflow (single writer in demo profile)
+      ReservedConcurrentExecutions: 1
+      Timeout: 30
+      Environment:
+        Variables:
+          ENABLE_LLM_FALLBACK: !Ref EnableLLMFallback
+          FALLBACK_MODEL_ID: !Ref FallbackModelId
+          BEDROCK_GUARDRAIL_ID: !If [UseLLM, !GetAtt ParserGuardrail.GuardrailId, ""]
+          WHATSAPP_PHONE_NUMBER_ID: !Ref WhatsAppPhoneNumberId
+          ESCALATION_TOPIC_ARN: !Ref EscalationTopic
+      Policies:
+        - EFSWriteAccessPolicy: {FileSystem: !Ref DataFs, AccessPoint: !Ref EfsAccessPoint}
+        - SNSPublishMessagePolicy: {TopicName: !GetAtt EscalationTopic.TopicName}
+        - Statement:
+            - Effect: Allow
+              Action: [social-messaging:SendWhatsAppMessage]
+              Resource: "*"
+            - !If
+              - UseLLM
+              - Effect: Allow
+                Action: [bedrock:InvokeModel, bedrock:Converse, bedrock:ApplyGuardrail]
+                Resource: "*"
+              - !Ref AWS::NoValue
+      Events:
+        Inbound:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt InboundQueue.Arn
+            BatchSize: 5
+            FunctionResponseTypes: [ReportBatchItemFailures]
+
+  SweeperFn:
+    Type: AWS::Serverless::Function
+    DependsOn: [MountA, MountB]
+    Properties:
+      Handler: infra.aws_lambda.handlers.sweeper_handler
+      VpcConfig:
+        SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: [!Ref LambdaSG]
+      FileSystemConfigs:
+        - Arn: !GetAtt EfsAccessPoint.Arn
+          LocalMountPath: /mnt/data
+      Description: Expire 5-min holds and 20-min pending confirmations
+      Policies:
+        - EFSWriteAccessPolicy: {FileSystem: !Ref DataFs, AccessPoint: !Ref EfsAccessPoint}
+      Events:
+        EveryMinute:
+          Type: ScheduleV2
+          Properties: {ScheduleExpression: rate(1 minute)}
+
+  SchedulerFn:
+    Type: AWS::Serverless::Function
+    DependsOn: [MountA, MountB]
+    Properties:
+      Handler: infra.aws_lambda.handlers.scheduler_handler
+      VpcConfig:
+        SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: [!Ref LambdaSG]
+      FileSystemConfigs:
+        - Arn: !GetAtt EfsAccessPoint.Arn
+          LocalMountPath: /mnt/data
+      Description: Facility scheduling tool - proposals only, never books
+      Timeout: 60
+      Environment:
+        Variables:
+          ARTIFACT_BUCKET: !Ref ArtifactBucket
+          ESCALATION_TOPIC_ARN: !Ref EscalationTopic
+      Policies:
+        - EFSWriteAccessPolicy: {FileSystem: !Ref DataFs, AccessPoint: !Ref EfsAccessPoint}
+        - S3WritePolicy: {BucketName: !Ref ArtifactBucket}
+        - SNSPublishMessagePolicy: {TopicName: !GetAtt EscalationTopic.TopicName}
+      Events:
+        Every15Min:
+          Type: ScheduleV2
+          Properties: {ScheduleExpression: rate(15 minutes)}
+        EtaOrCheckin:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref OpsBus
+            Pattern:
+              source: [setuhaul.ops]
+              detail-type: [EtaUpdated, GateCheckIn, DockEvent]
+
+  OpsApiFn:
+    Type: AWS::Serverless::Function
+    DependsOn: [MountA, MountB]
+    Properties:
+      Handler: infra.aws_lambda.handlers.ops_api_handler
+      VpcConfig:
+        SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: [!Ref LambdaSG]
+      FileSystemConfigs:
+        - Arn: !GetAtt EfsAccessPoint.Arn
+          LocalMountPath: /mnt/data
+      Description: Coordinator queue - list escalations, approve or reject pending bookings
+      Policies:
+        - EFSWriteAccessPolicy: {FileSystem: !Ref DataFs, AccessPoint: !Ref EfsAccessPoint}
+      Events:
+        List:
+          Type: HttpApi
+          Properties: {ApiId: !Ref Api, Method: GET, Path: /ops/queue, Auth: {Authorizer: Coordinators}}
+        Decide:
+          Type: HttpApi
+          Properties: {ApiId: !Ref Api, Method: POST, Path: /ops/decision, Auth: {Authorizer: Coordinators}}
+
+  # ---------------------------------------------------------------- LLM guardrail (optional path)
+  ParserGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Condition: UseLLM
+    Properties:
+      Name: !Sub setuhaul-parser-${Stage}
+      BlockedInputMessaging: "Message blocked by policy."
+      BlockedOutputsMessaging: "Output blocked by policy."
+      ContentPolicyConfig:
+        FiltersConfig:
+          - {Type: PROMPT_ATTACK, InputStrength: HIGH, OutputStrength: NONE}
+          - {Type: MISCONDUCT, InputStrength: MEDIUM, OutputStrength: MEDIUM}
+      SensitiveInformationPolicyConfig:
+        PiiEntitiesConfig:
+          - {Type: PHONE, Action: ANONYMIZE}
+          - {Type: EMAIL, Action: ANONYMIZE}
+          - {Type: NAME, Action: ANONYMIZE}
+      TopicPolicyConfig:
+        TopicsConfig:
+          - Name: Booking decisions
+            Definition: Deciding, ranking or confirming dock slots, priorities or compensation.
+            Type: DENY
+
+  # ---------------------------------------------------------------- observability
+  AlarmSafety:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: A driver reported a safety incident - page the shift manager
+      Namespace: SetuHaul/DriverAgent
+      MetricName: Escalation
+      Dimensions:
+        - {Name: Service, Value: driver-agent}
+        - {Name: reason, Value: SAFETY}
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref EscalationTopic]
+  AlarmOutputGuard:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Output guardrail blocked a reply (possible bug) - investigate
+      Namespace: SetuHaul/DriverAgent
+      MetricName: GuardrailOutputBlock
+      Dimensions:
+        - {Name: Service, Value: driver-agent}
+        - {Name: code, Value: UNBACKED_BOOKING_CLAIM}
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref EscalationTopic]
+  AlarmDLQ:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Driver messages failed 3 times and are in the DLQ
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions: [{Name: QueueName, Value: !GetAtt InboundDLQ.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions: [!Ref EscalationTopic]
+  AlarmQueueAge:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Drivers waiting more than 60 s for a reply
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions: [{Name: QueueName, Value: !GetAtt InboundQueue.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: 60
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions: [!Ref EscalationTopic]
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub setuhaul-driver-agent-${Stage}
+      DashboardBody: !Sub |
+        {"widgets":[
+         {"type":"metric","x":0,"y":0,"width":12,"height":6,"properties":{"title":"Messages, bookings, escalations","region":"${AWS::Region}","stat":"Sum","period":300,
+          "metrics":[["SetuHaul/DriverAgent","MessagesReceived","Service","driver-agent"],
+                     ["SetuHaul/DriverAgent","BookingCommitted","Service","driver-agent","status","CONFIRMED"],
+                     ["SetuHaul/DriverAgent","BookingCommitted","Service","driver-agent","status","PENDING_CONFIRMATION"],
+                     ["SetuHaul/DriverAgent","Escalation","Service","driver-agent","reason","NO_FEASIBLE_SLOT"],
+                     ["SetuHaul/DriverAgent","Escalation","Service","driver-agent","reason","SAFETY"]]}},
+         {"type":"metric","x":12,"y":0,"width":12,"height":6,"properties":{"title":"Integrity and freshness","region":"${AWS::Region}","stat":"Sum","period":300,
+          "metrics":[["SetuHaul/DriverAgent","OptionGone","Service","driver-agent","reason","OPTION_GONE"],
+                     ["SetuHaul/DriverAgent","OptionGone","Service","driver-agent","reason","SLOT_TAKEN"],
+                     ["SetuHaul/DriverAgent","DuplicateSuppressed","Service","driver-agent"],
+                     ["SetuHaul/DriverAgent","ClarificationQuestion","Service","driver-agent"]]}},
+         {"type":"metric","x":0,"y":6,"width":12,"height":6,"properties":{"title":"Guardrails","region":"${AWS::Region}","stat":"Sum","period":300,
+          "metrics":[["SetuHaul/DriverAgent","GuardrailInputFlag","Service","driver-agent","flag","INJECTION"],
+                     ["SetuHaul/DriverAgent","GuardrailInputFlag","Service","driver-agent","flag","PII"],
+                     ["SetuHaul/DriverAgent","GuardrailOutputBlock","Service","driver-agent","code","UNBACKED_BOOKING_CLAIM"],
+                     ["SetuHaul/DriverAgent","LLMFallbackUsed","Service","driver-agent"]]}},
+         {"type":"metric","x":12,"y":6,"width":12,"height":6,"properties":{"title":"Latency (worker p95)","region":"${AWS::Region}","stat":"p95","period":300,
+          "metrics":[["AWS/Lambda","Duration","FunctionName","${WorkerFn}"],["AWS/SQS","ApproximateAgeOfOldestMessage","QueueName","${InboundQueue.QueueName}",{"stat":"Maximum"}]]}}
+        ]}
+
+Outputs:
+  WebhookUrl:
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/webhook/whatsapp
+  OpsApiUrl:
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/ops/queue
+  InboundQueueUrl:
+    Value: !Ref InboundQueue
+  DashboardName:
+    Value: !Ref Dashboard

@@ -1,0 +1,369 @@
+{
+  "nlu": {
+    "cases": 52,
+    "case_accuracy": 1.0,
+    "by_language": {
+      "en": 1.0,
+      "hi": 1.0,
+      "hinglish": 1.0
+    },
+    "language_detection_accuracy": 1.0,
+    "field_accuracy": {
+      "intent": 1.0,
+      "eta": 1.0,
+      "earliest_start": 1.0,
+      "eta_confidence": 1.0,
+      "delay_reason": 1.0,
+      "latest_gate_out": 1.0,
+      "delay_min": 1.0,
+      "flags": 1.0,
+      "option_choice": 1.0,
+      "intent_any": 1.0,
+      "eta_window": 1.0,
+      "clarify": 1.0,
+      "shipment_refs": 1.0
+    },
+    "failures": []
+  },
+  "nlu_holdout": {
+    "cases": 20,
+    "case_accuracy": 0.8,
+    "by_language": {
+      "en": 0.75,
+      "hi": 0.8,
+      "hinglish": 0.857
+    },
+    "language_detection_accuracy": 0.9,
+    "field_accuracy": {
+      "intent": 0.917,
+      "eta": 0.75,
+      "delay_reason": 1.0,
+      "delay_min": 1.0,
+      "earliest_start": 0.0,
+      "option_choice": 1.0,
+      "eta_window": 1.0,
+      "latest_gate_out": 1.0
+    },
+    "failures": [
+      {
+        "id": "ho04",
+        "lang": "en",
+        "text": "can I get something after lunch, like 2 or later",
+        "pass": false,
+        "errors": [
+          "earliest_start: expected '14:00' got None"
+        ],
+        "detected_lang": "en"
+      },
+      {
+        "id": "ho07",
+        "lang": "en",
+        "text": "please connect me to someone",
+        "pass": false,
+        "errors": [
+          "intent: expected 'HUMAN' got []"
+        ],
+        "detected_lang": "en"
+      },
+      {
+        "id": "ho12",
+        "lang": "hi",
+        "text": "ढाई बजे के बाद का स्लॉट चाहिए",
+        "pass": false,
+        "errors": [
+          "earliest_start: expected '14:30' got None"
+        ],
+        "detected_lang": "hi"
+      },
+      {
+        "id": "ho14",
+        "lang": "hinglish",
+        "text": "bhai 1 ghanta lagega abhi",
+        "pass": false,
+        "errors": [
+          "eta: expected '10:30' got '11:00'"
+        ],
+        "detected_lang": "hinglish"
+      }
+    ]
+  },
+  "feasibility": {
+    "cases": 11,
+    "accuracy": 1.0,
+    "rows": [
+      {
+        "id": "F01-reefer-no-slot",
+        "pass": true,
+        "errors": [],
+        "options": []
+      },
+      {
+        "id": "F02-heavy-only-D6",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D6 12:40-14:10",
+          "D6 14:00-15:30",
+          "D6 15:30-17:00"
+        ]
+      },
+      {
+        "id": "F03-21t-not-on-20t-docks",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 12:30-13:45",
+          "D2 12:45-14:00",
+          "D2 13:00-14:15"
+        ]
+      },
+      {
+        "id": "F04-driver-after-12",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 12:30-13:15",
+          "D2 12:45-13:30",
+          "D2 13:00-13:45"
+        ]
+      },
+      {
+        "id": "F05-gate-out-13-30",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 12:30-13:15"
+        ]
+      },
+      {
+        "id": "F06-overweight-confirmed-D3",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 09:35-10:50",
+          "D4 10:00-11:15",
+          "D4 12:30-13:45"
+        ]
+      },
+      {
+        "id": "F07-cancelled",
+        "pass": true,
+        "errors": [],
+        "options": []
+      },
+      {
+        "id": "F08-reefer-only-D5",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D5 11:20-12:15",
+          "D5 12:00-12:55",
+          "D5 13:00-13:55"
+        ]
+      },
+      {
+        "id": "F09-early-truck-not-before-dock-free",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 08:30-09:15",
+          "D1 08:42-09:27",
+          "D1 09:00-09:45"
+        ]
+      },
+      {
+        "id": "F10-breakdown-window",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D4 12:30-13:15",
+          "D2 12:45-13:30",
+          "D2 13:00-13:45"
+        ]
+      },
+      {
+        "id": "F11-ask-only-after-1pm",
+        "pass": true,
+        "errors": [],
+        "options": [
+          "D1 13:15-14:05",
+          "D1 14:00-14:50",
+          "D1 15:00-15:50"
+        ]
+      }
+    ]
+  },
+  "guardrails": {
+    "cases": 15,
+    "accuracy": 1.0,
+    "failures": []
+  },
+  "integrity": {
+    "tests": 21,
+    "passed": 21,
+    "accuracy": 1.0,
+    "failures": []
+  },
+  "solver": {
+    "rows": [
+      {
+        "at": "08:30",
+        "mode": "chat",
+        "trucks": 4,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 54575.0,
+        "nodes": 25,
+        "bnb_ms": 1,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 54575.0,
+        "cpsat_ms": 8.7,
+        "match": true
+      },
+      {
+        "at": "08:30",
+        "mode": "plan",
+        "trucks": 16,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 55850.0,
+        "nodes": 4795,
+        "bnb_ms": 146,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 55850.0,
+        "cpsat_ms": 202.0,
+        "match": true
+      },
+      {
+        "at": "09:30",
+        "mode": "chat",
+        "trucks": 4,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 54575.0,
+        "nodes": 25,
+        "bnb_ms": 1,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 54575.0,
+        "cpsat_ms": 9.1,
+        "match": true
+      },
+      {
+        "at": "09:30",
+        "mode": "plan",
+        "trucks": 16,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 56825.0,
+        "nodes": 4725,
+        "bnb_ms": 92,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 56825.0,
+        "cpsat_ms": 317.5,
+        "match": true
+      },
+      {
+        "at": "09:45",
+        "mode": "chat",
+        "trucks": 4,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 54575.0,
+        "nodes": 25,
+        "bnb_ms": 1,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 54575.0,
+        "cpsat_ms": 10.2,
+        "match": true
+      },
+      {
+        "at": "09:45",
+        "mode": "plan",
+        "trucks": 16,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 59925.0,
+        "nodes": 12091,
+        "bnb_ms": 232,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 59925.0,
+        "cpsat_ms": 560.1,
+        "match": true
+      },
+      {
+        "at": "10:30",
+        "mode": "chat",
+        "trucks": 4,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 54575.0,
+        "nodes": 25,
+        "bnb_ms": 1,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 54575.0,
+        "cpsat_ms": 9.6,
+        "match": true
+      },
+      {
+        "at": "10:30",
+        "mode": "plan",
+        "trucks": 16,
+        "bnb_status": "PROVEN_OPTIMAL",
+        "bnb_cost": 73950.0,
+        "nodes": 56554,
+        "bnb_ms": 919,
+        "cpsat_status": "OPTIMAL",
+        "cpsat_cost": 73950.0,
+        "cpsat_ms": 3276.6,
+        "match": true
+      }
+    ],
+    "cpsat_available": true,
+    "accuracy": 1.0
+  },
+  "scenario_measures": {
+    "cases (conversations)": 12,
+    "time from first message to usable outcome (median min)": 2,
+    "turns to outcome (median driver messages)": 2,
+    "share resolved without manual takeover": "8/12",
+    "conflicting or duplicate allocations": 0,
+    "options later found infeasible at commit": "1 of 26 shown",
+    "no-slot escalations with complete hand-off record": "1/1",
+    "avg driver wait after rescheduling (min, arrival->dock)": 61.6,
+    "warehouse slot utilisation 10:00-16:00 (Jaipur)": "10/31 open slots booked",
+    "priority-policy violations (text claims changing order, displaced promises)": 0,
+    "driver clarification questions": "3 across 12 cases",
+    "duplicate messages suppressed": 1
+  },
+  "gates": {
+    "nlu_case_accuracy": {
+      "value": 1.0,
+      "threshold": 0.9,
+      "pass": true
+    },
+    "nlu_holdout_accuracy": {
+      "value": 0.8,
+      "threshold": 0.7,
+      "pass": true
+    },
+    "nlu_min_language_accuracy": {
+      "value": 1.0,
+      "threshold": 0.85,
+      "pass": true
+    },
+    "feasibility": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "guardrails": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "integrity_tests": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "solver_optimality": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    }
+  },
+  "all_gates_pass": true
+}

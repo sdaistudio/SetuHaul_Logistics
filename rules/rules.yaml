@@ -1,0 +1,109 @@
+# SetuHaul decision rules. Every number the system decides with lives here.
+# Changing a value changes behaviour without changing code; the eval gate
+# (python -m evals.run_evals) must still pass before a change is deployed.
+version: 1
+
+# ---------------------------------------------------------------- timing ---
+timing:
+  gate_to_dock_min: 15          # gate-in -> reversed on the dock
+  dock_to_gate_out_min: 10      # unload end -> gate-out
+  min_lead_from_now_min: 5      # never offer a start in the past
+  eta_buffer_min:               # planning ETA = point + buffer (LOW uses window upper edge if given)
+    HIGH: 0
+    MEDIUM: 15
+    LOW: 30
+
+# -------------------------------------------------------------- priority ---
+priority_weight:                # weight on waiting / lateness; comes only from shipments.priority_code
+  CRITICAL: 100
+  HIGH: 40
+  NORMAL: 15
+  LOW: 5
+
+# --------------------------------------------- hard rules: compatibility ---
+# Evaluated top to bottom; the first rule whose `when` matches sets the
+# required dock. `weight_limit` is always applied. A dock that fails is never
+# offered and never planned ("a closed toll lane is closed").
+compatibility:
+  default_heavy_threshold_kg: 25000   # used if the facility has no HEAVY_DOCK_REQUIRED_KG rule
+  rules:
+    - name: reefer_needs_refrigerated_dock
+      when: {temperature_control_required: 1}
+      require: {dock_type: REEFER, supports_refrigerated: 1}
+    - name: reefer_by_dock_type
+      when: {required_dock_type: REEFER}
+      require: {dock_type: REEFER, supports_refrigerated: 1}
+    - name: heavy_needs_heavy_dock
+      when: {load_over_heavy_threshold: true}
+      require: {dock_type: HEAVY}
+    - name: heavy_by_dock_type
+      when: {required_dock_type: HEAVY}
+      require: {dock_type: HEAVY}
+    - name: standard_stays_standard     # keep reefer / heavy bays for loads that need them
+      when: {any: true}
+      require: {dock_type: STANDARD}
+  weight_limit: true                    # load_weight_kg <= dock.max_vehicle_weight_kg
+
+# ------------------------------------------------- hard rules: capacity ---
+hard:
+  one_booking_per_slot: true
+  start_inside_slot_window: true
+  finish_before_close: true
+  blocking_dock_events: [BREAKDOWN, MAINTENANCE, MANUAL_BLOCK, CAPACITY_REDUCTION]
+  respect_driver_deadlines: true        # "must leave by 13:30" is a hard constraint
+
+# ------------------------------------------------ soft costs (objective) ---
+# Total cost of a plan = sum over trucks. Lower is better. All costs are
+# multiplied by the truck's priority weight except where noted.
+costs:
+  wait_per_min: 1                 # x weight: minutes between planning arrival and dock start
+  late_vs_promise_per_min: 2      # x weight: minutes started after promised slot start + grace
+  promise_grace_min: 30
+  move_kept_promise: 400          # flat: moving a truck whose current booking is still reachable
+  needs_approval: 250             # flat: start after LAST_NEW_START_TIME
+  unscheduled: 1000               # x weight: no dock today -> escalation to a person
+  idle_premium_dock_per_min: 0    # optional: discourage leaving scarce docks idle
+
+# -------------------------------------------------------------- solver ---
+solver:
+  algorithm: branch_and_bound     # exact search with admissible lower bound; deterministic
+  plan_time_budget_ms: 3000       # facility re-plan (anytime: returns best + proven gap)
+  chat_time_budget_ms: 400        # per candidate when ranking a driver's options
+  node_limit: 400000
+  candidate_slots_per_truck: 14   # earliest feasible slots considered per truck
+  chat_candidates_evaluated: 8    # driver's own slots evaluated with look-ahead
+  option_ranking: solver          # solver | earliest
+  lock_reachable_promises_in_chat: true   # in chat mode other trucks' reachable bookings do not move
+
+# ------------------------------------------- conversation / commitment ---
+conversation:
+  hold_ttl_min: 5
+  pending_confirmation_ttl_min: 20
+  max_options_shown: 3
+  auto_confirm: true
+  max_clarification_questions: 2
+  duplicate_window_min: 10
+  max_message_chars: 1000
+  night_shift_start: "18:00"
+
+# ---------------------------------------- location on demand (no polling) ---
+# Never poll every truck. Look only when a position can change a decision
+# (value of information), then use the sources in this order. GPS first,
+# FASTag second (works in GPS dead zones and when a device is switched off),
+# driver-shared WhatsApp location last (free, but needs the driver).
+location:
+  daily_budget_inr: 300
+  max_pings_per_truck_per_hour: 2
+  min_decision_value: 150         # plan cost the position must be able to change
+  inr_per_cost_unit: 0.5          # value of one cost unit, to compare VOI with price
+  gps_stale_after_min: 20         # no fix for 20 min = dead zone or device off
+  sources:                        # tried in this order
+    - {name: gps_telematics, cost_inr: 4, needs_driver_action: false}
+    - {name: fastag_last_toll_ulip, cost_inr: 1.5, needs_driver_action: false}
+    - {name: driver_whatsapp_live_location, cost_inr: 0, needs_driver_action: true}
+  toll_watchdog:                  # expected toll crossings from the corridor table
+    corridor_file: data/corridors_sim.yaml
+    overdue_tolerance_pct: 25     # allowed extra time on a segment before it is "overdue"
+    overdue_min_floor: 15
+    on_overdue: downgrade_eta_to_LOW
+    on_overdue_and_gps_silent: ops_review   # possible toll bypass, breakdown or dead zone; never auto-accuse

@@ -1,0 +1,29 @@
+version: 0.2
+# CodeBuild / CodePipeline: tests and evals gate every deploy.
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - pip install aws-sam-cli cfn-lint
+  pre_build:
+    commands:
+      - python -m unittest discover -s tests -v
+      - python -m audit.run_audit
+      - python -m scenarios.run_scenarios
+      - python -m evals.run_evals          # exits 1 if any gate fails -> pipeline stops
+      - cfn-lint infra/template.yaml
+  build:
+    commands:
+      - sam build -t infra/template.yaml
+      - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name setuhaul-$STAGE
+        --capabilities CAPABILITY_IAM --region ap-south-1 --resolve-s3
+        --parameter-overrides Stage=$STAGE VpcId=$VPC_ID VpcSubnetIds=$SUBNETS EscalationEmail=$ESC_EMAIL
+  post_build:
+    commands:
+      - aws s3 cp evals/report.json s3://$ARTIFACT_BUCKET/evals/$CODEBUILD_RESOLVED_SOURCE_VERSION.json || true
+artifacts:
+  files:
+    - evals/report.md
+    - scenarios/transcript.md
+    - audit/findings.md

@@ -1,0 +1,492 @@
+[
+  {
+    "at": "09:30",
+    "label": "Scheduler BEFORE the spike",
+    "policies": [
+      {
+        "policy": "FCFS",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 7.3,
+          "weighted_wait": 5825,
+          "critical_wait_min": 40,
+          "missed_appointments": 1,
+          "schedule_changes": 9
+        }
+      },
+      {
+        "policy": "EDD",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 11.3,
+          "weighted_wait": 3075,
+          "critical_wait_min": 0,
+          "missed_appointments": 1,
+          "schedule_changes": 9
+        }
+      },
+      {
+        "policy": "WEIGHTED",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 23.3,
+          "weighted_wait": 4300,
+          "critical_wait_min": 0,
+          "missed_appointments": 1,
+          "schedule_changes": 11
+        }
+      },
+      {
+        "policy": "COMMITMENT_FIRST_WEIGHTED",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 11.0,
+          "weighted_wait": 7100,
+          "critical_wait_min": 50,
+          "missed_appointments": 1,
+          "schedule_changes": 5,
+          "swap_proposals": [
+            {
+              "promote": "SHP1014",
+              "priority": "CRITICAL",
+              "waits_min": 50,
+              "displace": "SHP1013",
+              "displaced_priority": "NORMAL",
+              "dock": "DOCK-JAI-D2",
+              "at": "11:45",
+              "needs": "coordinator approval + driver notice to SHP1013"
+            }
+          ]
+        }
+      },
+      {
+        "policy": "COMMITMENT_FIRST_WEIGHTED + approved swaps",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 11.3,
+          "weighted_wait": 2825,
+          "critical_wait_min": 0,
+          "missed_appointments": 1,
+          "schedule_changes": 6
+        }
+      },
+      {
+        "policy": "OPTIMAL (branch & bound, proven optimal)",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 10.7,
+          "weighted_wait": 3625,
+          "critical_wait_min": 0,
+          "missed_appointments": 2,
+          "schedule_changes": 6,
+          "solver_cost": 57825,
+          "solver_nodes": 4725,
+          "solver_ms": 90
+        }
+      }
+    ],
+    "recommended_plan": [
+      {
+        "shipment": "SHP1003",
+        "dock": "DOCK-JAI-D1",
+        "start": "09:35",
+        "end": "10:20",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1005",
+        "dock": "DOCK-JAI-D4",
+        "start": "09:35",
+        "end": "10:50",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1004",
+        "dock": "DOCK-JAI-D2",
+        "start": "09:40",
+        "end": "10:40",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1007",
+        "dock": "DOCK-JAI-D1",
+        "start": "10:20",
+        "end": "11:20",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1011",
+        "dock": "DOCK-JAI-D6",
+        "start": "11:10",
+        "end": "12:40",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1009",
+        "dock": "DOCK-JAI-D4",
+        "start": "11:15",
+        "end": "12:30",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1010",
+        "dock": "DOCK-JAI-D5",
+        "start": "11:20",
+        "end": "12:15",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1012",
+        "dock": "DOCK-JAI-D1",
+        "start": "11:25",
+        "end": "12:10",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1014",
+        "dock": "DOCK-JAI-D2",
+        "start": "11:40",
+        "end": "12:55",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1006",
+        "dock": "DOCK-JAI-D1",
+        "start": "12:10",
+        "end": "12:55",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1013",
+        "dock": "DOCK-JAI-D4",
+        "start": "12:30",
+        "end": "13:30",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1016",
+        "dock": "DOCK-JAI-D6",
+        "start": "12:40",
+        "end": "14:10",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1018",
+        "dock": "DOCK-JAI-D2",
+        "start": "12:55",
+        "end": "13:40",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1017",
+        "dock": "DOCK-JAI-D1",
+        "start": "13:15",
+        "end": "14:05",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1020",
+        "dock": "DOCK-JAI-D2",
+        "start": "18:30",
+        "end": "19:30",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1015",
+        "dock": null,
+        "start": "",
+        "end": "",
+        "kept": false,
+        "approval": false,
+        "note": "no compatible dock time left today"
+      }
+    ]
+  },
+  {
+    "at": "10:00",
+    "label": "Scheduler AFTER the spike + check-in",
+    "policies": [
+      {
+        "policy": "FCFS",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 13.5,
+          "weighted_wait": 8780,
+          "critical_wait_min": 50,
+          "missed_appointments": 2,
+          "schedule_changes": 9
+        }
+      },
+      {
+        "policy": "EDD",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 14.1,
+          "weighted_wait": 9580,
+          "critical_wait_min": 50,
+          "missed_appointments": 1,
+          "schedule_changes": 9
+        }
+      },
+      {
+        "policy": "WEIGHTED",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 32.8,
+          "weighted_wait": 5230,
+          "critical_wait_min": 0,
+          "missed_appointments": 2,
+          "schedule_changes": 13
+        }
+      },
+      {
+        "policy": "COMMITMENT_FIRST_WEIGHTED",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 29.7,
+          "weighted_wait": 13675,
+          "critical_wait_min": 80,
+          "missed_appointments": 1,
+          "schedule_changes": 8,
+          "swap_proposals": [
+            {
+              "promote": "SHP1014",
+              "priority": "CRITICAL",
+              "waits_min": 80,
+              "displace": "SHP1006",
+              "displaced_priority": "HIGH",
+              "dock": "DOCK-JAI-D2",
+              "at": "12:00",
+              "needs": "coordinator approval + driver notice to SHP1006"
+            }
+          ]
+        }
+      },
+      {
+        "policy": "COMMITMENT_FIRST_WEIGHTED + approved swaps",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 34.7,
+          "weighted_wait": 13175,
+          "critical_wait_min": 80,
+          "missed_appointments": 1,
+          "schedule_changes": 8
+        }
+      },
+      {
+        "policy": "OPTIMAL (branch & bound, proven optimal)",
+        "metrics": {
+          "trucks": 16,
+          "scheduled": 15,
+          "unscheduled": 1,
+          "avg_wait_min": 25.1,
+          "weighted_wait": 5630,
+          "critical_wait_min": 0,
+          "missed_appointments": 0,
+          "schedule_changes": 9,
+          "solver_cost": 57925,
+          "solver_nodes": 98231,
+          "solver_ms": 2230
+        }
+      }
+    ],
+    "recommended_plan": [
+      {
+        "shipment": "SHP1005",
+        "dock": "DOCK-JAI-D4",
+        "start": "10:05",
+        "end": "11:20",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1007",
+        "dock": "DOCK-JAI-D1",
+        "start": "10:05",
+        "end": "11:05",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1004",
+        "dock": "DOCK-JAI-D2",
+        "start": "10:10",
+        "end": "11:10",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1011",
+        "dock": "DOCK-JAI-D6",
+        "start": "11:10",
+        "end": "12:40",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1009",
+        "dock": "DOCK-JAI-D1",
+        "start": "11:15",
+        "end": "12:30",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1013",
+        "dock": "DOCK-JAI-D2",
+        "start": "11:30",
+        "end": "12:30",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1014",
+        "dock": "DOCK-JAI-D4",
+        "start": "11:40",
+        "end": "12:55",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1010",
+        "dock": "DOCK-JAI-D5",
+        "start": "12:00",
+        "end": "12:55",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1006",
+        "dock": "DOCK-JAI-D2",
+        "start": "12:30",
+        "end": "13:15",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1012",
+        "dock": "DOCK-JAI-D1",
+        "start": "12:30",
+        "end": "13:15",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1016",
+        "dock": "DOCK-JAI-D6",
+        "start": "12:40",
+        "end": "14:10",
+        "kept": true,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1003",
+        "dock": "DOCK-JAI-D4",
+        "start": "12:55",
+        "end": "13:40",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1018",
+        "dock": "DOCK-JAI-D3",
+        "start": "13:00",
+        "end": "13:45",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1017",
+        "dock": "DOCK-JAI-D1",
+        "start": "13:15",
+        "end": "14:05",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1020",
+        "dock": "DOCK-JAI-D1",
+        "start": "19:15",
+        "end": "20:15",
+        "kept": false,
+        "approval": false,
+        "note": ""
+      },
+      {
+        "shipment": "SHP1015",
+        "dock": null,
+        "start": "",
+        "end": "",
+        "kept": false,
+        "approval": false,
+        "note": "no compatible dock time left today"
+      }
+    ]
+  }
+]

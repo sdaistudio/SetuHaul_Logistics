@@ -1,0 +1,14 @@
+{"note": "Expected values are derived by hand from rules R1-R8 in setuhaul/feasibility.py (ETA + 15 min gate-to-dock, existing bookings start when their own truck can be on the dock, one booking per slot).",
+ "cases": [
+  {"id": "F01-reefer-no-slot", "shipment": "SHP1015", "now": "16:25", "expect": {"no_feasible": true}},
+  {"id": "F02-heavy-only-D6", "shipment": "SHP1016", "now": "09:40", "expect": {"first": "D6 12:40", "only_docks": ["D6"]}},
+  {"id": "F03-21t-not-on-20t-docks", "shipment": "SHP1014", "now": "09:45", "expect": {"first": "D4 12:30", "only_docks": ["D2", "D4"], "must_reject": {"SLOT-JAI-004": "WEIGHT"}}},
+  {"id": "F04-driver-after-12", "shipment": "SHP1006", "now": "09:40", "constraints": {"earliest_start": "12:00"}, "expect": {"first": "D4 12:30", "not_before": "12:00"}},
+  {"id": "F05-gate-out-13-30", "shipment": "SHP1012", "now": "09:40", "constraints": {"latest_gate_out": "13:30"}, "expect": {"first": "D4 12:30", "all_end_by": "13:20"}},
+  {"id": "F06-overweight-confirmed-D3", "shipment": "SHP1005", "now": "09:30", "expect": {"must_reject": {"SLOT-JAI-030": "WEIGHT"}}},
+  {"id": "F07-cancelled", "shipment": "SHP1019", "now": "10:12", "expect": {"no_feasible": true}},
+  {"id": "F08-reefer-only-D5", "shipment": "SHP1010", "now": "09:40", "expect": {"only_docks": ["D5"]}},
+  {"id": "F09-early-truck-not-before-dock-free", "shipment": "SHP1003", "now": "08:25", "expect": {"not_before": "08:30", "must_reject": {"SLOT-JAI-031": "SLOT_BLOCKED"}}},
+  {"id": "F10-breakdown-window", "shipment": "SHP1006", "now": "09:40", "expect": {"must_reject": {"SLOT-JAI-032": "SLOT_BLOCKED"}}},
+  {"id": "F11-ask-only-after-1pm", "shipment": "SHP1017", "now": "10:02", "constraints": {"earliest_start": "13:00"}, "expect": {"not_before": "13:00", "first": "D1 13:15"}}
+]}

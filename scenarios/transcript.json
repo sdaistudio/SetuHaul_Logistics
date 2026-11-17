@@ -1,0 +1,1278 @@
+[
+  {
+    "kind": "turn",
+    "time": "08:22",
+    "driver": "DRV003",
+    "thread": "S-EARLY",
+    "text": "Bhai main gate pe pahunch gaya, abhi dock mil sakta hai kya? 9 baje ka slot hai",
+    "note": "Early arrival (Hinglish). Free capacity offered only because nobody is displaced.",
+    "lang": "hinglish",
+    "intent": "EARLY_ARRIVAL",
+    "reply": "Aap jaldi pahunche ho. Jaldi aane se aap scheduled trucks se aage nahi jaate, par yeh khaali jagah kisi ko affect nahi karti:\n1) Dock D4: lagbhag 08:27 start, 09:12 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "early"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-043",
+        "dock": "D4",
+        "start": "08:27",
+        "end": "09:12",
+        "window": "08:00-09:00",
+        "needs_approval": false
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "EARLY_ARRIVAL",
+        "REPORT_DELAY"
+      ],
+      "eta": "09:00",
+      "eta_confidence": "HIGH",
+      "eta_kind": "CLOCK",
+      "evidence": [
+        "eta: '9 baje'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "08:23",
+    "driver": "DRV003",
+    "thread": "S-EARLY",
+    "text": "1",
+    "note": "Driver accepts.",
+    "lang": "hinglish",
+    "intent": "SELECT_OPTION",
+    "reply": "Booking confirmed: dock D4, lagbhag 08:28 baje. Aapka purana 09:00-10:00 slot chhod diya gaya hai. Aap andar ho: dock ke call tak yard mein rukiye.",
+    "state": "CONFIRMED",
+    "actions": [
+      "book:CONFIRMED"
+    ],
+    "options": [],
+    "committed": {
+      "appointment_id": "APT-8476478F",
+      "status": "CONFIRMED",
+      "slot_id": "SLOT-JAI-043",
+      "dock": "D4",
+      "planned_start": "2026-08-04T08:28:00+05:30",
+      "planned_end": "2026-08-04T09:13:00+05:30",
+      "replaced": "APT1003",
+      "approval_reasons": []
+    },
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "system",
+    "time": "09:30",
+    "text": "Scheduler BEFORE the spike"
+  },
+  {
+    "kind": "turn",
+    "time": "09:34",
+    "driver": "DRV006",
+    "thread": "S-A",
+    "text": "Traffic after Shahpura. Reaching around 11:20. Any slot after 12?",
+    "note": "Spike starts. ETA + constraint in one message.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D2: start about 12:45, unloading done about 13:30\n2) Dock D2: start about 13:00, unloading done about 13:45\n3) Dock D3: start about 13:00, unloading done about 13:45\nReply with the number to book. Nothing is booked until you choose.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-019",
+        "dock": "D2",
+        "start": "12:45",
+        "end": "13:30",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 54575,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-020",
+        "dock": "D2",
+        "start": "13:00",
+        "end": "13:45",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 56375,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-034",
+        "dock": "D3",
+        "start": "13:00",
+        "end": "13:45",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 56375,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY",
+        "ASK_OPTIONS"
+      ],
+      "eta": "11:20",
+      "eta_confidence": "MEDIUM",
+      "eta_kind": "CLOCK",
+      "earliest_start": "12:00",
+      "delay_reason": "TRAFFIC",
+      "evidence": [
+        "earliest_start: '12'",
+        "eta: '11:20'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:35",
+    "driver": "DRV006",
+    "thread": "S-A",
+    "text": "Traffic after Shahpura. Reaching around 11:20. Any slot after 12?",
+    "note": "Messaging retry with a NEW external id: caught by content dedupe.",
+    "lang": "en",
+    "intent": "DUPLICATE",
+    "reply": null,
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "dedupe"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": true,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {}
+  },
+  {
+    "kind": "turn",
+    "time": "09:37",
+    "driver": "DRV012",
+    "thread": "S-B",
+    "text": "Tyre repaired. I can reach 11:10. I need to leave the warehouse before 1:30 for another pickup.",
+    "note": "Gate-out deadline interpreted and stated back, no extra question.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "I am planning for arrival at 11:10. Slots you can reach at Jaipur:\n1) Dock D4: start about 12:30, unloading done about 13:15\nI have read your time limit as: you must leave the gate by 13:30.\nReply with the number to book. Nothing is booked until you choose.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-047",
+        "dock": "D4",
+        "start": "12:30",
+        "end": "13:15",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 54575,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "eta": "11:10",
+      "eta_confidence": "HIGH",
+      "eta_kind": "CLOCK",
+      "latest_gate_out": "13:30",
+      "delay_reason": "BREAKDOWN",
+      "evidence": [
+        "latest_gate_out: '1:30'",
+        "eta: '11:10'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:39",
+    "driver": "DRV013",
+    "thread": "S-C",
+    "text": "I am late by one hour.",
+    "note": "Relative delay anchored to the plan (10:00+60). Existing pending D2 11:00 still works: no churn.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.",
+    "state": "PENDING_WAREHOUSE",
+    "actions": [
+      "options"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "eta": "10:39",
+      "eta_confidence": "MEDIUM",
+      "eta_kind": "RELATIVE_DELAY",
+      "delay_min": 60,
+      "evidence": [
+        "duration: 'one hour'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:41",
+    "driver": "DRV004",
+    "thread": "S-D",
+    "text": "मैं 45 मिनट लेट हो जाऊँगा",
+    "note": "Hindi. Driver has two trips: must ask which.",
+    "lang": "hi",
+    "intent": "REPORT_DELAY",
+    "reply": "आज आपकी 2 ट्रिप हैं:\n1) ORD-260804-004 (Kota → Jaipur, ईटीए 08:45)\n2) ORD-260804-020 (Kota → Jaipur, ईटीए 18:00)\nयह किस ट्रिप के बारे में है? 1 या 2 लिखें।",
+    "state": "NEED_SHIPMENT",
+    "actions": [
+      "identify"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": true,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hi",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "eta": "10:26",
+      "eta_confidence": "MEDIUM",
+      "eta_kind": "RELATIVE_DELAY",
+      "delay_min": 45,
+      "evidence": [
+        "duration: '45 minute'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:42",
+    "driver": "DRV004",
+    "thread": "S-D",
+    "text": "शाम वाला",
+    "note": "Answers clarification.",
+    "lang": "hi",
+    "intent": "UNKNOWN",
+    "reply": "मैं 18:45 पहुँचने के हिसाब से देख रहा हूँ (आपका तय समय 18:00 + 45 मिनट) (देर वाले समय 19:00 के हिसाब से, ताकि स्लॉट न छूटे)। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D1: लगभग 19:15 शुरू, 20:15 तक अनलोड\n2) डॉक D2: लगभग 19:15 शुरू, 20:15 तक अनलोड\n3) डॉक D3: लगभग 19:15 शुरू, 20:15 तक अनलोड\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-012",
+        "dock": "D1",
+        "start": "19:15",
+        "end": "20:15",
+        "window": "19:00-20:00",
+        "needs_approval": false,
+        "facility_cost": 54125,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-026",
+        "dock": "D2",
+        "start": "19:15",
+        "end": "20:15",
+        "window": "19:00-20:00",
+        "needs_approval": false,
+        "facility_cost": 54125,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-040",
+        "dock": "D3",
+        "start": "19:15",
+        "end": "20:15",
+        "window": "19:00-20:00",
+        "needs_approval": false,
+        "facility_cost": 54125,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hi"
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:44",
+    "driver": "DRV014",
+    "thread": "S-E",
+    "text": "भाई 11:25 तक पहुँचूंगा, लोड बहुत ज़रूरी है, पहला डॉक दे दो",
+    "note": "CRITICAL shipment, Hindi. Priority claim in text is logged, not trusted.",
+    "lang": "hi",
+    "intent": "SELECT_OPTION",
+    "reply": "मैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D2: लगभग 12:30 शुरू, 13:45 तक अनलोड\n2) डॉक D4: लगभग 12:30 शुरू, 13:45 तक अनलोड\n3) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड\nडॉक का क्रम शिपमेंट रिकॉर्ड की प्राथमिकता से तय होता है; चैट से इसे नहीं बदला जा सकता।\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-019",
+        "dock": "D2",
+        "start": "12:30",
+        "end": "13:45",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 75125,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-047",
+        "dock": "D4",
+        "start": "12:30",
+        "end": "13:45",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 75125,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-020",
+        "dock": "D2",
+        "start": "13:00",
+        "end": "14:15",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 84125,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hi",
+      "intents": [
+        "SELECT_OPTION",
+        "REPORT_DELAY"
+      ],
+      "eta": "11:25",
+      "eta_confidence": "HIGH",
+      "eta_kind": "CLOCK",
+      "option_choice": 1,
+      "flags": [
+        "PRIORITY_CLAIM"
+      ],
+      "evidence": [
+        "eta: '11:25'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:45",
+    "driver": "DRV006",
+    "thread": "S-A",
+    "text": "1",
+    "note": "DRV006 takes D4 12:30 - the same slot DRV012 was shown at 09:37.",
+    "lang": "en",
+    "intent": "SELECT_OPTION",
+    "reply": "Booking confirmed: dock D2, start about 12:30. Your old 10:00-11:00 slot is released. Please be at the gate by 12:15.",
+    "state": "CONFIRMED",
+    "actions": [
+      "book:CONFIRMED"
+    ],
+    "options": [],
+    "committed": {
+      "appointment_id": "APT-96FEE70A",
+      "status": "CONFIRMED",
+      "slot_id": "SLOT-JAI-019",
+      "dock": "D2",
+      "planned_start": "2026-08-04T12:30:00+05:30",
+      "planned_end": "2026-08-04T13:15:00+05:30",
+      "replaced": "APT1006",
+      "approval_reasons": []
+    },
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:46",
+    "driver": "DRV014",
+    "thread": "S-E",
+    "text": "1",
+    "note": "CRITICAL load books D2 12:30; its infeasible pending D1 request (21 t on a 20 t dock) is replaced.",
+    "lang": "hi",
+    "intent": "SELECT_OPTION",
+    "reply": "माफ़ कीजिए, डॉक D2 12:30 वाला स्लॉट अभी दूसरे ट्रक को मिल गया।\nमैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D2: लगभग 13:15 शुरू, 14:30 तक अनलोड\n2) डॉक D4: लगभग 13:00 शुरू, 14:15 तक अनलोड\n3) डॉक D4: लगभग 12:30 शुरू, 13:45 तक अनलोड\nडॉक का क्रम शिपमेंट रिकॉर्ड की प्राथमिकता से तय होता है; चैट से इसे नहीं बदला जा सकता।\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "book_failed:OPTION_GONE",
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-020",
+        "dock": "D2",
+        "start": "13:15",
+        "end": "14:30",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 74225,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-048",
+        "dock": "D4",
+        "start": "13:00",
+        "end": "14:15",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 74225,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-047",
+        "dock": "D4",
+        "start": "12:30",
+        "end": "13:45",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 74750,
+        "strands": [
+          "SHP1012",
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:47",
+    "driver": "DRV014",
+    "thread": "S-E",
+    "text": "1",
+    "note": "Books the refreshed first option, chosen by look-ahead across all trucks.",
+    "lang": "hi",
+    "intent": "SELECT_OPTION",
+    "reply": "बुकिंग पक्की: डॉक D2, लगभग 13:15 बजे। आपका पुराना 11:00-12:00 स्लॉट छोड़ दिया गया है। कृपया 13:00 तक गेट पर पहुँचें।",
+    "state": "CONFIRMED",
+    "actions": [
+      "book:CONFIRMED"
+    ],
+    "options": [],
+    "committed": {
+      "appointment_id": "APT-38427EB6",
+      "status": "CONFIRMED",
+      "slot_id": "SLOT-JAI-020",
+      "dock": "D2",
+      "planned_start": "2026-08-04T13:15:00+05:30",
+      "planned_end": "2026-08-04T14:30:00+05:30",
+      "replaced": "APT1014A",
+      "approval_reasons": []
+    },
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:48",
+    "driver": "DRV012",
+    "thread": "S-B",
+    "text": "option 1",
+    "note": "Competing request: D4 12:30 is gone. Re-check at commit; nothing else ends before 13:30 -> person decides.",
+    "lang": "en",
+    "intent": "SELECT_OPTION",
+    "reply": "Booking confirmed: dock D4, start about 12:30. Please be at the gate by 12:15.",
+    "state": "CONFIRMED",
+    "actions": [
+      "book:CONFIRMED"
+    ],
+    "options": [],
+    "committed": {
+      "appointment_id": "APT-1E9BB4CA",
+      "status": "CONFIRMED",
+      "slot_id": "SLOT-JAI-047",
+      "dock": "D4",
+      "planned_start": "2026-08-04T12:30:00+05:30",
+      "planned_end": "2026-08-04T13:15:00+05:30",
+      "replaced": null,
+      "approval_reasons": []
+    },
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "system",
+    "time": "09:49",
+    "text": "Coordinator CON001 approved pending booking for SHP1013"
+  },
+  {
+    "kind": "turn",
+    "time": "09:50",
+    "driver": "DRV007",
+    "thread": "S-F",
+    "text": "Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?",
+    "note": "Driver on two in-transit trucks (data conflict): must ask which.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "You have 2 trips today:\n1) ORD-260804-007 (Ajmer → Jaipur, ETA 09:50)\n2) ORD-260804-016 (Mumbai → Jaipur, ETA 10:30)\nWhich one is this about? Reply 1 or 2.",
+    "state": "NEED_SHIPMENT",
+    "actions": [
+      "identify"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": true,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY",
+        "ASK_OPTIONS"
+      ],
+      "eta": "12:00",
+      "eta_confidence": "HIGH",
+      "eta_kind": "CLOCK",
+      "evidence": [
+        "eta: '12:00'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:51",
+    "driver": "DRV007",
+    "thread": "S-F",
+    "text": "016 wala",
+    "note": "Order suffix resolves shipment.",
+    "lang": "hinglish",
+    "intent": "IDENTIFY_SHIPMENT",
+    "reply": "Main 12:00 pahunchne ke hisaab se dekh raha hoon. Jaipur par ye slot mil sakte hain:\n1) Dock D6: lagbhag 12:40 start, 14:10 tak unload\n2) Dock D6: lagbhag 14:00 start, 15:30 tak unload\n3) Dock D6: lagbhag 15:30 start, 17:00 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-074",
+        "dock": "D6",
+        "start": "12:40",
+        "end": "14:10",
+        "window": "12:30-14:00",
+        "needs_approval": false,
+        "facility_cost": 42350,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-075",
+        "dock": "D6",
+        "start": "14:00",
+        "end": "15:30",
+        "window": "14:00-15:30",
+        "needs_approval": false,
+        "facility_cost": 45550,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-076",
+        "dock": "D6",
+        "start": "15:30",
+        "end": "17:00",
+        "window": "15:30-17:00",
+        "needs_approval": false,
+        "facility_cost": 49150,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "IDENTIFY_SHIPMENT"
+      ],
+      "order_suffixes": [
+        "016"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:52",
+    "driver": "DRV007",
+    "thread": "S-F",
+    "text": "1",
+    "note": "Data conflict -> pending, not auto-confirmed.",
+    "lang": "hinglish",
+    "intent": "SELECT_OPTION",
+    "reply": "Aapke liye dock D6 lagbhag 12:40 baje ki request bheji hai. Yeh abhi confirm nahi hai: warehouse coordinator ki approval chahiye (shipment data check karna hai). 20 minute mein bataunga.",
+    "state": "PENDING_WAREHOUSE",
+    "actions": [
+      "book:PENDING_CONFIRMATION"
+    ],
+    "options": [],
+    "committed": {
+      "appointment_id": "APT-D41F7983",
+      "status": "PENDING_CONFIRMATION",
+      "slot_id": "SLOT-JAI-074",
+      "dock": "D6",
+      "planned_start": "2026-08-04T12:40:00+05:30",
+      "planned_end": "2026-08-04T14:10:00+05:30",
+      "replaced": null,
+      "approval_reasons": [
+        "DATA_CONFLICT"
+      ]
+    },
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "SELECT_OPTION"
+      ],
+      "option_choice": 1
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:53",
+    "driver": "DRV010",
+    "thread": "S-G",
+    "text": "thoda late ho jaunga",
+    "note": "Vague delay: ask for a time.",
+    "lang": "hinglish",
+    "intent": "REPORT_DELAY",
+    "reply": "Dock dhoondhne ke liye time chahiye. Aap lagbhag kitne baje Jaipur pahunchoge? 12:30-13:00 jaisa range bhi chalega.",
+    "state": "NEED_ETA",
+    "actions": [
+      "ask_eta"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": true,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "clarify": [
+        "ETA_VAGUE"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "09:54",
+    "driver": "DRV010",
+    "thread": "S-G",
+    "text": "lagbhag 11:30 tak",
+    "note": "'11:30 tak' answers the ETA question (elsewhere 'tak' means a deadline). Reefer -> D5 only.",
+    "lang": "hinglish",
+    "intent": "REPORT_DELAY",
+    "reply": "Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D5: lagbhag 12:00 start, 12:55 tak unload\n2) Dock D5: lagbhag 13:00 start, 13:55 tak unload\n3) Dock D5: lagbhag 14:00 start, 14:55 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-061",
+        "dock": "D5",
+        "start": "12:00",
+        "end": "12:55",
+        "window": "12:00-13:00",
+        "needs_approval": false,
+        "facility_cost": 43750,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-062",
+        "dock": "D5",
+        "start": "13:00",
+        "end": "13:55",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 50950,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-063",
+        "dock": "D5",
+        "start": "14:00",
+        "end": "14:55",
+        "window": "14:00-15:00",
+        "needs_approval": false,
+        "facility_cost": 58150,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "eta": "11:30",
+      "eta_confidence": "MEDIUM",
+      "eta_kind": "CLOCK",
+      "evidence": [
+        "latest_gate_out: '11:30'",
+        "time given in answer to ETA question"
+      ]
+    }
+  },
+  {
+    "kind": "system",
+    "time": "09:56",
+    "text": "Coordinator CON001 approved pending booking for SHP1016"
+  },
+  {
+    "kind": "system",
+    "time": "09:58",
+    "text": "Gate check-in: SHP1007 arrived (late) and is in the yard"
+  },
+  {
+    "kind": "system",
+    "time": "10:00",
+    "text": "Scheduler AFTER the spike + check-in"
+  },
+  {
+    "kind": "turn",
+    "time": "10:02",
+    "driver": "DRV001",
+    "thread": "S-H",
+    "text": "What slots are possible after 1 PM if I reach around 12:45?",
+    "note": "Ask-only: nothing reserved.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "I am planning for arrival at 12:45 (planning for the late end, 13:00, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D1: start about 13:15, unloading done about 14:05\n2) Dock D3: start about 13:15, unloading done about 14:05\n3) Dock D4: start about 13:15, unloading done about 14:05\nReply with the number to book. Nothing is booked until you choose.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-006",
+        "dock": "D1",
+        "start": "13:15",
+        "end": "14:05",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 41800,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-034",
+        "dock": "D3",
+        "start": "13:15",
+        "end": "14:05",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 41800,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-048",
+        "dock": "D4",
+        "start": "13:15",
+        "end": "14:05",
+        "window": "13:00-14:00",
+        "needs_approval": false,
+        "facility_cost": 41800,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY",
+        "ASK_OPTIONS"
+      ],
+      "eta": "12:45",
+      "eta_confidence": "MEDIUM",
+      "eta_kind": "CLOCK",
+      "earliest_start": "13:00",
+      "evidence": [
+        "earliest_start: '1 pm'",
+        "eta: '12:45'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "10:04",
+    "driver": "DRV001",
+    "thread": "S-H",
+    "text": "aur 3 baje ke baad?",
+    "note": "Compares later options.",
+    "lang": "hinglish",
+    "intent": "ASK_OPTIONS",
+    "reply": "Main 12:45 pahunchne ke hisaab se dekh raha hoon (late wale time 13:00 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D1: lagbhag 15:00 start, 15:50 tak unload\n2) Dock D2: lagbhag 15:00 start, 15:50 tak unload\n3) Dock D3: lagbhag 15:00 start, 15:50 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+    "state": "OPTIONS_SHOWN",
+    "actions": [
+      "options"
+    ],
+    "options": [
+      {
+        "slot_id": "SLOT-JAI-008",
+        "dock": "D1",
+        "start": "15:00",
+        "end": "15:50",
+        "window": "15:00-16:00",
+        "needs_approval": false,
+        "facility_cost": 42850,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-022",
+        "dock": "D2",
+        "start": "15:00",
+        "end": "15:50",
+        "window": "15:00-16:00",
+        "needs_approval": false,
+        "facility_cost": 42850,
+        "strands": [
+          "SHP1015"
+        ]
+      },
+      {
+        "slot_id": "SLOT-JAI-036",
+        "dock": "D3",
+        "start": "15:00",
+        "end": "15:50",
+        "window": "15:00-16:00",
+        "needs_approval": false,
+        "facility_cost": 42850,
+        "strands": [
+          "SHP1015"
+        ]
+      }
+    ],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "ASK_OPTIONS"
+      ],
+      "earliest_start": "15:00",
+      "evidence": [
+        "earliest_start: '3 baje'"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "10:05",
+    "driver": "DRV001",
+    "thread": "S-H",
+    "text": "nahi, abhi rehne do",
+    "note": "Declines: still nothing booked.",
+    "lang": "hinglish",
+    "intent": "DECLINE",
+    "reply": "Theek hai, kuch book nahi kiya. Naya time bhejo, ya coordinator se baat ke liye 'manager' likho.",
+    "state": "NEED_ETA",
+    "actions": [
+      "decline"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "DECLINE"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "10:12",
+    "driver": "DRV008",
+    "thread": "S-I",
+    "text": "Is my 4 PM slot still active?",
+    "note": "Cancelled shipment.",
+    "lang": "en",
+    "intent": "CHECK_STATUS",
+    "reply": "This shipment and its appointment were cancelled. Please contact dispatch before travelling.",
+    "state": "CLOSED",
+    "actions": [
+      "identify"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": null,
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "CHECK_STATUS"
+      ],
+      "option_time": "16:00"
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "10:30",
+    "driver": "DRV011",
+    "thread": "S-J",
+    "text": "Truck ka accident ho gaya, helper ko chot lagi hai",
+    "note": "Safety -> person now.",
+    "lang": "hinglish",
+    "intent": "SAFETY",
+    "reply": "Aapki safety sabse pehle hai. Kisi safe jagah ruk jaiye. Koi ghayal hai to abhi 112 call karein. Operations team ko bata diya hai, koi aapko call karega.",
+    "state": "ESCALATED",
+    "actions": [
+      "escalate:SAFETY"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": {
+      "escalation_id": "ESC-C1FE12C9",
+      "reason": "SAFETY",
+      "why": "Driver safety: a person must take over immediately.",
+      "raised_at": "2026-08-04T10:30:00+05:30",
+      "thread_id": "S-J",
+      "shipment_id": null,
+      "facility_id": "FAC-JAI-01",
+      "facts": {
+        "message": "Truck ka accident ho gaya, helper ko chot lagi hai"
+      },
+      "options_tried": [],
+      "recommendation": "",
+      "routed_to": {
+        "role": "SHIFT_MANAGER",
+        "contact_id": "CON003",
+        "name": "Anita Joshi",
+        "channel": "EMAIL",
+        "address": "anita.joshi@setuhaul.example",
+        "skipped": []
+      },
+      "sla": "acknowledge within 10 min (5 min for SAFETY)",
+      "driver_told": "a person will contact you; do not go to the dock until then"
+    },
+    "parse": {
+      "lang": "hinglish",
+      "intents": [
+        "SAFETY"
+      ]
+    }
+  },
+  {
+    "kind": "turn",
+    "time": "16:24",
+    "driver": "DRV015",
+    "thread": "S-K",
+    "text": "Evening traffic. ETA 6:30. Can the reefer unload tonight?",
+    "note": "Reefer dock under maintenance: no feasible slot -> escalation with full record.",
+    "lang": "en",
+    "intent": "REPORT_DELAY",
+    "reply": "I cannot find a valid refrigerated dock slot for arrival at 18:30 today: the only compatible dock is blocked. I have passed your case to the warehouse coordinator with all details. Please do not go to the dock until they contact you.",
+    "state": "ESCALATED",
+    "actions": [
+      "options"
+    ],
+    "options": [],
+    "committed": null,
+    "duplicate": false,
+    "clarification": false,
+    "guard": [],
+    "escalation": {
+      "escalation_id": "ESC-248B365C",
+      "reason": "NO_FEASIBLE_SLOT",
+      "why": "No compatible slot after declared ETA.",
+      "raised_at": "2026-08-04T16:24:00+05:30",
+      "thread_id": "S-K",
+      "shipment_id": "SHP1015",
+      "facility_id": "FAC-JAI-01",
+      "facts": {
+        "shipment": {
+          "shipment_id": "SHP1015",
+          "order_reference": "ORD-260804-015",
+          "carrier_id": "CAR003",
+          "driver_id": "DRV015",
+          "vehicle_id": "VEH005",
+          "origin_name": "Delhi Dairy Cooperative",
+          "origin_city": "Delhi",
+          "destination_facility_id": "FAC-JAI-01",
+          "customer_name": "FreshBasket Jaipur",
+          "product_category": "Dairy products",
+          "load_weight_kg": 15000,
+          "pallet_count": 20,
+          "required_dock_type": "REEFER",
+          "temperature_control_required": 1,
+          "priority_code": "HIGH",
+          "planned_departure_ts": "2026-08-04T12:00:00+05:30",
+          "actual_departure_ts": "2026-08-04T12:20:00+05:30",
+          "original_eta_ts": "2026-08-04T17:30:00+05:30",
+          "latest_eta_ts": "2026-08-04T18:30:00+05:30",
+          "expected_unload_min": 60,
+          "current_status": "IN_TRANSIT",
+          "created_at": "2026-08-01T12:00:00+05:30",
+          "updated_at": "2026-08-04T16:30:00+05:30"
+        },
+        "eta": {
+          "point": "2026-08-04T18:30:00+05:30",
+          "planning_eta": "2026-08-04T18:30:00+05:30",
+          "earliest": null,
+          "latest": null,
+          "confidence": "HIGH",
+          "source": "DRIVER_CHAT",
+          "at_facility": false,
+          "evidence": [
+            "driver message in this thread"
+          ]
+        },
+        "constraints": {
+          "earliest_start": null,
+          "latest_start": null,
+          "latest_gate_out": null
+        },
+        "rejection_summary": {
+          "SLOT_BLOCKED": 4,
+          "ETA_AFTER_WINDOW": 2
+        }
+      },
+      "options_tried": [
+        {
+          "slot": "D5 16:00-17:00",
+          "rejected_because": [
+            "ETA_AFTER_WINDOW"
+          ],
+          "notes": [
+            "earliest dock time 18:45 (planning ETA 18:30)"
+          ]
+        },
+        {
+          "slot": "D5 17:00-18:00",
+          "rejected_because": [
+            "ETA_AFTER_WINDOW"
+          ],
+          "notes": [
+            "earliest dock time 18:45 (planning ETA 18:30)"
+          ]
+        },
+        {
+          "slot": "D5 18:00-19:00",
+          "rejected_because": [
+            "SLOT_BLOCKED"
+          ],
+          "notes": [
+            "Refrigeration power maintenance"
+          ]
+        },
+        {
+          "slot": "D5 19:00-20:00",
+          "rejected_because": [
+            "SLOT_BLOCKED"
+          ],
+          "notes": [
+            "Refrigeration power maintenance"
+          ]
+        },
+        {
+          "slot": "D5 20:00-21:00",
+          "rejected_because": [
+            "SLOT_BLOCKED"
+          ],
+          "notes": [
+            "Refrigeration power maintenance"
+          ]
+        },
+        {
+          "slot": "D5 21:00-22:00",
+          "rejected_because": [
+            "SLOT_BLOCKED"
+          ],
+          "notes": [
+            "Refrigeration power maintenance"
+          ]
+        }
+      ],
+      "recommendation": "Options for a person to decide: (a) approve reefer unload after maintenance window, (b) next-morning first reefer slot with cold-chain check, (c) divert to another reefer facility.",
+      "routed_to": {
+        "role": "WAREHOUSE_COORDINATOR",
+        "contact_id": "CON001",
+        "name": "Neha Bansal",
+        "channel": "EMAIL",
+        "address": "neha.bansal@setuhaul.example",
+        "skipped": []
+      },
+      "sla": "acknowledge within 10 min (5 min for SAFETY)",
+      "driver_told": "a person will contact you; do not go to the dock until then"
+    },
+    "parse": {
+      "lang": "en",
+      "intents": [
+        "REPORT_DELAY"
+      ],
+      "eta": "18:30",
+      "eta_confidence": "HIGH",
+      "eta_kind": "CLOCK",
+      "delay_reason": "TRAFFIC",
+      "evidence": [
+        "eta: '6:30'"
+      ]
+    }
+  }
+]

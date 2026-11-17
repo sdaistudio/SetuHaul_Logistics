@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Home — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1040px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="prototype.html">Prototype</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="hero"><h1>SetuHaul Logistics — driver exception service</h1>
+<p>When many drivers report delays at once, SetuHaul answers each one in English, Hindi or Hinglish with a dock slot the truck can really make, and never promises the same capacity twice. Language at the edges; a deterministic solver decides every slot; a person decides when no safe answer exists.</p>
+<p>Built on the 4 August 2026 Jaipur snapshot for the FDE Academy challenge. Everything below is generated from the code in <a href="https://github.com/sdaistudio/SetuHaul_Logistics">the repository</a>.</p></div>
+<div class="kpis"><div class="kpi"><div class="v">0</div><div class="l">double bookings (10-driver race + replay)</div></div><div class="kpi"><div class="v">2 min</div><div class="l">median time to a usable answer</div></div><div class="kpi"><div class="v">100% / 80%</div><div class="l">NLU tuned / held-out (EN·HI·Hinglish)</div></div><div class="kpi"><div class="v">8 / 8</div><div class="l">solver optimum = OR-Tools CP-SAT</div></div><div class="kpi"><div class="v">8/12</div><div class="l">conversations resolved without takeover</div></div><div class="kpi"><div class="v">20</div><div class="l">data issues proved by SQL</div></div></div>
+<h2 class="sec">Start here</h2><div class="grid">
+<a class="card big" href="design.html"><b>Solution design</b><span>Options, architecture on AWS, deterministic core, solver, guardrails, evals, results and open decisions.</span></a>
+<a class="card big" href="prototype.html"><b>Discussion prototype</b><span>Conversation replay, dock board, solver look-ahead, scheduling comparison, evals, observability.</span></a><a class="card big" href="analysis.html"><b>Data analysis</b><span>Statistical profile: delays, ETA trust, capacity, unload cascades (Monte Carlo), data quality.</span></a><a class="card big" href="er.html"><b>ER diagram &amp; data browser</b><span>Clickable entity model; every table&#x27;s rows, columns, keys and CREATE statement.</span></a>
+</div>
+<h2 class="sec">Architecture</h2><div class="arch"><a href="architecture.svg"><img src="architecture.png" alt="SetuHaul architecture on AWS"></a></div>
+<h2 class="sec">Hand-in documents</h2><div class="grid"><a class="card" href="problem.html"><b>Problem definition sheet</b><span>Facts, estimates, assumptions and unknowns; the 20 data issues.</span></a><a class="card" href="decisions.html"><b>Decision register</b><span>D1–D13: every decision the brief asks for, with reason and evidence.</span></a><a class="card" href="solver.html"><b>Solver design</b><span>Branch and bound, look-ahead, CP-SAT proof, location on demand.</span></a><a class="card" href="readout.html"><b>Client readout</b><span>One page for the head of operations and the planner.</span></a><a class="card" href="audit.html"><b>Data audit findings</b><span>Twenty data issues, each with the SQL that proves it.</span></a><a class="card" href="scenarios.html"><b>Scenario run transcript</b><span>Every driver conversation in the Jaipur replay, with system state.</span></a><a class="card" href="evals.html"><b>Evaluation report</b><span>NLU, feasibility, guardrail, integrity and solver gates.</span></a>
+<a class="card" href="https://github.com/sdaistudio/SetuHaul_Logistics"><b>Source code on GitHub</b><span>Workflow, NLU, solver, rules.yaml, tests, evals, AWS SAM template, analysis scripts.</span></a></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>
