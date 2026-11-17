@@ -34,7 +34,7 @@ from .model import tpl, understand_text as parse_message
 from .tool import (check_slot_feasibility as evaluate_all, confirm_booking as commit_hold,
                    escalate_to_human as escalate, get_eta as resolve_eta, hold_slot as place_hold,
                    rank_options_lookahead as rank_for_driver, traced)
-from .timeutil import hhmm, iso, minutes, parse
+from .timeutil import diff_min, hhmm, iso, minutes, parse
 
 STATIC_TIMES = {"11:30", "12:30", "13:00", "21:00"}  # example times inside templates
 
@@ -153,6 +153,12 @@ class DriverAgent:
             st["state"] = "ESCALATED"
             return tpl.render("human", lang, role=tpl.word(tpl.ROLE_NAMES, esc["routed_to"]["role"], lang))
 
+        # "pehla dock de do" before any options exist is a request, not a choice of option
+        if st["state"] != "OPTIONS_SHOWN" and "SELECT_OPTION" in p.intents and len(p.intents) > 1:
+            p.intents = [i for i in p.intents if i != "SELECT_OPTION"]
+            p.option_choice = None
+            turn.intent, turn.parse = p.primary_intent, p.as_dict()
+
         d.setdefault("msg_times", []).append(iso(now))
         d["msg_times"] = [t for t in d["msg_times"] if parse(t) > now - minutes(30)]
         if len(d["msg_times"]) > 15:
@@ -194,6 +200,8 @@ class DriverAgent:
         if st["state"] == "NEED_SHIPMENT":
             intents = d.pop("pending_intents", intents)
             st["state"] = "NEW"
+            if turn.intent in ("UNKNOWN", "SELECT_OPTION"):
+                turn.intent = "IDENTIFY_SHIPMENT"
 
         # ---- choose an offered option ---------------------------------------
         if st["state"] == "OPTIONS_SHOWN" and ("SELECT_OPTION" in intents or "CONFIRM" in intents):
@@ -277,10 +285,24 @@ class DriverAgent:
                 picked = match(cands[0])
         if picked is not None:
             d["shipment_id"] = picked["shipment_id"]
+        at_fac = {r["shipment_id"]: r["gate_in_ts"] for r in self.conn.execute(
+            "SELECT shipment_id, gate_in_ts FROM facility_checkins WHERE gate_in_ts IS NOT NULL AND gate_out_ts IS NULL")}
+        if d.get("shipment_id") is None and len(active) > 1:
+            # Load-type words in the message ("heavy trailer", "reefer") that match exactly one
+            # live shipment identify it; the assumption is stated back to the driver.
+            t = normalise(p.text)
+            import re as _re
+            kinds = {"HEAVY": bool(_re.search(r"\b(heavy|bhari|bhaari|trailer)\b|भारी|हेवी", t)),
+                     "REEFER": bool(_re.search(r"\b(reefer|cold|thanda|refrigerat\w*)\b|रीफर|ठंडा", t))}
+            for kind, said in kinds.items():
+                if not said:
+                    continue
+                hit = [r for r in active if self._load_kind(r) == kind]
+                if len(hit) == 1:
+                    d["shipment_id"] = hit[0]["shipment_id"]
+                    d["assumed_trip"] = kind
         if d.get("shipment_id") is None and len(active) > 1:
             # Deterministic narrowing with evidence, never a guess between equals:
-            at_fac = {r["shipment_id"] for r in self.conn.execute(
-                "SELECT shipment_id FROM facility_checkins WHERE gate_in_ts IS NOT NULL AND gate_out_ts IS NULL")}
             if "EARLY_ARRIVAL" in p.intents or "CHECK_STATUS" in p.intents:
                 here = [r for r in active if r["shipment_id"] in at_fac]
                 if len(here) == 1:
@@ -297,10 +319,19 @@ class DriverAgent:
                 d["pending_intents"] = [i for i in p.intents if i != "SELECT_OPTION"]
                 st["state"] = "NEED_SHIPMENT"
                 d["clarifications"] = d.get("clarifications", 0) + 1
-                trips = "\n".join(f"{i}) {r['order_reference']} ({r['origin_city']} → {self._fac_name(r)}, "
-                                  f"{'ETA' if lang != 'hi' else 'ईटीए'} {hhmm(parse(r['original_eta_ts']))})"
+                def tag(r):
+                    bits = []
+                    if self._load_kind(r) != "STANDARD":
+                        bits.append(tpl.word(tpl.TRIP_TAG, self._load_kind(r), lang))
+                    if r["shipment_id"] in at_fac:
+                        bits.append(tpl.word(tpl.TRIP_TAG, "AT_DC", lang).format(t=hhmm(parse(at_fac[r["shipment_id"]]))))
+                    else:
+                        bits.append(f"{'ETA' if lang != 'hi' else 'ईटीए'} {hhmm(parse(r['original_eta_ts']))}")
+                    return ", ".join(bits)
+                trips = "\n".join(f"{i}) {r['order_reference']} ({r['origin_city']} → {self._fac_name(r)}, {tag(r)})"
                                   for i, r in enumerate(active, 1))
-                self._extra_times = {hhmm(parse(r["original_eta_ts"])) for r in active}
+                self._extra_times = {hhmm(parse(r["original_eta_ts"])) for r in active} | \
+                    {hhmm(parse(at_fac[r["shipment_id"]])) for r in active if r["shipment_id"] in at_fac}
                 return None, ("ask", tpl.render("ask_shipment", lang, n=len(active), trips=trips))
             else:
                 cancelled = [r for r in rows if r["current_status"] == "CANCELLED"]
@@ -312,6 +343,12 @@ class DriverAgent:
         if sh["current_status"] == "CANCELLED":
             return None, ("cancelled", tpl.render("cancelled_shipment", lang))
         return sh["shipment_id"], None
+
+    @staticmethod
+    def _load_kind(sh) -> str:
+        if sh["temperature_control_required"]:
+            return "REEFER"
+        return "HEAVY" if sh["required_dock_type"] == "HEAVY" else "STANDARD"
 
     def _fac_name(self, sh) -> str:
         r = self.conn.execute("SELECT city FROM facilities WHERE facility_id=?", (sh["destination_facility_id"],)).fetchone()
@@ -386,7 +423,20 @@ class DriverAgent:
                 ranked = rank_for_driver(self.conn, sh["shipment_id"], now, eta, cons, [e.slot_id for e in feas])
                 by_id = {e.slot_id: e for e in feas}
                 if ranked:
-                    opts = [by_id[r.slot_id] for r in ranked[: config.MAX_OPTIONS_SHOWN]]
+                    # Fairness rule: do not offer a slot that leaves another truck with no dock
+                    # today when this driver has options that strand nobody extra. Then show
+                    # distinct start times only, so the driver gets real choices.
+                    least = min(len(r.others_unscheduled) for r in ranked)
+                    keep, seen = [], set()
+                    for r in ranked:
+                        k = hhmm(by_id[r.slot_id].planned_start)
+                        if len(r.others_unscheduled) == least and k not in seen:
+                            seen.add(k)
+                            keep.append(r)
+                    opts = [by_id[r.slot_id] for r in keep[: config.MAX_OPTIONS_SHOWN]]
+                    first = min(o.planned_start for o in opts)
+                    d["protected_earlier"] = any(len(r.others_unscheduled) > least and
+                                                 by_id[r.slot_id].planned_start < first for r in ranked)
                     look = {r.slot_id: r for r in ranked}
                 sp.update(evaluated=len(ranked), ranking=[f"{r.dock_code} {hhmm(r.start)} cost={r.facility_cost:.0f}"
                                                           f" strands={r.others_unscheduled}" for r in ranked[:5]])
@@ -401,7 +451,12 @@ class DriverAgent:
                 times |= {hhmm(parse(cur["slot_start_ts"])), hhmm(parse(cur["slot_end_ts"])),
                           hhmm(eta.point), hhmm(mine.planned_start)}
                 st["state"] = "CONFIRMED" if cur["appointment_status"] == "CONFIRMED" else "PENDING_WAREHOUSE"
-                return tpl.render("current_ok", lang, status=tpl.word(tpl.STATUS_NAME, cur["appointment_status"], lang),
+                pre = ""
+                base = self._reference_eta(sh["shipment_id"])
+                if d.get("eta_kind") == "RELATIVE_DELAY" and d.get("delay_min") and base:
+                    pre = tpl.render("assume_relative", lang, delay=d["delay_min"], eta=hhmm(eta.point), base=hhmm(base))
+                    times.add(hhmm(base))
+                return pre + tpl.render("current_ok", lang, status=tpl.word(tpl.STATUS_NAME, cur["appointment_status"], lang),
                                   window=f"{hhmm(parse(cur['slot_start_ts']))}-"
                                   f"{hhmm(parse(cur['slot_end_ts']))}", dock=cur["dock_code"],
                                   eta=hhmm(eta.point), start=hhmm(mine.planned_start))
@@ -418,8 +473,15 @@ class DriverAgent:
             self._set_exception_status(st, "ESCALATED")
             times |= {hhmm(eta.point)}
             dock_type = "REEFER" if sh["temperature_control_required"] else sh["required_dock_type"]
+            why = tpl.word(tpl.WHY, top, lang)
+            blocked = [e for e in evals if "SLOT_BLOCKED" in e.reasons and "DOCK_TYPE" not in e.reasons
+                       and "WEIGHT" not in e.reasons and e.slot_end > eta.planning_eta]
+            if blocked:      # say which dock and when, in clock times the driver can check
+                b0, b1 = min(e.slot_start for e in blocked), max(e.slot_end for e in blocked)
+                why += f" ({blocked[0].dock_code} {hhmm(b0)}-{hhmm(b1)})"
+                times |= {hhmm(b0), hhmm(b1)}
             return tpl.render("no_slot", lang, dock_type=tpl.word(tpl.DOCK_TYPE_NAME, dock_type, lang),
-                              eta=hhmm(eta.point), why=tpl.word(tpl.WHY, top, lang),
+                              eta=hhmm(eta.point), why=why,
                               role=tpl.word(tpl.ROLE_NAMES, esc["routed_to"]["role"], lang))
 
         d["shown"] = [{"slot_id": o.slot_id, "dock": o.dock_code, "start": hhmm(o.planned_start),
@@ -440,8 +502,20 @@ class DriverAgent:
             times.add(hhmm(base))
         if eta.planning_eta != eta.point and not eta.at_facility:
             assumption += tpl.render("assume_low", lang, planning=hhmm(eta.planning_eta))
+        assumption = assumption.replace(") (", "; ")          # one bracket, not two in a row
         times |= {hhmm(eta.point), hhmm(eta.planning_eta)}
-        lines = [tpl.render("options_head", lang, eta=hhmm(eta.point), assumption=assumption, facility=fac)]
+        lines = []
+        if d.pop("assumed_trip", None):
+            lines.append(tpl.render("assume_trip", lang, what=tpl.word(tpl.TRIP_TAG, self._load_kind(sh), lang),
+                                    order=sh["order_reference"], route=f"{sh['origin_city']} → {fac}"))
+        if cur and cur["appointment_status"] in ("CONFIRMED", "PENDING_CONFIRMATION"):
+            mine = next((e for e in evals if e.slot_id == cur["slot_id"]), None)
+            if (mine is None or not mine.feasible) and d.get("missed_told") != cur["appointment_id"]:
+                d["missed_told"] = cur["appointment_id"]      # say it once per booking, not every turn
+                w = f"{hhmm(parse(cur['slot_start_ts']))}-{hhmm(parse(cur['slot_end_ts']))}"
+                lines.append(tpl.render("current_missed", lang, window=w, dock=cur["dock_code"]))
+                times |= set(w.split("-"))
+        lines.append(tpl.render("options_head", lang, eta=hhmm(eta.point), assumption=assumption, facility=fac))
         for i, o in enumerate(d["shown"], 1):
             flag = tpl.render("flag_approval", lang) if o["needs_approval"] else ""
             lines.append(tpl.render("option_line", lang, n=i, dock=o["dock"], start=o["start"], end=o["end"], flag=flag))
@@ -451,6 +525,11 @@ class DriverAgent:
             times.add(hhmm(cons.latest_gate_out))
         if d.get("priority_claim"):
             lines.append(tpl.render("priority_note", lang))
+        if d.pop("protected_earlier", False):
+            lines.append(tpl.render("protect_note", lang))
+        starts = [o["start"] for o in d["shown"]]
+        if len(starts) > 1 and starts[0] != min(starts):
+            lines.append(tpl.render("order_note", lang))
         lines.append(tpl.render("options_tail", lang))
         return "\n".join(lines)
 
@@ -494,17 +573,22 @@ class DriverAgent:
         self.tel.metric("BookingCommitted", status=res["status"])
         d["appointment_id"] = res["appointment_id"]
         times |= {hhmm(parse(res["planned_start"]))}
+        moved = ""
+        new_start = hhmm(parse(res["planned_start"]))
+        if abs(diff_min(parse(res["planned_start"]), parse(f"{res['planned_start'][:11]}{opt['start']}:00{res['planned_start'][19:]}"))) >= 5:
+            moved = tpl.render("time_changed", lang, old=opt["start"], new=new_start)
+            times |= {opt["start"], new_start}
         if res["status"] == "CONFIRMED":
             st["state"] = "CONFIRMED"
             self._set_exception_status(st, "RESOLVED")
             self._notify(sh, res, now, "INTERNAL", "Dock booking confirmed via driver chat")
-            released = ""
+            released = moved
             if res.get("replaced"):
                 old = self.conn.execute("SELECT sl.slot_start_ts, sl.slot_end_ts FROM appointments a JOIN "
                                         "appointment_slots sl USING(slot_id) WHERE appointment_id=?",
                                         (res["replaced"],)).fetchone()
                 ow = f"{hhmm(parse(old['slot_start_ts']))}-{hhmm(parse(old['slot_end_ts']))}"
-                released = tpl.render("released_old", lang, old=ow)
+                released = moved + tpl.render("released_old", lang, old=ow)
                 times |= set(ow.split("-"))
             sh_eta = self._eta_estimate(d, sh)
             if sh_eta and sh_eta.at_facility:

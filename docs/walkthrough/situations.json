@@ -106,7 +106,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "I am planning for arrival at 12:45 (planning for the late end, 13:00, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D1: start about 13:15, unloading done about 14:05\n2) Dock D3: start about 13:15, unloading done about 14:05\n3) Dock D4: start about 13:15, unloading done about 14:05\nReply with the number to book. Nothing is booked until you choose.",
+     "reply": "Your current 12:00-13:00 slot on dock D1 cannot be reached with this arrival time.\nI am planning for arrival at 12:45 (planning for the late end, 13:00, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D1: start about 13:15, unloading done about 14:05\n2) Dock D1: start about 14:00, unloading done about 14:50\nReply with the number to book. Nothing is booked until you choose.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -120,7 +120,7 @@
         "text": "What slots are possible after 1 PM if I reach around 12:45?"
        },
        "result": "en, REPORT_DELAY/ASK_OPTIONS, eta 12:45 CLOCK MEDIUM, not before 13:00",
-       "ms": 2.6,
+       "ms": 3.7,
        "ok": true
       },
       {
@@ -132,6 +132,18 @@
         "lang": "en"
        },
        "result": " (planning for the late end, 13:00, so the slot is not missed)",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "en"
+       },
+       "result": "Your current 12:00-13:00 slot on dock D1 cannot be reached with this a",
        "ms": 0.0,
        "ok": true
       },
@@ -167,19 +179,7 @@
         "template": "option_line",
         "lang": "en"
        },
-       "result": "2) Dock D3: start about 13:15, unloading done about 14:05",
-       "ms": 0.0,
-       "ok": true
-      },
-      {
-       "layer": "MODEL",
-       "name": "phrase",
-       "kind": "LANGUAGE",
-       "args": {
-        "template": "option_line",
-        "lang": "en"
-       },
-       "result": "3) Dock D4: start about 13:15, unloading done about 14:05",
+       "result": "2) Dock D1: start about 14:00, unloading done about 14:50",
        "ms": 0.0,
        "ok": true
       },
@@ -203,7 +203,7 @@
        "kind": "READ",
        "args": {},
        "result": "SHP1017",
-       "ms": 0.1,
+       "ms": 0.3,
        "ok": true
       },
       {
@@ -214,7 +214,7 @@
         "shipment_id": "SHP1017"
        },
        "result": "eta 12:45 (LOW, DRIVER_DECLARED)",
-       "ms": 0.5,
+       "ms": 0.7,
        "ok": true
       },
       {
@@ -226,7 +226,7 @@
         "eta": "eta 12:45 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.3,
+       "ms": 1.9,
        "ok": true
       },
       {
@@ -242,7 +242,7 @@
         "eta": "eta 12:45 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "68 slots checked, 35 feasible; rejected: DOCK_TYPEx20, SLOT_TAKENx7, SLOT_BLOCKEDx7; planning ETA 13:00",
-       "ms": 2.3,
+       "ms": 2.6,
        "ok": true
       },
       {
@@ -258,7 +258,7 @@
         }
        },
        "result": "D1 13:15 board cost 55025 strands ['SHP1015']; D3 13:15 board cost 55025 strands ['SHP1015']; D4 13:15 board cost 55025 strands ['SHP1015']",
-       "ms": 49.1,
+       "ms": 51.9,
        "ok": true
       }
      ],
@@ -288,7 +288,7 @@
       "eta_updates",
       "agent_conversations"
      ],
-     "sql_statements": 1101
+     "sql_statements": 1102
     },
     {
      "time": "10:04",
@@ -298,7 +298,7 @@
      "lang": "hinglish",
      "intent": "ASK_OPTIONS",
      "state": "OPTIONS_SHOWN",
-     "reply": "Main 12:45 pahunchne ke hisaab se dekh raha hoon (late wale time 13:00 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D1: lagbhag 15:00 start, 15:50 tak unload\n2) Dock D2: lagbhag 15:00 start, 15:50 tak unload\n3) Dock D3: lagbhag 15:00 start, 15:50 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+     "reply": "Main 12:45 pahunchne ke hisaab se dekh raha hoon (late wale time 13:00 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D1: lagbhag 15:00 start, 15:50 tak unload\n2) Dock D1: lagbhag 16:00 start, 16:50 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -359,19 +359,7 @@
         "template": "option_line",
         "lang": "hinglish"
        },
-       "result": "2) Dock D2: lagbhag 15:00 start, 15:50 tak unload",
-       "ms": 0.0,
-       "ok": true
-      },
-      {
-       "layer": "MODEL",
-       "name": "phrase",
-       "kind": "LANGUAGE",
-       "args": {
-        "template": "option_line",
-        "lang": "hinglish"
-       },
-       "result": "3) Dock D3: lagbhag 15:00 start, 15:50 tak unload",
+       "result": "2) Dock D1: lagbhag 16:00 start, 16:50 tak unload",
        "ms": 0.0,
        "ok": true
       },
@@ -406,7 +394,7 @@
         "shipment_id": "SHP1017"
        },
        "result": "eta 12:45 (MEDIUM, DRIVER_DECLARED)",
-       "ms": 0.3,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -422,7 +410,7 @@
         "eta": "eta 12:45 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "68 slots checked, 27 feasible; rejected: DOCK_TYPEx20, BEFORE_DRIVER_EARLIESTx13, SLOT_TAKENx7; planning ETA 13:00",
-       "ms": 2.9,
+       "ms": 2.5,
        "ok": true
       },
       {
@@ -438,7 +426,7 @@
         }
        },
        "result": "D1 15:00 board cost 56075 strands ['SHP1015']; D2 15:00 board cost 56075 strands ['SHP1015']; D3 15:00 board cost 56075 strands ['SHP1015']",
-       "ms": 53.9,
+       "ms": 50.9,
        "ok": true
       }
      ],
@@ -467,7 +455,7 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 1095
+     "sql_statements": 1096
     },
     {
      "time": "10:05",
@@ -523,7 +511,8 @@
       "chat_threads",
       "chat_messages",
       "inbound_dedupe",
-      "agent_conversations"
+      "agent_conversations",
+      "facility_checkins"
      ],
      "tables_written": [
       "chat_messages",
@@ -531,7 +520,7 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 14
+     "sql_statements": 15
     }
    ],
    "extra": {
@@ -638,7 +627,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "PENDING_WAREHOUSE",
-     "reply": "Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.",
+     "reply": "I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min); send the time if that is wrong. Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -653,6 +642,18 @@
        },
        "result": "en, REPORT_DELAY, eta 10:39 RELATIVE_DELAY MEDIUM, delay 60m",
        "ms": 0.1,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "assume_relative",
+        "lang": "en"
+       },
+       "result": "I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min",
+       "ms": 0.0,
        "ok": true
       },
       {
@@ -675,7 +676,7 @@
        "kind": "READ",
        "args": {},
        "result": "SHP1013",
-       "ms": 0.2,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -686,7 +687,7 @@
         "shipment_id": "SHP1013"
        },
        "result": "eta 11:00 (LOW, DRIVER_DECLARED)",
-       "ms": 0.2,
+       "ms": 0.3,
        "ok": true
       },
       {
@@ -698,7 +699,7 @@
         "eta": "eta 11:00 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.4,
+       "ms": 1.5,
        "ok": true
       },
       {
@@ -726,7 +727,7 @@
         "constraints": {}
        },
        "result": "D4 12:30 board cost 52500 strands ['SHP1015']; D2 11:30 board cost 52775 strands ['SHP1015']; D2 13:00 board cost 53625 strands ['SHP1015']",
-       "ms": 59.0,
+       "ms": 58.7,
        "ok": true
       }
      ],
@@ -756,7 +757,7 @@
       "driver_exceptions",
       "agent_conversations"
      ],
-     "sql_statements": 1100
+     "sql_statements": 1102
     },
     {
      "time": "09:41",
@@ -766,7 +767,7 @@
      "lang": "hi",
      "intent": "REPORT_DELAY",
      "state": "NEED_SHIPMENT",
-     "reply": "आज आपकी 2 ट्रिप हैं:\n1) ORD-260804-004 (Kota → Jaipur, ईटीए 08:45)\n2) ORD-260804-020 (Kota → Jaipur, ईटीए 18:00)\nयह किस ट्रिप के बारे में है? 1 या 2 लिखें।",
+     "reply": "आज आपकी 2 ट्रिप हैं:\n1) ORD-260804-004 (Kota → Jaipur, 09:25 से DC पर)\n2) ORD-260804-020 (Kota → Jaipur, ईटीए 18:00)\nयह किस ट्रिप के बारे में है? 1 या 2 लिखें।",
      "duplicate": false,
      "clarification": true,
      "escalation": null,
@@ -780,7 +781,7 @@
         "text": "मैं 45 मिनट लेट हो जाऊँगा"
        },
        "result": "hi, REPORT_DELAY, eta 10:26 RELATIVE_DELAY MEDIUM, delay 45m",
-       "ms": 0.1,
+       "ms": 0.3,
        "ok": true
       },
       {
@@ -791,7 +792,7 @@
         "template": "ask_shipment",
         "lang": "hi"
        },
-       "result": "आज आपकी 2 ट्रिप हैं: 1) ORD-260804-004 (Kota → Jaipur, ईटीए 08:45) 2) ",
+       "result": "आज आपकी 2 ट्रिप हैं: 1) ORD-260804-004 (Kota → Jaipur, 09:25 से DC पर)",
        "ms": 0.0,
        "ok": true
       }
@@ -803,7 +804,7 @@
        "kind": "READ",
        "args": {},
        "result": "ask",
-       "ms": 0.2,
+       "ms": 0.9,
        "ok": true
       }
      ],
@@ -830,9 +831,9 @@
      "thread": "L2b",
      "text": "शाम वाला",
      "lang": "hi",
-     "intent": "UNKNOWN",
+     "intent": "IDENTIFY_SHIPMENT",
      "state": "OPTIONS_SHOWN",
-     "reply": "मैं 18:45 पहुँचने के हिसाब से देख रहा हूँ (आपका तय समय 18:00 + 45 मिनट) (देर वाले समय 19:00 के हिसाब से, ताकि स्लॉट न छूटे)। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D1: लगभग 19:15 शुरू, 20:15 तक अनलोड\n2) डॉक D2: लगभग 19:15 शुरू, 20:15 तक अनलोड\n3) डॉक D3: लगभग 19:15 शुरू, 20:15 तक अनलोड\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
+     "reply": "इस समय पर पहुँचने से आपका मौजूदा डॉक D2 18:00-19:00 स्लॉट नहीं मिल पाएगा।\nमैं 18:45 पहुँचने के हिसाब से देख रहा हूँ (आपका तय समय 18:00 + 45 मिनट; देर वाले समय 19:00 के हिसाब से, ताकि स्लॉट न छूटे)। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D1: लगभग 19:15 शुरू, 20:15 तक अनलोड\n2) डॉक D1: लगभग 20:00 शुरू, 21:00 तक अनलोड\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -878,6 +879,18 @@
        "name": "phrase",
        "kind": "LANGUAGE",
        "args": {
+        "template": "current_missed",
+        "lang": "hi"
+       },
+       "result": "इस समय पर पहुँचने से आपका मौजूदा डॉक D2 18:00-19:00 स्लॉट नहीं मिल पाए",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
         "template": "options_head",
         "lang": "hi"
        },
@@ -905,19 +918,7 @@
         "template": "option_line",
         "lang": "hi"
        },
-       "result": "2) डॉक D2: लगभग 19:15 शुरू, 20:15 तक अनलोड",
-       "ms": 0.0,
-       "ok": true
-      },
-      {
-       "layer": "MODEL",
-       "name": "phrase",
-       "kind": "LANGUAGE",
-       "args": {
-        "template": "option_line",
-        "lang": "hi"
-       },
-       "result": "3) डॉक D3: लगभग 19:15 शुरू, 20:15 तक अनलोड",
+       "result": "2) डॉक D1: लगभग 20:00 शुरू, 21:00 तक अनलोड",
        "ms": 0.0,
        "ok": true
       },
@@ -941,7 +942,7 @@
        "kind": "READ",
        "args": {},
        "result": "SHP1020",
-       "ms": 0.3,
+       "ms": 0.4,
        "ok": true
       },
       {
@@ -952,7 +953,7 @@
         "shipment_id": "SHP1020"
        },
        "result": "eta 18:00 (MEDIUM, ORIGINAL_PLAN)",
-       "ms": 0.0,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -964,7 +965,7 @@
         "eta": "eta 18:45 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.9,
+       "ms": 1.3,
        "ok": true
       },
       {
@@ -978,7 +979,7 @@
         "eta": "eta 18:45 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 12 feasible; rejected: ETA_AFTER_WINDOWx29, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 19:00",
-       "ms": 2.2,
+       "ms": 3.1,
        "ok": true
       },
       {
@@ -992,7 +993,7 @@
         "constraints": {}
        },
        "result": "D1 19:15 board cost 54125 strands ['SHP1015']; D2 19:15 board cost 54125 strands ['SHP1015']; D3 19:15 board cost 54125 strands ['SHP1015']",
-       "ms": 54.0,
+       "ms": 79.9,
        "ok": true
       }
      ],
@@ -1020,7 +1021,7 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 1098
+     "sql_statements": 1099
     },
     {
      "time": "09:53",
@@ -1044,7 +1045,7 @@
         "text": "thoda late ho jaunga"
        },
        "result": "hinglish, REPORT_DELAY, clarify ['ETA_VAGUE']",
-       "ms": 0.1,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -1078,18 +1079,18 @@
         "shipment_id": "SHP1010"
        },
        "result": "eta 10:50 (MEDIUM, ORIGINAL_PLAN)",
-       "ms": 0.0,
+       "ms": 0.1,
        "ok": true
       }
      ],
      "tables_read": [
       "chat_threads",
       "shipments",
+      "facility_checkins",
       "chat_messages",
       "inbound_dedupe",
       "agent_conversations",
       "facilities",
-      "facility_checkins",
       "eta_updates"
      ],
      "tables_written": [
@@ -1098,7 +1099,7 @@
       "inbound_dedupe",
       "agent_conversations"
      ],
-     "sql_statements": 20
+     "sql_statements": 21
     },
     {
      "time": "09:54",
@@ -1108,7 +1109,7 @@
      "lang": "hinglish",
      "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D5: lagbhag 12:00 start, 12:55 tak unload\n2) Dock D5: lagbhag 13:00 start, 13:55 tak unload\n3) Dock D5: lagbhag 14:00 start, 14:55 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+     "reply": "Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi mil payega.\nMain 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D5: lagbhag 12:00 start, 12:55 tak unload\n2) Dock D5: lagbhag 13:00 start, 13:55 tak unload\n3) Dock D5: lagbhag 14:00 start, 14:55 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -1122,7 +1123,7 @@
         "text": "lagbhag 11:30 tak"
        },
        "result": "hinglish, ADD_CONSTRAINT, leave by 11:30",
-       "ms": 0.1,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -1134,6 +1135,18 @@
         "lang": "hinglish"
        },
        "result": " (late wale time 11:45 ke hisaab se, taaki slot na chhoote)",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "hinglish"
+       },
+       "result": "Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi m",
        "ms": 0.0,
        "ok": true
       },
@@ -1216,7 +1229,7 @@
         "shipment_id": "SHP1010"
        },
        "result": "eta 10:50 (MEDIUM, ORIGINAL_PLAN)",
-       "ms": 0.0,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -1228,7 +1241,7 @@
         "eta": "eta 11:30 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.3,
+       "ms": 1.5,
        "ok": true
       },
       {
@@ -1242,7 +1255,7 @@
         "eta": "eta 11:30 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx9, SLOT_BLOCKEDx7; planning ETA 11:45",
-       "ms": 1.9,
+       "ms": 2.4,
        "ok": true
       },
       {
@@ -1256,7 +1269,7 @@
         "constraints": {}
        },
        "result": "D5 12:00 board cost 56525 strands ['SHP1015']; D5 13:00 board cost 63725 strands ['SHP1015']; D5 14:00 board cost 70925 strands ['SHP1015']",
-       "ms": 45.7,
+       "ms": 53.4,
        "ok": true
       }
      ],
@@ -1284,7 +1297,7 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 857
+     "sql_statements": 858
     }
    ],
    "extra": {}
@@ -1444,10 +1457,10 @@
      "text": "Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?",
      "lang": "en",
      "intent": "REPORT_DELAY",
-     "state": "NEED_SHIPMENT",
-     "reply": "You have 2 trips today:\n1) ORD-260804-007 (Ajmer → Jaipur, ETA 09:50)\n2) ORD-260804-016 (Mumbai → Jaipur, ETA 10:30)\nWhich one is this about? Reply 1 or 2.",
+     "state": "OPTIONS_SHOWN",
+     "reply": "I take this to be about your heavy trip ORD-260804-016 (Mumbai → Jaipur).\nI am planning for arrival at 12:00. Slots you can reach at Jaipur:\n1) Dock D6: start about 12:40, unloading done about 14:10\n2) Dock D6: start about 14:00, unloading done about 15:30\n3) Dock D6: start about 15:30, unloading done about 17:00\nReply with the number to book. Nothing is booked until you choose.",
      "duplicate": false,
-     "clarification": true,
+     "clarification": false,
      "escalation": null,
      "committed": null,
      "model": [
@@ -1467,65 +1480,11 @@
        "name": "phrase",
        "kind": "LANGUAGE",
        "args": {
-        "template": "ask_shipment",
+        "template": "assume_trip",
         "lang": "en"
        },
-       "result": "You have 2 trips today: 1) ORD-260804-007 (Ajmer → Jaipur, ETA 09:50) ",
+       "result": "I take this to be about your heavy trip ORD-260804-016 (Mumbai → Jaipu",
        "ms": 0.0,
-       "ok": true
-      }
-     ],
-     "tools": [
-      {
-       "layer": "TOOL",
-       "name": "find_driver_shipments",
-       "kind": "READ",
-       "args": {},
-       "result": "ask",
-       "ms": 0.2,
-       "ok": true
-      }
-     ],
-     "tables_read": [
-      "chat_threads",
-      "facilities",
-      "chat_messages",
-      "inbound_dedupe",
-      "agent_conversations",
-      "shipments",
-      "facility_checkins"
-     ],
-     "tables_written": [
-      "chat_threads",
-      "chat_messages",
-      "inbound_dedupe",
-      "agent_conversations"
-     ],
-     "sql_statements": 17
-    },
-    {
-     "time": "09:51",
-     "driver": "DRV007",
-     "thread": "L3a",
-     "text": "016 wala",
-     "lang": "hinglish",
-     "intent": "IDENTIFY_SHIPMENT",
-     "state": "OPTIONS_SHOWN",
-     "reply": "Main 12:00 pahunchne ke hisaab se dekh raha hoon. Jaipur par ye slot mil sakte hain:\n1) Dock D6: lagbhag 12:40 start, 14:10 tak unload\n2) Dock D6: lagbhag 14:00 start, 15:30 tak unload\n3) Dock D6: lagbhag 15:30 start, 17:00 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
-     "duplicate": false,
-     "clarification": false,
-     "escalation": null,
-     "committed": null,
-     "model": [
-      {
-       "layer": "MODEL",
-       "name": "understand",
-       "kind": "LANGUAGE",
-       "args": {
-        "text": "016 wala"
-       },
-       "result": "hinglish, IDENTIFY_SHIPMENT",
-       "ms": 0.1,
        "ok": true
       },
       {
@@ -1534,9 +1493,9 @@
        "kind": "LANGUAGE",
        "args": {
         "template": "options_head",
-        "lang": "hinglish"
+        "lang": "en"
        },
-       "result": "Main 12:00 pahunchne ke hisaab se dekh raha hoon. Jaipur par ye slot m",
+       "result": "I am planning for arrival at 12:00. Slots you can reach at Jaipur:",
        "ms": 0.0,
        "ok": true
       },
@@ -1546,9 +1505,9 @@
        "kind": "LANGUAGE",
        "args": {
         "template": "option_line",
-        "lang": "hinglish"
+        "lang": "en"
        },
-       "result": "1) Dock D6: lagbhag 12:40 start, 14:10 tak unload",
+       "result": "1) Dock D6: start about 12:40, unloading done about 14:10",
        "ms": 0.0,
        "ok": true
       },
@@ -1558,9 +1517,9 @@
        "kind": "LANGUAGE",
        "args": {
         "template": "option_line",
-        "lang": "hinglish"
+        "lang": "en"
        },
-       "result": "2) Dock D6: lagbhag 14:00 start, 15:30 tak unload",
+       "result": "2) Dock D6: start about 14:00, unloading done about 15:30",
        "ms": 0.0,
        "ok": true
       },
@@ -1570,9 +1529,9 @@
        "kind": "LANGUAGE",
        "args": {
         "template": "option_line",
-        "lang": "hinglish"
+        "lang": "en"
        },
-       "result": "3) Dock D6: lagbhag 15:30 start, 17:00 tak unload",
+       "result": "3) Dock D6: start about 15:30, unloading done about 17:00",
        "ms": 0.0,
        "ok": true
       },
@@ -1582,9 +1541,9 @@
        "kind": "LANGUAGE",
        "args": {
         "template": "options_tail",
-        "lang": "hinglish"
+        "lang": "en"
        },
-       "result": "Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hog",
+       "result": "Reply with the number to book. Nothing is booked until you choose.",
        "ms": 0.0,
        "ok": true
       }
@@ -1596,7 +1555,7 @@
        "kind": "READ",
        "args": {},
        "result": "SHP1016",
-       "ms": 0.1,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -1619,7 +1578,7 @@
         "eta": "eta 12:00 (HIGH, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.6,
+       "ms": 1.5,
        "ok": true
       },
       {
@@ -1628,12 +1587,12 @@
        "kind": "READ",
        "args": {
         "shipment_id": "SHP1016",
-        "now": "09:51",
+        "now": "09:50",
         "constraints": {},
         "eta": "eta 12:00 (HIGH, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 6 feasible; rejected: WEIGHTx65, DOCK_TYPEx65, SLOT_TAKENx11; planning ETA 12:00",
-       "ms": 2.2,
+       "ms": 3.1,
        "ok": true
       },
       {
@@ -1642,12 +1601,12 @@
        "kind": "READ",
        "args": {
         "shipment_id": "SHP1016",
-        "now": "09:51",
+        "now": "09:50",
         "eta": "eta 12:00 (HIGH, DRIVER_CHAT)",
         "constraints": {}
        },
        "result": "D6 12:40 board cost 54575 strands ['SHP1015']; D6 14:00 board cost 57775 strands ['SHP1015']; D6 15:30 board cost 61375 strands ['SHP1015']",
-       "ms": 33.3,
+       "ms": 51.3,
        "ok": true
       }
      ],
@@ -1666,16 +1625,160 @@
       "slot_holds",
       "dock_status_events",
       "chat_threads",
-      "chat_messages"
+      "chat_messages",
+      "inbound_dedupe"
      ],
      "tables_written": [
+      "chat_threads",
       "chat_messages",
       "driver_exceptions",
+      "inbound_dedupe",
       "eta_updates",
+      "agent_conversations"
+     ],
+     "sql_statements": 829
+    },
+    {
+     "time": "09:51",
+     "driver": "DRV007",
+     "thread": "L3a",
+     "text": "1",
+     "lang": "en",
+     "intent": "SELECT_OPTION",
+     "state": "PENDING_WAREHOUSE",
+     "reply": "I have requested dock D6 at about 12:40 for you. It is NOT confirmed yet: the warehouse coordinator must approve it (shipment data needs a check). I will message you within 20 minutes.",
+     "duplicate": false,
+     "clarification": false,
+     "escalation": null,
+     "committed": {
+      "appointment_id": "APT-7E95BC8D",
+      "status": "PENDING_CONFIRMATION",
+      "slot_id": "SLOT-JAI-074",
+      "dock": "D6",
+      "planned_start": "2026-08-04T12:40:00+05:30",
+      "planned_end": "2026-08-04T14:10:00+05:30",
+      "replaced": null,
+      "approval_reasons": [
+       "DATA_CONFLICT"
+      ]
+     },
+     "model": [
+      {
+       "layer": "MODEL",
+       "name": "understand",
+       "kind": "LANGUAGE",
+       "args": {
+        "text": "1"
+       },
+       "result": "en, SELECT_OPTION, option 1",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "pending",
+        "lang": "en"
+       },
+       "result": "I have requested dock D6 at about 12:40 for you. It is NOT confirmed y",
+       "ms": 0.0,
+       "ok": true
+      }
+     ],
+     "tools": [
+      {
+       "layer": "TOOL",
+       "name": "find_driver_shipments",
+       "kind": "READ",
+       "args": {},
+       "result": "SHP1016",
+       "ms": 0.1,
+       "ok": true
+      },
+      {
+       "layer": "TOOL",
+       "name": "get_eta",
+       "kind": "READ",
+       "args": {
+        "shipment_id": "SHP1016"
+       },
+       "result": "eta 12:00 (HIGH, DRIVER_DECLARED)",
+       "ms": 0.1,
+       "ok": true
+      },
+      {
+       "layer": "TOOL",
+       "name": "hold_slot",
+       "kind": "WRITE",
+       "args": {
+        "shipment_id": "SHP1016",
+        "slot_id": "SLOT-JAI-074",
+        "now": "09:51"
+       },
+       "result": "HOLD-DBEB57A7 on SLOT-JAI-074 until 09:56",
+       "ms": 3.2,
+       "ok": true
+      },
+      {
+       "layer": "TOOL",
+       "name": "confirm_booking",
+       "kind": "WRITE",
+       "args": {
+        "hold_id": "HOLD-DBEB57A7",
+        "now": "09:51",
+        "idem_key": "chat:5b886f63901e3d55",
+        "approval_reasons": "list"
+       },
+       "result": "PENDING_CONFIRMATION D6 12:40 approval: ['DATA_CONFLICT']",
+       "ms": 4.4,
+       "ok": true
+      },
+      {
+       "layer": "TOOL",
+       "name": "notify_warehouse",
+       "kind": "WRITE",
+       "args": {
+        "shipment": "SHP1016",
+        "channel": "EMAIL",
+        "subject": "Approval needed: DATA_CONFLICT"
+       },
+       "result": "operational_messages row queued",
+       "ms": 0.9,
+       "ok": true
+      }
+     ],
+     "tables_read": [
+      "shipments",
+      "facility_checkins",
+      "eta_updates",
+      "appointment_slots",
+      "appointments",
+      "slot_holds",
+      "chat_threads",
+      "facilities",
+      "docks",
+      "facility_rules",
+      "appointment_plan",
+      "dock_status_events",
+      "chat_messages",
+      "agent_conversations",
+      "idempotency_keys"
+     ],
+     "tables_written": [
+      "slot_holds",
+      "chat_messages",
+      "audit_log",
+      "appointments",
+      "appointment_plan",
+      "idempotency_keys",
+      "driver_exceptions",
+      "operational_messages",
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 823
+     "sql_statements": 127
     },
     {
      "time": "09:54",
@@ -1685,7 +1788,7 @@
      "lang": "hinglish",
      "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D5: lagbhag 12:00 start, 12:55 tak unload\n2) Dock D5: lagbhag 13:00 start, 13:55 tak unload\n3) Dock D5: lagbhag 14:00 start, 14:55 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
+     "reply": "Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi mil payega.\nMain 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:\n1) Dock D5: lagbhag 12:00 start, 12:55 tak unload\n2) Dock D5: lagbhag 13:00 start, 13:55 tak unload\n3) Dock D5: lagbhag 14:00 start, 14:55 tak unload\nBook karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -1711,6 +1814,18 @@
         "lang": "hinglish"
        },
        "result": " (late wale time 11:45 ke hisaab se, taaki slot na chhoote)",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "hinglish"
+       },
+       "result": "Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi m",
        "ms": 0.0,
        "ok": true
       },
@@ -1805,7 +1920,7 @@
         "eta": "eta 11:30 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.6,
+       "ms": 1.1,
        "ok": true
       },
       {
@@ -1818,8 +1933,8 @@
         "constraints": {},
         "eta": "eta 11:30 (MEDIUM, DRIVER_CHAT)"
        },
-       "result": "73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:45",
-       "ms": 2.7,
+       "result": "73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:45",
+       "ms": 2.4,
        "ok": true
       },
       {
@@ -1832,8 +1947,8 @@
         "eta": "eta 11:30 (MEDIUM, DRIVER_CHAT)",
         "constraints": {}
        },
-       "result": "D5 12:00 board cost 56975 strands ['SHP1015']; D5 13:00 board cost 64175 strands ['SHP1015']; D5 14:00 board cost 71375 strands ['SHP1015']",
-       "ms": 37.4,
+       "result": "D5 12:00 board cost 55975 strands ['SHP1015']; D5 13:00 board cost 63175 strands ['SHP1015']; D5 14:00 board cost 70375 strands ['SHP1015']",
+       "ms": 35.9,
        "ok": true
       }
      ],
@@ -1863,7 +1978,7 @@
       "eta_updates",
       "agent_conversations"
      ],
-     "sql_statements": 843
+     "sql_statements": 826
     }
    ],
    "extra": {}
@@ -1980,7 +2095,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D2: start about 12:45, unloading done about 13:30\n2) Dock D2: start about 13:00, unloading done about 13:45\n3) Dock D3: start about 13:00, unloading done about 13:45\nReply with the number to book. Nothing is booked until you choose.",
+     "reply": "Your current 10:00-11:00 slot on dock D4 cannot be reached with this arrival time.\nI am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D2: start about 12:45, unloading done about 13:30\n2) Dock D2: start about 13:00, unloading done about 13:45\n3) Dock D1: start about 13:45, unloading done about 14:30\nAn earlier slot is kept for a truck that has no other dock today.\nReply with the number to book. Nothing is booked until you choose.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -1994,7 +2109,7 @@
         "text": "Traffic after Shahpura. Reaching around 11:20. Any slot a..."
        },
        "result": "en, REPORT_DELAY/ASK_OPTIONS, eta 11:20 CLOCK MEDIUM, not before 12:00",
-       "ms": 0.2,
+       "ms": 0.3,
        "ok": true
       },
       {
@@ -2006,6 +2121,18 @@
         "lang": "en"
        },
        "result": " (planning for the late end, 11:35, so the slot is not missed)",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "en"
+       },
+       "result": "Your current 10:00-11:00 slot on dock D4 cannot be reached with this a",
        "ms": 0.0,
        "ok": true
       },
@@ -2053,7 +2180,19 @@
         "template": "option_line",
         "lang": "en"
        },
-       "result": "3) Dock D3: start about 13:00, unloading done about 13:45",
+       "result": "3) Dock D1: start about 13:45, unloading done about 14:30",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "protect_note",
+        "lang": "en"
+       },
+       "result": "An earlier slot is kept for a truck that has no other dock today.",
        "ms": 0.0,
        "ok": true
       },
@@ -2088,7 +2227,7 @@
         "shipment_id": "SHP1006"
        },
        "result": "eta 11:20 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.3,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -2100,7 +2239,7 @@
         "eta": "eta 11:20 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 2.3,
+       "ms": 1.7,
        "ok": true
       },
       {
@@ -2116,7 +2255,7 @@
         "eta": "eta 11:20 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35",
-       "ms": 2.4,
+       "ms": 2.6,
        "ok": true
       },
       {
@@ -2132,7 +2271,7 @@
         }
        },
        "result": "D2 12:45 board cost 54575 strands ['SHP1015']; D2 13:00 board cost 56375 strands ['SHP1015']; D3 13:00 board cost 56375 strands ['SHP1015']",
-       "ms": 65.8,
+       "ms": 47.2,
        "ok": true
       }
      ],
@@ -2186,7 +2325,7 @@
         "text": "Tyre repaired. I can reach 11:10. I need to leave the war..."
        },
        "result": "en, REPORT_DELAY, eta 11:10 CLOCK HIGH, leave by 13:30",
-       "ms": 0.3,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -2268,7 +2407,7 @@
         "eta": "eta 11:10 (HIGH, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.7,
+       "ms": 1.1,
        "ok": true
       },
       {
@@ -2284,7 +2423,7 @@
         "eta": "eta 11:10 (HIGH, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 1 feasible; rejected: DRIVER_DEADLINEx36, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10",
-       "ms": 3.4,
+       "ms": 2.4,
        "ok": true
       },
       {
@@ -2300,7 +2439,7 @@
         }
        },
        "result": "D4 12:30 board cost 54575 strands ['SHP1015']",
-       "ms": 9.6,
+       "ms": 5.8,
        "ok": true
       }
      ],
@@ -2330,7 +2469,7 @@
       "eta_updates",
       "agent_conversations"
      ],
-     "sql_statements": 198
+     "sql_statements": 199
     },
     {
      "time": "09:39",
@@ -2340,7 +2479,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "PENDING_WAREHOUSE",
-     "reply": "Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.",
+     "reply": "I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min); send the time if that is wrong. Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -2354,7 +2493,19 @@
         "text": "I am late by one hour."
        },
        "result": "en, REPORT_DELAY, eta 10:39 RELATIVE_DELAY MEDIUM, delay 60m",
-       "ms": 0.2,
+       "ms": 0.1,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "assume_relative",
+        "lang": "en"
+       },
+       "result": "I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min",
+       "ms": 0.0,
        "ok": true
       },
       {
@@ -2428,7 +2579,7 @@
         "constraints": {}
        },
        "result": "D4 12:30 board cost 52500 strands ['SHP1015']; D2 11:30 board cost 52775 strands ['SHP1015']; D2 13:00 board cost 53625 strands ['SHP1015']",
-       "ms": 85.3,
+       "ms": 61.1,
        "ok": true
       }
      ],
@@ -2458,7 +2609,7 @@
       "driver_exceptions",
       "agent_conversations"
      ],
-     "sql_statements": 1100
+     "sql_statements": 1102
     },
     {
      "time": "09:44",
@@ -2466,9 +2617,9 @@
      "thread": "L4d",
      "text": "भाई 11:25 तक पहुँचूंगा, लोड बहुत ज़रूरी है, पहला डॉक दे दो",
      "lang": "hi",
-     "intent": "SELECT_OPTION",
+     "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "मैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D2: लगभग 12:30 शुरू, 13:45 तक अनलोड\n2) डॉक D4: लगभग 12:30 शुरू, 13:45 तक अनलोड\n3) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड\nडॉक का क्रम शिपमेंट रिकॉर्ड की प्राथमिकता से तय होता है; चैट से इसे नहीं बदला जा सकता।\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
+     "reply": "इस समय पर पहुँचने से आपका मौजूदा डॉक D1 11:00-12:00 स्लॉट नहीं मिल पाएगा।\nमैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:\n1) डॉक D2: लगभग 12:30 शुरू, 13:45 तक अनलोड\n2) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड\n3) डॉक D2: लगभग 14:00 शुरू, 15:15 तक अनलोड\nडॉक का क्रम शिपमेंट रिकॉर्ड की प्राथमिकता से तय होता है; चैट से इसे नहीं बदला जा सकता।\nबुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -2482,7 +2633,19 @@
         "text": "भाई 11:25 तक पहुँचूंगा, लोड बहुत ज़रूरी है, पहला डॉक दे दो"
        },
        "result": "hi, SELECT_OPTION/REPORT_DELAY, eta 11:25 CLOCK HIGH, option 1",
-       "ms": 0.5,
+       "ms": 0.4,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "hi"
+       },
+       "result": "इस समय पर पहुँचने से आपका मौजूदा डॉक D1 11:00-12:00 स्लॉट नहीं मिल पाए",
+       "ms": 0.0,
        "ok": true
       },
       {
@@ -2517,7 +2680,7 @@
         "template": "option_line",
         "lang": "hi"
        },
-       "result": "2) डॉक D4: लगभग 12:30 शुरू, 13:45 तक अनलोड",
+       "result": "2) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड",
        "ms": 0.0,
        "ok": true
       },
@@ -2529,7 +2692,7 @@
         "template": "option_line",
         "lang": "hi"
        },
-       "result": "3) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड",
+       "result": "3) डॉक D2: लगभग 14:00 शुरू, 15:15 तक अनलोड",
        "ms": 0.0,
        "ok": true
       },
@@ -2576,7 +2739,7 @@
         "shipment_id": "SHP1014"
        },
        "result": "eta 11:25 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.2,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -2588,7 +2751,7 @@
         "eta": "eta 11:25 (HIGH, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.5,
+       "ms": 1.2,
        "ok": true
       },
       {
@@ -2602,7 +2765,7 @@
         "eta": "eta 11:25 (HIGH, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 17 feasible; rejected: WEIGHTx26, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 11:25",
-       "ms": 2.4,
+       "ms": 2.2,
        "ok": true
       },
       {
@@ -2616,7 +2779,7 @@
         "constraints": {}
        },
        "result": "D2 12:30 board cost 73775 strands ['SHP1015']; D4 12:30 board cost 73775 strands ['SHP1015']; D2 13:00 board cost 82775 strands ['SHP1015']",
-       "ms": 73.9,
+       "ms": 65.9,
        "ok": true
       }
      ],
@@ -2646,7 +2809,7 @@
       "eta_updates",
       "agent_conversations"
      ],
-     "sql_statements": 1101
+     "sql_statements": 1102
     },
     {
      "time": "09:46",
@@ -2661,7 +2824,7 @@
      "clarification": false,
      "escalation": null,
      "committed": {
-      "appointment_id": "APT-F52B1F0B",
+      "appointment_id": "APT-1B37C512",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-019",
       "dock": "D2",
@@ -2679,7 +2842,7 @@
         "text": "1"
        },
        "result": "en, SELECT_OPTION, option 1",
-       "ms": 0.1,
+       "ms": 0.0,
        "ok": true
       },
       {
@@ -2737,8 +2900,8 @@
         "slot_id": "SLOT-JAI-019",
         "now": "09:46"
        },
-       "result": "HOLD-293B8AE1 on SLOT-JAI-019 until 09:51",
-       "ms": 3.1,
+       "result": "HOLD-C0A3836B on SLOT-JAI-019 until 09:51",
+       "ms": 2.4,
        "ok": true
       },
       {
@@ -2746,13 +2909,13 @@
        "name": "confirm_booking",
        "kind": "WRITE",
        "args": {
-        "hold_id": "HOLD-293B8AE1",
+        "hold_id": "HOLD-C0A3836B",
         "now": "09:46",
         "idem_key": "chat:871c9f31218086a5",
         "approval_reasons": "list"
        },
        "result": "CONFIRMED D2 12:30 (replaces APT1014A)",
-       "ms": 3.7,
+       "ms": 3.0,
        "ok": true
       },
       {
@@ -2765,7 +2928,7 @@
         "subject": "Dock booking confirmed via driver chat"
        },
        "result": "operational_messages row queued",
-       "ms": 1.1,
+       "ms": 1.0,
        "ok": true
       },
       {
@@ -2809,7 +2972,7 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 125
+     "sql_statements": 126
     }
    ],
    "extra": {}
@@ -2911,7 +3074,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "OPTIONS_SHOWN",
-     "reply": "I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D2: start about 12:45, unloading done about 13:30\n2) Dock D2: start about 13:00, unloading done about 13:45\n3) Dock D3: start about 13:00, unloading done about 13:45\nReply with the number to book. Nothing is booked until you choose.",
+     "reply": "Your current 10:00-11:00 slot on dock D4 cannot be reached with this arrival time.\nI am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:\n1) Dock D2: start about 12:45, unloading done about 13:30\n2) Dock D2: start about 13:00, unloading done about 13:45\n3) Dock D1: start about 13:45, unloading done about 14:30\nAn earlier slot is kept for a truck that has no other dock today.\nReply with the number to book. Nothing is booked until you choose.",
      "duplicate": false,
      "clarification": false,
      "escalation": null,
@@ -2937,6 +3100,18 @@
         "lang": "en"
        },
        "result": " (planning for the late end, 11:35, so the slot is not missed)",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "current_missed",
+        "lang": "en"
+       },
+       "result": "Your current 10:00-11:00 slot on dock D4 cannot be reached with this a",
        "ms": 0.0,
        "ok": true
       },
@@ -2984,7 +3159,19 @@
         "template": "option_line",
         "lang": "en"
        },
-       "result": "3) Dock D3: start about 13:00, unloading done about 13:45",
+       "result": "3) Dock D1: start about 13:45, unloading done about 14:30",
+       "ms": 0.0,
+       "ok": true
+      },
+      {
+       "layer": "MODEL",
+       "name": "phrase",
+       "kind": "LANGUAGE",
+       "args": {
+        "template": "protect_note",
+        "lang": "en"
+       },
+       "result": "An earlier slot is kept for a truck that has no other dock today.",
        "ms": 0.0,
        "ok": true
       },
@@ -3019,7 +3206,7 @@
         "shipment_id": "SHP1006"
        },
        "result": "eta 11:20 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.4,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -3047,7 +3234,7 @@
         "eta": "eta 11:20 (MEDIUM, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35",
-       "ms": 3.6,
+       "ms": 3.0,
        "ok": true
       },
       {
@@ -3063,7 +3250,7 @@
         }
        },
        "result": "D2 12:45 board cost 54575 strands ['SHP1015']; D2 13:00 board cost 56375 strands ['SHP1015']; D3 13:00 board cost 56375 strands ['SHP1015']",
-       "ms": 50.1,
+       "ms": 58.7,
        "ok": true
       }
      ],
@@ -3214,7 +3401,7 @@
         "shipment_id": "SHP1012"
        },
        "result": "eta 11:10 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.1,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -3226,7 +3413,7 @@
         "eta": "eta 11:10 (HIGH, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.3,
+       "ms": 1.4,
        "ok": true
       },
       {
@@ -3242,7 +3429,7 @@
         "eta": "eta 11:10 (HIGH, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 1 feasible; rejected: DRIVER_DEADLINEx36, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10",
-       "ms": 2.3,
+       "ms": 3.0,
        "ok": true
       },
       {
@@ -3258,7 +3445,7 @@
         }
        },
        "result": "D4 12:30 board cost 54575 strands ['SHP1015']",
-       "ms": 6.2,
+       "ms": 7.6,
        "ok": true
       }
      ],
@@ -3288,7 +3475,7 @@
       "eta_updates",
       "agent_conversations"
      ],
-     "sql_statements": 198
+     "sql_statements": 199
     },
     {
      "time": "09:46",
@@ -3303,7 +3490,7 @@
      "clarification": false,
      "escalation": null,
      "committed": {
-      "appointment_id": "APT-A92D4A75",
+      "appointment_id": "APT-559327C8",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-047",
       "dock": "D4",
@@ -3323,8 +3510,8 @@
         "slot_id": "SLOT-JAI-047",
         "now": "09:46"
        },
-       "result": "HOLD-BC4E45E8 on SLOT-JAI-047 until 09:51",
-       "ms": 2.7,
+       "result": "HOLD-8BC77B41 on SLOT-JAI-047 until 09:51",
+       "ms": 3.1,
        "ok": true
       },
       {
@@ -3332,12 +3519,12 @@
        "name": "confirm_booking",
        "kind": "WRITE",
        "args": {
-        "hold_id": "HOLD-BC4E45E8",
+        "hold_id": "HOLD-8BC77B41",
         "now": "09:46",
         "idem_key": "walk-take-L5b"
        },
        "result": "CONFIRMED D4 12:30 (replaces APT1013A)",
-       "ms": 3.3,
+       "ms": 3.7,
        "ok": true
       }
      ],
@@ -3386,7 +3573,7 @@
         "text": "option 1"
        },
        "result": "en, SELECT_OPTION, option 1",
-       "ms": 0.0,
+       "ms": 0.1,
        "ok": true
       },
       {
@@ -3468,7 +3655,7 @@
         "shipment_id": "SHP1012"
        },
        "result": "eta 11:10 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.1,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -3481,7 +3668,7 @@
         "now": "09:48"
        },
        "result": "CapacityError: OPTION_GONE",
-       "ms": 1.4,
+       "ms": 1.5,
        "ok": false
       },
       {
@@ -3508,7 +3695,7 @@
         "eta": "eta 11:10 (HIGH, DRIVER_CHAT)"
        },
        "result": "73 slots checked, 2 feasible; rejected: DRIVER_DEADLINEx35, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10",
-       "ms": 2.1,
+       "ms": 2.6,
        "ok": true
       },
       {
@@ -3524,7 +3711,7 @@
         }
        },
        "result": "D2 11:25 board cost 49400 strands ['SHP1015']; D2 12:00 board cost 55925 strands ['SHP1015']",
-       "ms": 13.2,
+       "ms": 15.2,
        "ok": true
       }
      ],
@@ -3552,13 +3739,13 @@
       "agent_conversations",
       "chat_threads"
      ],
-     "sql_statements": 358
+     "sql_statements": 359
     }
    ],
    "extra": {
     "idempotent_retry": {
-     "first": "APT-A1A5817A",
-     "second": "APT-A1A5817A",
+     "first": "APT-93D002C9",
+     "second": "APT-93D002C9",
      "replay": true,
      "tools": [
       {
@@ -3570,8 +3757,8 @@
         "slot_id": "SLOT-JAI-018",
         "now": "09:56"
        },
-       "result": "HOLD-26F59C5F on SLOT-JAI-018 until 10:01",
-       "ms": 3.4,
+       "result": "HOLD-0B5F5301 on SLOT-JAI-018 until 10:01",
+       "ms": 2.9,
        "ok": true
       },
       {
@@ -3579,12 +3766,12 @@
        "name": "confirm_booking",
        "kind": "WRITE",
        "args": {
-        "hold_id": "HOLD-26F59C5F",
+        "hold_id": "HOLD-0B5F5301",
         "now": "09:56",
         "idem_key": "walk-idem-1"
        },
-       "result": "CONFIRMED D2 11:45 (replaces APT-A92D4A75)",
-       "ms": 5.3,
+       "result": "CONFIRMED D2 11:45 (replaces APT-559327C8)",
+       "ms": 3.7,
        "ok": true
       },
       {
@@ -3592,11 +3779,11 @@
        "name": "confirm_booking",
        "kind": "WRITE",
        "args": {
-        "hold_id": "HOLD-26F59C5F",
+        "hold_id": "HOLD-0B5F5301",
         "now": "09:56",
         "idem_key": "walk-idem-1"
        },
-       "result": "CONFIRMED D2 11:45 (replaces APT-A92D4A75) [idempotent replay]",
+       "result": "CONFIRMED D2 11:45 (replaces APT-559327C8) [idempotent replay]",
        "ms": 0.1,
        "ok": true
       }
@@ -3611,7 +3798,7 @@
     },
     "race_same_slot": {
      "slot": "SLOT-JAI-006",
-     "SHP1017": "HOLD-A7DE59F0",
+     "SHP1017": "HOLD-8D66F73C",
      "SHP1018": "OPTION_GONE"
     }
    }
@@ -3744,7 +3931,7 @@
      "lang": "en",
      "intent": "REPORT_DELAY",
      "state": "ESCALATED",
-     "reply": "I cannot find a valid refrigerated dock slot for arrival at 18:30 today: the only compatible dock is blocked. I have passed your case to the warehouse coordinator with all details. Please do not go to the dock until they contact you.",
+     "reply": "I cannot find a valid refrigerated dock slot for arrival at 18:30 today: the only compatible dock is blocked (D5 18:00-22:00). I have passed your case to the warehouse coordinator with all details. Please do not go to the dock until they contact you.",
      "duplicate": false,
      "clarification": false,
      "escalation": "NO_FEASIBLE_SLOT",
@@ -3792,7 +3979,7 @@
         "shipment_id": "SHP1015"
        },
        "result": "eta 18:30 (HIGH, DRIVER_DECLARED)",
-       "ms": 0.4,
+       "ms": 0.2,
        "ok": true
       },
       {
@@ -3804,7 +3991,7 @@
         "eta": "eta 18:30 (HIGH, DRIVER_CHAT)"
        },
        "result": "eta_updates row written",
-       "ms": 1.9,
+       "ms": 1.6,
        "ok": true
       },
       {
@@ -3818,7 +4005,7 @@
         "eta": "eta 18:30 (HIGH, DRIVER_CHAT)"
        },
        "result": "34 slots checked, 0 feasible; rejected: DOCK_TYPEx28, SLOT_BLOCKEDx4, ETA_AFTER_WINDOWx2; planning ETA 18:30",
-       "ms": 3.4,
+       "ms": 2.4,
        "ok": true
       },
       {
@@ -3828,8 +4015,8 @@
        "args": {
         "reason": "NO_FEASIBLE_SLOT"
        },
-       "result": "ESC-6CD63409 NO_FEASIBLE_SLOT -> WAREHOUSE_COORDINATOR Neha Bansal via EMAIL",
-       "ms": 0.4,
+       "result": "ESC-37E21DB0 NO_FEASIBLE_SLOT -> WAREHOUSE_COORDINATOR Neha Bansal via EMAIL",
+       "ms": 0.3,
        "ok": true
       }
      ],
@@ -3862,7 +4049,7 @@
       "audit_log",
       "agent_conversations"
      ],
-     "sql_statements": 72
+     "sql_statements": 73
     }
    ],
    "extra": {}
@@ -4228,7 +4415,7 @@
       "schedule_changes": 6,
       "solver_cost": 61150,
       "solver_nodes": 25137,
-      "solver_ms": 642
+      "solver_ms": 576
      },
      "swap_proposals": []
     }
@@ -4526,7 +4713,7 @@
      "trigger": "09:50 snapshot"
     },
     "result": "recommend COMMITMENT_FIRST_WEIGHTED + approved swaps: {'trucks': 16, 'scheduled': 15, 'unscheduled': 1, 'avg_wait_min': 24.0, 'weighted_wait': 3775, 'critical_wait_min': 0, 'missed_appointments': 0, 'schedule_changes': 7}",
-    "ms": 710.0,
+    "ms": 622.5,
     "ok": true
    }
   ],

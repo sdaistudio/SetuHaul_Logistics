@@ -42,7 +42,7 @@ LADDER = [
     (3, "Rules and compatibility narrow the choices", "SHP1010, SHP1015, SHP1016, RULE005", "Feasibility is more than an empty row: dock type, reefer to D5, weight limit, maintenance and the 21:00 rule each remove slots, with a reason code.",
      [("facility_rules", "FAC-JAI-01"), ("shipment", "SHP1016"), ("shipment", "SHP1010"), ("dock_events", "FAC-JAI-01")],
      [("09:50", "DRV007", "L3a", "Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?", "wa-l3a"),
-      ("09:51", "DRV007", "L3a", "016 wala", "wa-l3b"),
+      ("09:51", "DRV007", "L3a", "1", "wa-l3b"),
       ("09:54", "DRV010", "L3b", "lagbhag 11:30 tak reach karunga, reefer hai", "wa-l3c")]),
     (4, "Several delayed trucks chase nearby slots", "SHP1006, SHP1012, SHP1013, SHP1014, SHP1009", "One allocation policy for everyone: hard rules, then look-ahead cost over all trucks (priority weights from rules.yaml), never 'who shouts loudest'.",
      [("eta_updates", "SHP1006"), ("eta_updates", "SHP1012"), ("eta_updates", "SHP1014"), ("current_appointment", "SHP1009")],

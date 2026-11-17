@@ -106,13 +106,14 @@ The held-out number is the honest estimate. Its misses produce a clarifying ques
 | Measure from the brief | Value |
 | --- | --- |
 | Time from first message to usable outcome (median) | 2 min, 2 driver messages |
-| Share resolved without manual takeover | 8 of 12 conversations (the other 4 are meant to reach a person: safety, reefer with no slot, data conflict pending approval, low-confidence ETA pending) |
+| Share resolved without manual takeover | 10 of 12 conversations (the other 2 are meant to reach a person: safety, and the reefer with no slot). Two bookings went to a coordinator for approval (data conflicts) and were approved. |
 | Conflicting or duplicate allocations | 0 |
-| Options later found infeasible at commit | 1 of 26 shown; driver told and re-offered |
+| Options later found infeasible at commit | 1 of 24 shown; driver told and re-offered |
 | No-slot escalations with a complete hand-off | 1 of 1 (look-ahead removed the other) |
-| Driver clarification questions | 3 across 12 conversations |
+| Driver clarification questions | 2 across 12 conversations (the heavy-trailer case is now identified from the message and stated back instead of asked) |
 | Duplicate messages suppressed | 1 (retry with a new message id) |
-| Average arrival-to-dock wait after rescheduling | 61.6 min (the critical load waits longer so no other truck is left without a dock; a coordinator can trade this back) |
+| Promises displaced by another driver's booking | 0 (measured: cancellations made during the run other than a driver's own rebooking or a certain miss) |
+| Average arrival-to-dock wait after rescheduling | 52.6 min (the critical load waits longer so no other truck is left without a dock; a coordinator can trade this back) |
 
 **Facility re-plan before the spike (09:30), 16 trucks:** first-come-first-served leaves the critical load waiting 40 minutes and changes 9 promises. The proven-optimal plan (92 ms, 4,725 nodes) gives the critical load 0 minutes, changes 6 promises and cuts priority-weighted waiting from 5,825 to 3,625 minutes. The reefer SHP1015 stays unscheduled in every plan: there is no compatible dock, so a person decides.
 

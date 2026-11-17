@@ -177,10 +177,10 @@
       "slot_end_ts": "2026-08-04T20:00:00+05:30",
       "slot_status": "OPEN",
       "block_reason": null,
-      "shipment_id": null,
-      "appointment_status": null,
-      "booking_source": null,
-      "priority_code": null
+      "shipment_id": "SHP1020",
+      "appointment_status": "CONFIRMED",
+      "booking_source": "DRIVER_CHAT",
+      "priority_code": "NORMAL"
     },
     {
       "slot_id": "SLOT-JAI-013",
@@ -333,10 +333,10 @@
       "slot_end_ts": "2026-08-04T19:00:00+05:30",
       "slot_status": "OPEN",
       "block_reason": null,
-      "shipment_id": "SHP1020",
-      "appointment_status": "CONFIRMED",
-      "booking_source": "PLANNER",
-      "priority_code": "NORMAL"
+      "shipment_id": null,
+      "appointment_status": null,
+      "booking_source": null,
+      "priority_code": null
     },
     {
       "slot_id": "SLOT-JAI-026",
@@ -753,10 +753,10 @@
       "slot_end_ts": "2026-08-04T12:00:00+05:30",
       "slot_status": "OPEN",
       "block_reason": null,
-      "shipment_id": "SHP1010",
-      "appointment_status": "CONFIRMED",
-      "booking_source": "PLANNER",
-      "priority_code": "HIGH"
+      "shipment_id": null,
+      "appointment_status": null,
+      "booking_source": null,
+      "priority_code": null
     },
     {
       "slot_id": "SLOT-JAI-061",
@@ -765,10 +765,10 @@
       "slot_end_ts": "2026-08-04T13:00:00+05:30",
       "slot_status": "OPEN",
       "block_reason": null,
-      "shipment_id": null,
-      "appointment_status": null,
-      "booking_source": null,
-      "priority_code": null
+      "shipment_id": "SHP1010",
+      "appointment_status": "CONFIRMED",
+      "booking_source": "DRIVER_CHAT",
+      "priority_code": "HIGH"
     },
     {
       "slot_id": "SLOT-JAI-062",

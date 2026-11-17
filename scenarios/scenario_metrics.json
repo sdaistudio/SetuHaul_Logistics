@@ -2,13 +2,13 @@
   "cases (conversations)": 12,
   "time from first message to usable outcome (median min)": 2,
   "turns to outcome (median driver messages)": 2,
-  "share resolved without manual takeover": "8/12",
+  "share resolved without manual takeover": "10/12",
   "conflicting or duplicate allocations": 0,
-  "options later found infeasible at commit": "1 of 26 shown",
+  "options later found infeasible at commit": "1 of 24 shown",
   "no-slot escalations with complete hand-off record": "1/1",
-  "avg driver wait after rescheduling (min, arrival->dock)": 61.6,
+  "avg driver wait after rescheduling (min, arrival->dock)": 52.6,
   "warehouse slot utilisation 10:00-16:00 (Jaipur)": "10/31 open slots booked",
-  "priority-policy violations (text claims changing order, displaced promises)": 0,
-  "driver clarification questions": "3 across 12 cases",
+  "promises displaced by another driver's booking": 0,
+  "driver clarification questions": "2 across 12 cases",
   "duplicate messages suppressed": 1
 }

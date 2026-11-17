@@ -63,13 +63,13 @@ Held-out failures (left unfixed on purpose):
 | At | Mode | Trucks | B&B | B&B cost | Nodes | B&B ms | CP-SAT | CP-SAT cost | CP-SAT ms | Match |
 |---|---|---:|---|---:|---:|---:|---|---:|---:|---|
 | 08:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 8.7 | True |
-| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55850 | 4795 | 98 | OPTIMAL | 55850 | 198.0 | True |
-| 09:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 11.8 | True |
-| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56825 | 4725 | 83 | OPTIMAL | 56825 | 278.7 | True |
-| 09:45 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 8.4 | True |
-| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59925 | 12091 | 253 | OPTIMAL | 59925 | 530.5 | True |
-| 10:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 13.2 | True |
-| 10:30 | plan | 16 | PROVEN_OPTIMAL | 73950 | 56554 | 1040 | OPTIMAL | 73950 | 3036.5 | True |
+| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55850 | 4795 | 83 | OPTIMAL | 55850 | 198.8 | True |
+| 09:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 10.1 | True |
+| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56825 | 4725 | 92 | OPTIMAL | 56825 | 273.0 | True |
+| 09:45 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 9.1 | True |
+| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59925 | 12091 | 230 | OPTIMAL | 59925 | 494.7 | True |
+| 10:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 8.4 | True |
+| 10:30 | plan | 16 | PROVEN_OPTIMAL | 73950 | 56554 | 1046 | OPTIMAL | 73950 | 2878.3 | True |
 
 ## Scenario-run measures (brief, page 9)
 
@@ -78,12 +78,12 @@ Held-out failures (left unfixed on purpose):
 | cases (conversations) | 12 |
 | time from first message to usable outcome (median min) | 2 |
 | turns to outcome (median driver messages) | 2 |
-| share resolved without manual takeover | 8/12 |
+| share resolved without manual takeover | 10/12 |
 | conflicting or duplicate allocations | 0 |
-| options later found infeasible at commit | 1 of 26 shown |
+| options later found infeasible at commit | 1 of 24 shown |
 | no-slot escalations with complete hand-off record | 1/1 |
-| avg driver wait after rescheduling (min, arrival->dock) | 61.6 |
+| avg driver wait after rescheduling (min, arrival->dock) | 52.6 |
 | warehouse slot utilisation 10:00-16:00 (Jaipur) | 10/31 open slots booked |
-| priority-policy violations (text claims changing order, displaced promises) | 0 |
-| driver clarification questions | 3 across 12 cases |
+| promises displaced by another driver's booking | 0 |
+| driver clarification questions | 2 across 12 cases |
 | duplicate messages suppressed | 1 |

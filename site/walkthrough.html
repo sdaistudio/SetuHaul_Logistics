@@ -67,16 +67,16 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 68 slots checked, 35 feasible; rejected: DOCK_TYPEx20, SLOT_TAKENx7, SLOT_BLOCKEDx7; planning ETA 13:00</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D1 13:15 board cost 55025 strands ['SHP1015']; D3 13:15 board cost 55025 strands ['SHP1015']; D4 13:15 board cost 55025 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_low, options_head, option_line, options_tail</li>
+<li>MODEL phrase: templates assume_low, current_missed, options_head, option_line, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>I am planning for arrival at 12:45 (planning for the late end, 13:00, so the slot is not missed). Slots you can reach at Jaipur:<br />
+<p>Your current 12:00-13:00 slot on dock D1 cannot be reached with this arrival time.<br />
+I am planning for arrival at 12:45 (planning for the late end, 13:00, so the slot is not missed). Slots you can reach at Jaipur:<br />
 1) Dock D1: start about 13:15, unloading done about 14:05<br />
-2) Dock D3: start about 13:15, unloading done about 14:05<br />
-3) Dock D4: start about 13:15, unloading done about 14:05<br />
+2) Dock D1: start about 14:00, unloading done about 14:50<br />
 Reply with the number to book. Nothing is booked until you choose.</p>
 </blockquote>
 <p><strong>10:04 DRV001</strong> (hinglish): <em>aur 3 baje ke baad?</em></p>
@@ -94,8 +94,7 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <blockquote>
 <p>Main 12:45 pahunchne ke hisaab se dekh raha hoon (late wale time 13:00 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:<br />
 1) Dock D1: lagbhag 15:00 start, 15:50 tak unload<br />
-2) Dock D2: lagbhag 15:00 start, 15:50 tak unload<br />
-3) Dock D3: lagbhag 15:00 start, 15:50 tak unload<br />
+2) Dock D1: lagbhag 16:00 start, 16:50 tak unload<br />
 Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 </blockquote>
 <p><strong>10:05 DRV001</strong> (hinglish): <em>nahi, abhi rehne do</em></p>
@@ -103,7 +102,7 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>MODEL understand: hinglish, DECLINE</li>
 <li>TOOL <code>find_driver_shipments</code> [READ]: SHP1017</li>
 <li>MODEL phrase: templates declined</li>
-<li>DB read: shipments, chat_threads, chat_messages, inbound_dedupe, agent_conversations</li>
+<li>DB read: shipments, chat_threads, chat_messages, inbound_dedupe, agent_conversations, facility_checkins</li>
 <li>DB write: chat_messages, inbound_dedupe, agent_conversations, chat_threads</li>
 <li>State: <code>NEED_ETA</code></li>
 </ul>
@@ -162,13 +161,13 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 38 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:15</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D4 12:30 board cost 52500 strands ['SHP1015']; D2 11:30 board cost 52775 strands ['SHP1015']; D2 13:00 board cost 53625 strands ['SHP1015']</li>
-<li>MODEL phrase: templates current_ok</li>
+<li>MODEL phrase: templates assume_relative, current_ok</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, inbound_dedupe, eta_updates, driver_exceptions, agent_conversations</li>
 <li>State: <code>PENDING_WAREHOUSE</code></li>
 </ul>
 <blockquote>
-<p>Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.</p>
+<p>I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min); send the time if that is wrong. Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.</p>
 </blockquote>
 <p><strong>09:41 DRV004</strong> (hi): <em>मैं 45 मिनट लेट हो जाऊँगा</em></p>
 <ul>
@@ -181,7 +180,7 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 </ul>
 <blockquote>
 <p>आज आपकी 2 ट्रिप हैं:<br />
-1) ORD-260804-004 (Kota → Jaipur, ईटीए 08:45)<br />
+1) ORD-260804-004 (Kota → Jaipur, 09:25 से DC पर)<br />
 2) ORD-260804-020 (Kota → Jaipur, ईटीए 18:00)<br />
 यह किस ट्रिप के बारे में है? 1 या 2 लिखें।</p>
 </blockquote>
@@ -193,16 +192,16 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 12 feasible; rejected: ETA_AFTER_WINDOWx29, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 19:00</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D1 19:15 board cost 54125 strands ['SHP1015']; D2 19:15 board cost 54125 strands ['SHP1015']; D3 19:15 board cost 54125 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_delay, assume_low, options_head, option_line, options_tail</li>
+<li>MODEL phrase: templates assume_delay, assume_low, current_missed, options_head, option_line, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages</li>
 <li>DB write: chat_messages, driver_exceptions, eta_updates, agent_conversations, chat_threads</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>मैं 18:45 पहुँचने के हिसाब से देख रहा हूँ (आपका तय समय 18:00 + 45 मिनट) (देर वाले समय 19:00 के हिसाब से, ताकि स्लॉट न छूटे)। Jaipur पर ये स्लॉट मिल सकते हैं:<br />
+<p>इस समय पर पहुँचने से आपका मौजूदा डॉक D2 18:00-19:00 स्लॉट नहीं मिल पाएगा।<br />
+मैं 18:45 पहुँचने के हिसाब से देख रहा हूँ (आपका तय समय 18:00 + 45 मिनट; देर वाले समय 19:00 के हिसाब से, ताकि स्लॉट न छूटे)। Jaipur पर ये स्लॉट मिल सकते हैं:<br />
 1) डॉक D1: लगभग 19:15 शुरू, 20:15 तक अनलोड<br />
-2) डॉक D2: लगभग 19:15 शुरू, 20:15 तक अनलोड<br />
-3) डॉक D3: लगभग 19:15 शुरू, 20:15 तक अनलोड<br />
+2) डॉक D1: लगभग 20:00 शुरू, 21:00 तक अनलोड<br />
 बुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।</p>
 </blockquote>
 <p><strong>09:53 DRV010</strong> (hinglish): <em>thoda late ho jaunga</em></p>
@@ -211,7 +210,7 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>find_driver_shipments</code> [READ]: SHP1010</li>
 <li>TOOL <code>get_eta</code> [READ]: eta 10:50 (MEDIUM, ORIGINAL_PLAN)</li>
 <li>MODEL phrase: templates ask_eta_vague</li>
-<li>DB read: chat_threads, shipments, chat_messages, inbound_dedupe, agent_conversations, facilities, facility_checkins, eta_updates</li>
+<li>DB read: chat_threads, shipments, facility_checkins, chat_messages, inbound_dedupe, agent_conversations, facilities, eta_updates</li>
 <li>DB write: chat_threads, chat_messages, inbound_dedupe, agent_conversations</li>
 <li>State: <code>NEED_ETA</code></li>
 </ul>
@@ -226,13 +225,14 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx9, SLOT_BLOCKEDx7; planning ETA 11:45</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D5 12:00 board cost 56525 strands ['SHP1015']; D5 13:00 board cost 63725 strands ['SHP1015']; D5 14:00 board cost 70925 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_low, options_head, option_line, options_tail</li>
+<li>MODEL phrase: templates assume_low, current_missed, options_head, option_line, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, appointments, eta_updates, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages</li>
 <li>DB write: chat_messages, driver_exceptions, eta_updates, agent_conversations, chat_threads</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:<br />
+<p>Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi mil payega.<br />
+Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:<br />
 1) Dock D5: lagbhag 12:00 start, 12:55 tak unload<br />
 2) Dock D5: lagbhag 13:00 start, 13:55 tak unload<br />
 3) Dock D5: lagbhag 14:00 start, 14:55 tak unload<br />
@@ -277,37 +277,39 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <p><strong>09:50 DRV007</strong> (en): <em>Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?</em></p>
 <ul>
 <li>MODEL understand: en, REPORT_DELAY/ASK_OPTIONS, eta 12:00 CLOCK HIGH</li>
-<li>TOOL <code>find_driver_shipments</code> [READ]: ask</li>
-<li>MODEL phrase: templates ask_shipment</li>
-<li>DB read: chat_threads, facilities, chat_messages, inbound_dedupe, agent_conversations, shipments, facility_checkins</li>
-<li>DB write: chat_threads, chat_messages, inbound_dedupe, agent_conversations</li>
-<li>State: <code>NEED_SHIPMENT</code></li>
-</ul>
-<blockquote>
-<p>You have 2 trips today:<br />
-1) ORD-260804-007 (Ajmer → Jaipur, ETA 09:50)<br />
-2) ORD-260804-016 (Mumbai → Jaipur, ETA 10:30)<br />
-Which one is this about? Reply 1 or 2.</p>
-</blockquote>
-<p><strong>09:51 DRV007</strong> (hinglish): <em>016 wala</em></p>
-<ul>
-<li>MODEL understand: hinglish, IDENTIFY_SHIPMENT</li>
 <li>TOOL <code>find_driver_shipments</code> [READ]: SHP1016</li>
 <li>TOOL <code>get_eta</code> [READ]: eta 12:00 (HIGH, DRIVER_DECLARED)</li>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 6 feasible; rejected: WEIGHTx65, DOCK_TYPEx65, SLOT_TAKENx11; planning ETA 12:00</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D6 12:40 board cost 54575 strands ['SHP1015']; D6 14:00 board cost 57775 strands ['SHP1015']; D6 15:30 board cost 61375 strands ['SHP1015']</li>
-<li>MODEL phrase: templates options_head, option_line, options_tail</li>
-<li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages</li>
-<li>DB write: chat_messages, driver_exceptions, eta_updates, agent_conversations, chat_threads</li>
+<li>MODEL phrase: templates assume_trip, options_head, option_line, options_tail</li>
+<li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
+<li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>Main 12:00 pahunchne ke hisaab se dekh raha hoon. Jaipur par ye slot mil sakte hain:<br />
-1) Dock D6: lagbhag 12:40 start, 14:10 tak unload<br />
-2) Dock D6: lagbhag 14:00 start, 15:30 tak unload<br />
-3) Dock D6: lagbhag 15:30 start, 17:00 tak unload<br />
-Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
+<p>I take this to be about your heavy trip ORD-260804-016 (Mumbai → Jaipur).<br />
+I am planning for arrival at 12:00. Slots you can reach at Jaipur:<br />
+1) Dock D6: start about 12:40, unloading done about 14:10<br />
+2) Dock D6: start about 14:00, unloading done about 15:30<br />
+3) Dock D6: start about 15:30, unloading done about 17:00<br />
+Reply with the number to book. Nothing is booked until you choose.</p>
+</blockquote>
+<p><strong>09:51 DRV007</strong> (en): <em>1</em></p>
+<ul>
+<li>MODEL understand: en, SELECT_OPTION, option 1</li>
+<li>TOOL <code>find_driver_shipments</code> [READ]: SHP1016</li>
+<li>TOOL <code>get_eta</code> [READ]: eta 12:00 (HIGH, DRIVER_DECLARED)</li>
+<li>TOOL <code>hold_slot</code> [WRITE]: HOLD-DBEB57A7 on SLOT-JAI-074 until 09:56</li>
+<li>TOOL <code>confirm_booking</code> [WRITE]: PENDING_CONFIRMATION D6 12:40 approval: ['DATA_CONFLICT']</li>
+<li>TOOL <code>notify_warehouse</code> [WRITE]: operational_messages row queued</li>
+<li>MODEL phrase: templates pending</li>
+<li>DB read: shipments, facility_checkins, eta_updates, appointment_slots, appointments, slot_holds, chat_threads, facilities, docks, facility_rules, appointment_plan, dock_status_events, chat_messages, agent_conversations, idempotency_keys</li>
+<li>DB write: slot_holds, chat_messages, audit_log, appointments, appointment_plan, idempotency_keys, driver_exceptions, operational_messages, agent_conversations, chat_threads</li>
+<li>State: <code>PENDING_WAREHOUSE</code>, committed PENDING_CONFIRMATION D6 12:40</li>
+</ul>
+<blockquote>
+<p>I have requested dock D6 at about 12:40 for you. It is NOT confirmed yet: the warehouse coordinator must approve it (shipment data needs a check). I will message you within 20 minutes.</p>
 </blockquote>
 <p><strong>09:54 DRV010</strong> (hinglish): <em>lagbhag 11:30 tak reach karunga, reefer hai</em></p>
 <ul>
@@ -315,15 +317,16 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>find_driver_shipments</code> [READ]: SHP1010</li>
 <li>TOOL <code>get_eta</code> [READ]: eta 10:50 (MEDIUM, ORIGINAL_PLAN)</li>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
-<li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:45</li>
-<li>TOOL <code>rank_options_lookahead</code> [READ]: D5 12:00 board cost 56975 strands ['SHP1015']; D5 13:00 board cost 64175 strands ['SHP1015']; D5 14:00 board cost 71375 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_low, options_head, option_line, options_tail</li>
+<li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:45</li>
+<li>TOOL <code>rank_options_lookahead</code> [READ]: D5 12:00 board cost 55975 strands ['SHP1015']; D5 13:00 board cost 63175 strands ['SHP1015']; D5 14:00 board cost 70375 strands ['SHP1015']</li>
+<li>MODEL phrase: templates assume_low, current_missed, options_head, option_line, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:<br />
+<p>Is time par pahunchne se aapka current dock D5 11:00-12:00 slot nahi mil payega.<br />
+Main 11:30 pahunchne ke hisaab se dekh raha hoon (late wale time 11:45 ke hisaab se, taaki slot na chhoote). Jaipur par ye slot mil sakte hain:<br />
 1) Dock D5: lagbhag 12:00 start, 12:55 tak unload<br />
 2) Dock D5: lagbhag 13:00 start, 13:55 tak unload<br />
 3) Dock D5: lagbhag 14:00 start, 14:55 tak unload<br />
@@ -373,16 +376,18 @@ Book karne ke liye number likhein. Aapke chunne tak kuch book nahi hoga.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D2 12:45 board cost 54575 strands ['SHP1015']; D2 13:00 board cost 56375 strands ['SHP1015']; D3 13:00 board cost 56375 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_low, options_head, option_line, options_tail</li>
+<li>MODEL phrase: templates assume_low, current_missed, options_head, option_line, protect_note, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:<br />
+<p>Your current 10:00-11:00 slot on dock D4 cannot be reached with this arrival time.<br />
+I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:<br />
 1) Dock D2: start about 12:45, unloading done about 13:30<br />
 2) Dock D2: start about 13:00, unloading done about 13:45<br />
-3) Dock D3: start about 13:00, unloading done about 13:45<br />
+3) Dock D1: start about 13:45, unloading done about 14:30<br />
+An earlier slot is kept for a truck that has no other dock today.<br />
 Reply with the number to book. Nothing is booked until you choose.</p>
 </blockquote>
 <p><strong>09:37 DRV012</strong> (en): <em>Tyre repaired. I can reach 11:10. I need to leave the warehouse before 1:30 for another pickup.</em></p>
@@ -412,13 +417,13 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 38 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:15</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D4 12:30 board cost 52500 strands ['SHP1015']; D2 11:30 board cost 52775 strands ['SHP1015']; D2 13:00 board cost 53625 strands ['SHP1015']</li>
-<li>MODEL phrase: templates current_ok</li>
+<li>MODEL phrase: templates assume_relative, current_ok</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, inbound_dedupe, eta_updates, driver_exceptions, agent_conversations</li>
 <li>State: <code>PENDING_WAREHOUSE</code></li>
 </ul>
 <blockquote>
-<p>Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.</p>
+<p>I read 'late by 60 min' as arrival about 11:00 (planned 10:00 + 60 min); send the time if that is wrong. Your 11:00-12:00 slot on dock D2 (waiting for warehouse approval) still works with arrival at 11:00. Expected dock start about 11:30. No change needed.</p>
 </blockquote>
 <p><strong>09:44 DRV014</strong> (hi): <em>भाई 11:25 तक पहुँचूंगा, लोड बहुत ज़रूरी है, पहला डॉक दे दो</em></p>
 <ul>
@@ -428,16 +433,17 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 17 feasible; rejected: WEIGHTx26, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 11:25</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D2 12:30 board cost 73775 strands ['SHP1015']; D4 12:30 board cost 73775 strands ['SHP1015']; D2 13:00 board cost 82775 strands ['SHP1015']</li>
-<li>MODEL phrase: templates options_head, option_line, priority_note, options_tail</li>
+<li>MODEL phrase: templates current_missed, options_head, option_line, priority_note, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>मैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:<br />
+<p>इस समय पर पहुँचने से आपका मौजूदा डॉक D1 11:00-12:00 स्लॉट नहीं मिल पाएगा।<br />
+मैं 11:25 पहुँचने के हिसाब से देख रहा हूँ। Jaipur पर ये स्लॉट मिल सकते हैं:<br />
 1) डॉक D2: लगभग 12:30 शुरू, 13:45 तक अनलोड<br />
-2) डॉक D4: लगभग 12:30 शुरू, 13:45 तक अनलोड<br />
-3) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड<br />
+2) डॉक D2: लगभग 13:00 शुरू, 14:15 तक अनलोड<br />
+3) डॉक D2: लगभग 14:00 शुरू, 15:15 तक अनलोड<br />
 डॉक का क्रम शिपमेंट रिकॉर्ड की प्राथमिकता से तय होता है; चैट से इसे नहीं बदला जा सकता।<br />
 बुक करने के लिए नंबर लिखें। आपके चुनने तक कुछ बुक नहीं होगा।</p>
 </blockquote>
@@ -446,7 +452,7 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <li>MODEL understand: en, SELECT_OPTION, option 1</li>
 <li>TOOL <code>find_driver_shipments</code> [READ]: SHP1014</li>
 <li>TOOL <code>get_eta</code> [READ]: eta 11:25 (HIGH, DRIVER_DECLARED)</li>
-<li>TOOL <code>hold_slot</code> [WRITE]: HOLD-293B8AE1 on SLOT-JAI-019 until 09:51</li>
+<li>TOOL <code>hold_slot</code> [WRITE]: HOLD-C0A3836B on SLOT-JAI-019 until 09:51</li>
 <li>TOOL <code>confirm_booking</code> [WRITE]: CONFIRMED D2 12:30 (replaces APT1014A)</li>
 <li>TOOL <code>notify_warehouse</code> [WRITE]: operational_messages row queued</li>
 <li>TOOL <code>get_eta</code> [READ]: eta 11:25 (HIGH, DRIVER_DECLARED)</li>
@@ -502,16 +508,18 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35</li>
 <li>TOOL <code>rank_options_lookahead</code> [READ]: D2 12:45 board cost 54575 strands ['SHP1015']; D2 13:00 board cost 56375 strands ['SHP1015']; D3 13:00 board cost 56375 strands ['SHP1015']</li>
-<li>MODEL phrase: templates assume_low, options_head, option_line, options_tail</li>
+<li>MODEL phrase: templates assume_low, current_missed, options_head, option_line, protect_note, options_tail</li>
 <li>DB read: shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities, docks, facility_rules, appointment_plan, slot_holds, dock_status_events, chat_threads, chat_messages, inbound_dedupe</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</li>
 <li>State: <code>OPTIONS_SHOWN</code></li>
 </ul>
 <blockquote>
-<p>I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:<br />
+<p>Your current 10:00-11:00 slot on dock D4 cannot be reached with this arrival time.<br />
+I am planning for arrival at 11:20 (planning for the late end, 11:35, so the slot is not missed). Slots you can reach at Jaipur:<br />
 1) Dock D2: start about 12:45, unloading done about 13:30<br />
 2) Dock D2: start about 13:00, unloading done about 13:45<br />
-3) Dock D3: start about 13:00, unloading done about 13:45<br />
+3) Dock D1: start about 13:45, unloading done about 14:30<br />
+An earlier slot is kept for a truck that has no other dock today.<br />
 Reply with the number to book. Nothing is booked until you choose.</p>
 </blockquote>
 <p><strong>09:35 DRV006</strong> (en): <em>Traffic after Shahpura. Reaching around 11:20. Any slot after 12?</em></p>
@@ -545,7 +553,7 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 </blockquote>
 <p><strong>09:46 world change</strong>: [parallel conversation books the slot DRV012 was just shown] SHP1013 takes D4 12:30</p>
 <ul>
-<li>TOOL <code>hold_slot</code> [WRITE]: HOLD-BC4E45E8 on SLOT-JAI-047 until 09:51</li>
+<li>TOOL <code>hold_slot</code> [WRITE]: HOLD-8BC77B41 on SLOT-JAI-047 until 09:51</li>
 <li>TOOL <code>confirm_booking</code> [WRITE]: CONFIRMED D4 12:30 (replaces APT1013A)</li>
 <li>DB read: shipments, facility_checkins, eta_updates, appointment_slots, appointments, slot_holds, facilities, docks, facility_rules, appointment_plan, dock_status_events, idempotency_keys</li>
 <li>DB write: slot_holds, audit_log, appointments, appointment_plan, idempotency_keys</li>
@@ -578,8 +586,8 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <p><strong>Extra checks</strong></p>
 <pre><code class="language-json">{
  &quot;idempotent_retry&quot;: {
-  &quot;first&quot;: &quot;APT-A1A5817A&quot;,
-  &quot;second&quot;: &quot;APT-A1A5817A&quot;,
+  &quot;first&quot;: &quot;APT-93D002C9&quot;,
+  &quot;second&quot;: &quot;APT-93D002C9&quot;,
   &quot;replay&quot;: true,
   &quot;tools&quot;: [
    {
@@ -591,8 +599,8 @@ Reply with the number to book. Nothing is booked until you choose.</p>
      &quot;slot_id&quot;: &quot;SLOT-JAI-018&quot;,
      &quot;now&quot;: &quot;09:56&quot;
     },
-    &quot;result&quot;: &quot;HOLD-26F59C5F on SLOT-JAI-018 until 10:01&quot;,
-    &quot;ms&quot;: 3.4,
+    &quot;result&quot;: &quot;HOLD-0B5F5301 on SLOT-JAI-018 until 10:01&quot;,
+    &quot;ms&quot;: 2.9,
     &quot;ok&quot;: true
    },
    {
@@ -600,12 +608,12 @@ Reply with the number to book. Nothing is booked until you choose.</p>
     &quot;name&quot;: &quot;confirm_booking&quot;,
     &quot;kind&quot;: &quot;WRITE&quot;,
     &quot;args&quot;: {
-     &quot;hold_id&quot;: &quot;HOLD-26F59C5F&quot;,
+     &quot;hold_id&quot;: &quot;HOLD-0B5F5301&quot;,
      &quot;now&quot;: &quot;09:56&quot;,
      &quot;idem_key&quot;: &quot;walk-idem-1&quot;
     },
-    &quot;result&quot;: &quot;CONFIRMED D2 11:45 (replaces APT-A92D4A75)&quot;,
-    &quot;ms&quot;: 5.3,
+    &quot;result&quot;: &quot;CONFIRMED D2 11:45 (replaces APT-559327C8)&quot;,
+    &quot;ms&quot;: 3.7,
     &quot;ok&quot;: true
    },
    {
@@ -613,11 +621,11 @@ Reply with the number to book. Nothing is booked until you choose.</p>
     &quot;name&quot;: &quot;confirm_booking&quot;,
     &quot;kind&quot;: &quot;WRITE&quot;,
     &quot;args&quot;: {
-     &quot;hold_id&quot;: &quot;HOLD-26F59C5F&quot;,
+     &quot;hold_id&quot;: &quot;HOLD-0B5F5301&quot;,
      &quot;now&quot;: &quot;09:56&quot;,
      &quot;idem_key&quot;: &quot;walk-idem-1&quot;
     },
-    &quot;result&quot;: &quot;CONFIRMED D2 11:45 (replaces APT-A92D4A75) [idempotent replay]&quot;,
+    &quot;result&quot;: &quot;CONFIRMED D2 11:45 (replaces APT-559327C8) [idempotent replay]&quot;,
     &quot;ms&quot;: 0.1,
     &quot;ok&quot;: true
    }
@@ -632,7 +640,7 @@ Reply with the number to book. Nothing is booked until you choose.</p>
  },
  &quot;race_same_slot&quot;: {
   &quot;slot&quot;: &quot;SLOT-JAI-006&quot;,
-  &quot;SHP1017&quot;: &quot;HOLD-A7DE59F0&quot;,
+  &quot;SHP1017&quot;: &quot;HOLD-8D66F73C&quot;,
   &quot;SHP1018&quot;: &quot;OPTION_GONE&quot;
  }
 }
@@ -680,14 +688,14 @@ Reply with the number to book. Nothing is booked until you choose.</p>
 <li>TOOL <code>get_eta</code> [READ]: eta 18:30 (HIGH, DRIVER_DECLARED)</li>
 <li>TOOL <code>record_eta</code> [WRITE]: eta_updates row written</li>
 <li>TOOL <code>check_slot_feasibility</code> [READ]: 34 slots checked, 0 feasible; rejected: DOCK_TYPEx28, SLOT_BLOCKEDx4, ETA_AFTER_WINDOWx2; planning ETA 18:30</li>
-<li>TOOL <code>escalate_to_human</code> [WRITE]: ESC-6CD63409 NO_FEASIBLE_SLOT -&gt; WAREHOUSE_COORDINATOR Neha Bansal via EMAIL</li>
+<li>TOOL <code>escalate_to_human</code> [WRITE]: ESC-37E21DB0 NO_FEASIBLE_SLOT -&gt; WAREHOUSE_COORDINATOR Neha Bansal via EMAIL</li>
 <li>MODEL phrase: templates no_slot</li>
 <li>DB read: shipments, facility_checkins, eta_updates, chat_threads, appointment_slots, facilities, docks, appointments, chat_messages, inbound_dedupe, agent_conversations, driver_exceptions, facility_rules, appointment_plan, slot_holds, dock_status_events, facility_contacts</li>
 <li>DB write: chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, escalations, audit_log, agent_conversations</li>
 <li>State: <code>ESCALATED</code>, escalation <code>NO_FEASIBLE_SLOT</code></li>
 </ul>
 <blockquote>
-<p>I cannot find a valid refrigerated dock slot for arrival at 18:30 today: the only compatible dock is blocked. I have passed your case to the warehouse coordinator with all details. Please do not go to the dock until they contact you.</p>
+<p>I cannot find a valid refrigerated dock slot for arrival at 18:30 today: the only compatible dock is blocked (D5 18:00-22:00). I have passed your case to the warehouse coordinator with all details. Please do not go to the dock until they contact you.</p>
 </blockquote>
 <h2>Level +: An early truck, a late truck and work in progress share one facility</h2>
 <p><strong>Where to look:</strong> <code>SHP1002, SHP1003, SHP1004, SHP1006</code><br />

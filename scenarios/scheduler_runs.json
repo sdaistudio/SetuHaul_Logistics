@@ -93,7 +93,7 @@
           "schedule_changes": 6,
           "solver_cost": 57825,
           "solver_nodes": 4725,
-          "solver_ms": 101
+          "solver_ms": 80
         }
       }
     ],
@@ -258,7 +258,7 @@
           "weighted_wait": 8780,
           "critical_wait_min": 50,
           "missed_appointments": 2,
-          "schedule_changes": 9
+          "schedule_changes": 7
         }
       },
       {
@@ -271,7 +271,7 @@
           "weighted_wait": 9580,
           "critical_wait_min": 50,
           "missed_appointments": 1,
-          "schedule_changes": 9
+          "schedule_changes": 7
         }
       },
       {
@@ -284,7 +284,7 @@
           "weighted_wait": 5230,
           "critical_wait_min": 0,
           "missed_appointments": 2,
-          "schedule_changes": 13
+          "schedule_changes": 11
         }
       },
       {
@@ -297,7 +297,7 @@
           "weighted_wait": 13675,
           "critical_wait_min": 80,
           "missed_appointments": 1,
-          "schedule_changes": 8,
+          "schedule_changes": 6,
           "swap_proposals": [
             {
               "promote": "SHP1014",
@@ -322,7 +322,7 @@
           "weighted_wait": 13175,
           "critical_wait_min": 80,
           "missed_appointments": 1,
-          "schedule_changes": 8
+          "schedule_changes": 6
         }
       },
       {
@@ -335,10 +335,10 @@
           "weighted_wait": 5630,
           "critical_wait_min": 0,
           "missed_appointments": 0,
-          "schedule_changes": 9,
-          "solver_cost": 57925,
-          "solver_nodes": 98231,
-          "solver_ms": 2392
+          "schedule_changes": 7,
+          "solver_cost": 54175,
+          "solver_nodes": 88869,
+          "solver_ms": 1843
         }
       }
     ],
@@ -411,7 +411,7 @@
         "dock": "DOCK-JAI-D5",
         "start": "12:00",
         "end": "12:55",
-        "kept": false,
+        "kept": true,
         "approval": false,
         "note": ""
       },
@@ -474,7 +474,7 @@
         "dock": "DOCK-JAI-D1",
         "start": "19:15",
         "end": "20:15",
-        "kept": false,
+        "kept": true,
         "approval": false,
         "note": ""
       },

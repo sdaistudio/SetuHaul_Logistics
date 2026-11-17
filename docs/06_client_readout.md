@@ -19,10 +19,10 @@ A WhatsApp assistant for drivers who are running late or early. It understands E
 
 - 12 driver conversations, median **2 minutes and 2 messages** to a usable outcome.
 - **0 double bookings**, also under a test of 10 drivers grabbing one slot at the same instant.
-- 1 of 26 offered slots was gone by the time the driver chose; the driver was told and re-offered.
+- 1 of 24 offered slots were gone by the time the driver chose; the driver was told and re-offered. When a dock freed up earlier than shown, the driver was told the new start time.
 - Looking ahead across all trucks avoided one escalation: a driver with a 13:30 deadline kept the only slot that worked for him, because the solver steered an earlier driver to a different dock.
 - The one remaining "no slot" case (reefer dock in maintenance) reached a coordinator with a complete record.
-- 3 clarification questions across 12 conversations.
+- 2 clarification questions across 12 conversations; where the system assumed something ("late by one hour" = 11:00, "heavy trailer" = trip 016) it said so, so the driver can correct it.
 - Language understanding: 100% on our test set, **80% on unseen messages** — the remaining 20% get a clarifying question or go to a person, never a wrong booking.
 
 ## Location without paying for constant GPS

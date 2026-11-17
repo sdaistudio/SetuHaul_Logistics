@@ -541,7 +541,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <h2>9. One message, end to end</h2>
 <p><img alt="L2 turn sequence" src="design/l2_turn.svg" /></p>
 <p><img alt="L2 state machines" src="design/l2_states.svg" /></p>
-<p>Conversation memory is one <code>agent_conversations</code> row per thread: state, language, remembered facts (shipment, ETA, constraints, options shown, clarification count) and a version number that is checked on save (optimistic concurrency). Facts said in an earlier turn are kept, so "016 wala" after a question resolves the shipment without the driver repeating the ETA.</p>
+<p>Conversation memory is one <code>agent_conversations</code> row per thread: state, language, remembered facts (shipment, ETA, constraints, options shown, clarification count) and a version number that is checked on save (optimistic concurrency). Facts said in an earlier turn are kept, so "शाम वाला" (the evening one) after a question resolves the shipment without the driver repeating the delay.</p>
 <h2>10. Stale reads, concurrent requests and promises</h2>
 <table>
 <thead>
@@ -555,7 +555,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <tr>
 <td>Two drivers pick the same slot</td>
 <td>Hold placed inside BEGIN IMMEDIATE; partial unique index <code>ux_live_hold_per_slot</code>; the second gets OPTION_GONE</td>
-<td>10-driver race in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a>; level 5 race: {'slot': 'SLOT-JAI-006', 'SHP1017': 'HOLD-A7DE59F0', 'SHP1018': 'OPTION_GONE'}</td>
+<td>10-driver race in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a>; level 5 race: {'slot': 'SLOT-JAI-006', 'SHP1017': 'HOLD-8D66F73C', 'SHP1018': 'OPTION_GONE'}</td>
 </tr>
 <tr>
 <td>Options shown, then the world changes</td>
@@ -565,7 +565,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <tr>
 <td>A retried confirm (network retry)</td>
 <td><code>idempotency_keys</code>: same key returns the first result</td>
-<td>Level 5: first APT-A1A5817A and retry APT-A1A5817A, replay = True</td>
+<td>Level 5: first APT-93D002C9 and retry APT-93D002C9, replay = True</td>
 </tr>
 <tr>
 <td>WhatsApp re-delivers a message (THR001 / THR009)</td>
@@ -771,26 +771,26 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>hinglish, REPORT_DELAY, clarify ['ETA_VAGUE'] / hinglish, ADD_CONSTRAINT, leave by 11:30</td>
 <td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
 <td>73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx9, SLOT_BLOCKEDx7; planning ETA 11:45</td>
-<td>chat_threads, shipments, chat_messages, inbound_dedupe, agent_conversations, facilities, facility_checkins, eta_updates …</td>
+<td>chat_threads, shipments, facility_checkins, chat_messages, inbound_dedupe, agent_conversations, facilities, eta_updates …</td>
 <td>chat_threads, chat_messages, inbound_dedupe, agent_conversations, driver_exceptions, eta_updates</td>
 <td>need eta → options shown</td>
 </tr>
 <tr>
 <td>3a</td>
 <td>Rules and compatibility narrow the choices (DRV007)</td>
-<td>en, REPORT_DELAY/ASK_OPTIONS, eta 12:00 CLOCK HIGH / hinglish, IDENTIFY_SHIPMENT</td>
-<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
-<td>73 slots checked, 6 feasible; rejected: WEIGHTx65, DOCK_TYPEx65, SLOT_TAKENx11; planning ETA 12:00</td>
-<td>chat_threads, facilities, chat_messages, inbound_dedupe, agent_conversations, shipments, facility_checkins, appointment_slots …</td>
-<td>chat_threads, chat_messages, inbound_dedupe, agent_conversations, driver_exceptions, eta_updates</td>
-<td>need shipment → options shown</td>
+<td>en, REPORT_DELAY/ASK_OPTIONS, eta 12:00 CLOCK HIGH / en, SELECT_OPTION, option 1</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>hold_slot</code> → <code>confirm_booking</code> → <code>notify_warehouse</code></td>
+<td>73 slots checked, 6 feasible; rejected: WEIGHTx65, DOCK_TYPEx65, SLOT_TAKENx11; planning ETA 12:00 · PENDING_CONFIRMATION D6 12:40 approval: ['DATA_CONFLICT']</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations, slot_holds, audit_log, appointments, appointment_plan, idempotency_keys, operational_messages</td>
+<td>options shown → pending warehouse</td>
 </tr>
 <tr>
 <td>3b</td>
 <td>〃 (DRV010)</td>
 <td>hinglish, REPORT_DELAY, eta 11:30 CLOCK MEDIUM</td>
 <td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
-<td>73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:45</td>
+<td>73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:45</td>
 <td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
 <td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
 <td>options shown</td>
@@ -870,7 +870,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>No feasible slot exists (DRV015)</td>
 <td>en, REPORT_DELAY, eta 18:30 CLOCK HIGH</td>
 <td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>escalate_to_human</code></td>
-<td>34 slots checked, 0 feasible; rejected: DOCK_TYPEx28, SLOT_BLOCKEDx4, ETA_AFTER_WINDOWx2; planning ETA 18:30 · ESC-6CD63409 NO_FEASIBLE_SLOT -&gt; WAREHOUSE_COORDINATOR Neha Bansal via EMAIL</td>
+<td>34 slots checked, 0 feasible; rejected: DOCK_TYPEx28, SLOT_BLOCKEDx4, ETA_AFTER_WINDOWx2; planning ETA 18:30 · ESC-37E21DB0 NO_FEASIBLE_SLOT -&gt; WAREHOUSE_COORDINATOR Neha Bansal via EMAIL</td>
 <td>shipments, facility_checkins, eta_updates, chat_threads, appointment_slots, facilities, docks, appointments …</td>
 <td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, escalations, audit_log, agent_conversations</td>
 <td>escalated</td>

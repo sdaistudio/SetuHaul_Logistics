@@ -57,6 +57,36 @@ T = {
         "hi": "मैंने समझा है कि आपको {t} तक गेट से निकलना है।",
         "hinglish": "Maine samjha hai ki aapko {t} tak gate se nikalna hai.",
     },
+    "current_missed": {
+        "en": "Your current {window} slot on dock {dock} cannot be reached with this arrival time.",
+        "hi": "इस समय पर पहुँचने से आपका मौजूदा डॉक {dock} {window} स्लॉट नहीं मिल पाएगा।",
+        "hinglish": "Is time par pahunchne se aapka current dock {dock} {window} slot nahi mil payega.",
+    },
+    "protect_note": {
+        "en": "An earlier slot is kept for a truck that has no other dock today.",
+        "hi": "एक पहले वाला स्लॉट उस ट्रक के लिए रखा गया है जिसके पास आज कोई और डॉक नहीं है।",
+        "hinglish": "Ek pehle wala slot us truck ke liye rakha gaya hai jiske paas aaj koi aur dock nahi hai.",
+    },
+    "order_note": {
+        "en": "Option 1 keeps total waiting at the docks lowest; you can choose any.",
+        "hi": "विकल्प 1 से डॉक पर कुल इंतज़ार सबसे कम रहता है; आप कोई भी चुन सकते हैं।",
+        "hinglish": "Option 1 se dock par total waiting sabse kam rehti hai; aap koi bhi chun sakte ho.",
+    },
+    "time_changed": {
+        "en": "The start time changed from {old} to {new} because the dock schedule moved since I showed the options. ",
+        "hi": "विकल्प दिखाने के बाद डॉक का शेड्यूल बदला, इसलिए शुरुआत {old} की जगह {new} है। ",
+        "hinglish": "Options dikhane ke baad dock schedule badla, isliye start {old} ki jagah {new} hai. ",
+    },
+    "assume_trip": {
+        "en": "I take this to be about your {what} trip {order} ({route}).",
+        "hi": "मैं इसे आपकी {what} ट्रिप {order} ({route}) के बारे में मान रहा हूँ।",
+        "hinglish": "Main ise aapki {what} trip {order} ({route}) ke baare mein maan raha hoon.",
+    },
+    "assume_relative": {
+        "en": "I read 'late by {delay} min' as arrival about {eta} (planned {base} + {delay} min); send the time if that is wrong. ",
+        "hi": "मैंने '{delay} मिनट लेट' को लगभग {eta} पहुँचना समझा है (तय समय {base} + {delay} मिनट); गलत हो तो समय भेजें। ",
+        "hinglish": "Maine '{delay} min late' ko lagbhag {eta} pahunchna samjha hai (planned {base} + {delay} min); galat ho to time bhejo. ",
+    },
     "option_gone": {
         "en": "Sorry, dock {dock} at {start} was just taken by another truck.",
         "hi": "माफ़ कीजिए, डॉक {dock} {start} वाला स्लॉट अभी दूसरे ट्रक को मिल गया।",
@@ -179,6 +209,12 @@ DOCK_TYPE_NAME = {
     "STANDARD": {"en": "standard", "hi": "सामान्य", "hinglish": "standard"},
     "REEFER": {"en": "refrigerated", "hi": "रेफ्रिजरेटेड", "hinglish": "reefer"},
     "HEAVY": {"en": "heavy-vehicle", "hi": "हेवी व्हीकल", "hinglish": "heavy"},
+}
+
+TRIP_TAG = {
+    "AT_DC": {"en": "already at the DC since {t}", "hi": "{t} से DC पर", "hinglish": "{t} se DC par"},
+    "HEAVY": {"en": "heavy", "hi": "हेवी", "hinglish": "heavy"},
+    "REEFER": {"en": "reefer", "hi": "रीफर", "hinglish": "reefer"},
 }
 
 STATUS_NAME = {

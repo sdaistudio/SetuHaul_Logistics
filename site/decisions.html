@@ -40,14 +40,14 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>What must we collect before showing options?</td>
 <td>Only two things the backend cannot know: <strong>which shipment</strong> (only if the driver has more than one live trip and the evidence cannot narrow it) and <strong>a clock-time ETA</strong> (exact, approximate or a range). Everything else (dock type, weight, priority, unload time, current booking, rules) is looked up, never asked. Optional constraints ("after 12", "must leave by 1:30") are used if offered, never requested.</td>
 <td>Asking for a fact the backend holds wastes the driver's time; asking nothing produces wrong options.</td>
-<td><a href="scenarios.html"><code>scenarios/transcript.md</code></a>: S-D (two trips, one question), S-G (vague "thoda late", one question), S-A (ETA + constraint in one message, zero questions). 3 clarification questions across 12 cases.</td>
+<td><a href="scenarios.html"><code>scenarios/transcript.md</code></a>: S-D (two trips, one question), S-G (vague "thoda late", one question), S-A (ETA + constraint in one message, zero questions). 2 clarification questions across 12 cases.</td>
 </tr>
 <tr>
 <td>D2</td>
 <td>How does a conversation link to driver, shipment, appointment?</td>
-<td>Phone → <code>drivers.phone</code> → driver. Shipment: explicit reference (SHP id, order number or its last 3 digits) &gt; the thread's existing shipment &gt; the only live trip &gt; the only <em>in-transit</em> trip for a delay / the only <em>at-gate</em> trip for an early-arrival message &gt; ask. Appointment = the shipment's <code>is_current</code> active appointment.</td>
+<td>Phone → <code>drivers.phone</code> → driver. Shipment: explicit reference (SHP id, order number or its last 3 digits) &gt; the thread's existing shipment &gt; the only live trip &gt; the only <em>in-transit</em> trip for a delay / the only <em>at-gate</em> trip for an early-arrival message &gt; a load-type word in the message ("heavy trailer", "reefer") that matches exactly one live trip, stated back to the driver &gt; ask, listing each trip with its load type and whether it is already at the DC. Appointment = the shipment's <code>is_current</code> active appointment.</td>
 <td>Deterministic narrowing with evidence, never a guess between equals.</td>
-<td>S-F: DRV007 is on two in-transit trucks (audit A05) so the agent asks; "016 wala" resolves by order suffix. <code>workflow._resolve_shipment</code>.</td>
+<td>S-D: DRV004 is asked which trip, and sees that trip 004 is already at the DC; "शाम वाला" (the evening one) resolves trip 020. S-F: DRV007 is on two in-transit trucks (audit A05); "heavy trailer" matches only trip 016, so it is chosen, stated back, and the booking goes to a coordinator because of the data conflict. <code>workflow._resolve_shipment</code>.</td>
 </tr>
 <tr>
 <td>D3</td>

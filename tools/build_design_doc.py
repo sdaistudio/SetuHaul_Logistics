@@ -225,7 +225,7 @@ Tables added to the supplied schema: `slot_holds`, `appointment_plan`, `agent_co
 
 ![L2 state machines](design/l2_states.svg)
 
-Conversation memory is one `agent_conversations` row per thread: state, language, remembered facts (shipment, ETA, constraints, options shown, clarification count) and a version number that is checked on save (optimistic concurrency). Facts said in an earlier turn are kept, so "016 wala" after a question resolves the shipment without the driver repeating the ETA.
+Conversation memory is one `agent_conversations` row per thread: state, language, remembered facts (shipment, ETA, constraints, options shown, clarification count) and a version number that is checked on save (optimistic concurrency). Facts said in an earlier turn are kept, so "शाम वाला" (the evening one) after a question resolves the shipment without the driver repeating the delay.
 
 ## 10. Stale reads, concurrent requests and promises
 
