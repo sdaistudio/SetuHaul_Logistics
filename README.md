@@ -7,6 +7,7 @@
 | Home | https://sdaistudio.github.io/SetuHaul_Logistics/ |
 | Solution design | https://sdaistudio.github.io/SetuHaul_Logistics/design.html |
 | Discussion prototype | https://sdaistudio.github.io/SetuHaul_Logistics/prototype.html |
+| Demo 2 · coordinator control tower (GPS, RAG, WhatsApp, conversation dashboard) | https://sdaistudio.github.io/SetuHaul_Logistics/demo2.html |
 | Data analysis | https://sdaistudio.github.io/SetuHaul_Logistics/analysis.html |
 | ER diagram & data browser | https://sdaistudio.github.io/SetuHaul_Logistics/er.html |
 | Decision register | https://sdaistudio.github.io/SetuHaul_Logistics/decisions.html |

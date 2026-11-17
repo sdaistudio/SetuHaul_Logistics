@@ -107,3 +107,24 @@ location:
     overdue_min_floor: 15
     on_overdue: downgrade_eta_to_LOW
     on_overdue_and_gps_silent: ops_review   # possible toll bypass, breakdown or dead zone; never auto-accuse
+
+# ------------------------------------------- coordinator control tower (Demo 2) ---
+# Green / amber / red per truck, recomputed whenever a GPS fix, ETA or booking changes.
+control_tower:
+  on_time_tolerance_min: 15       # dock-ready <= slot start + 15  -> GREEN
+  yard_wait_amber_min: 30         # waiting in the yard longer than this -> AMBER
+  yard_wait_red_min: 60
+  critical_slip_red_min: 60       # CRITICAL/HIGH load slipping more than this vs plan -> RED
+  gps_stale_min: 20               # no fix for 20 min -> GPS silent
+  avg_truck_speed_kmph: 45        # only for drawing progress when GPS is silent
+  rules:                          # first matching rule wins; evaluated in this order
+    - {status: RED,   when: "booking exists and truck cannot reach its window (dock-ready >= slot end)"}
+    - {status: RED,   when: "no booking and no feasible slot left today"}
+    - {status: RED,   when: "GPS silent and next FASTag toll overdue"}
+    - {status: RED,   when: "waiting in yard > yard_wait_red_min, or assigned dock unavailable"}
+    - {status: AMBER, when: "booking reachable but dock-ready > slot start + tolerance"}
+    - {status: AMBER, when: "no booking yet but feasible slots exist (needs rebooking)"}
+    - {status: AMBER, when: "booking pending warehouse approval, or ETA confidence LOW, or GPS silent"}
+    - {status: AMBER, when: "planned departure passed but truck not departed"}
+    - {status: AMBER, when: "waiting in yard > yard_wait_amber_min"}
+    - {status: GREEN, when: "booking reachable and dock-ready <= slot start + tolerance"}

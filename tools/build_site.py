@@ -63,7 +63,7 @@ FONTS = '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500
 
 
 def topbar() -> str:
-    links = [("index.html", "Home"), ("design.html", "Design"), ("prototype.html", "Prototype"),
+    links = [("index.html", "Home"), ("design.html", "Design"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"),
              ("analysis.html", "Analysis"), ("er.html", "ER & data"), ("decisions.html", "Decisions"),
              ("solver.html", "Solver"), ("readout.html", "Readout"), (REPO, "GitHub")]
     return '<nav class="top"><b>SetuHaul</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
@@ -110,6 +110,9 @@ def main():
     for out, src, _, _ in APPS:
         (SITE / out).write_text(inject_bar((ROOT / src).read_text(encoding="utf-8")), encoding="utf-8")
 
+    import build_demo2
+    build_demo2.main()
+
     import json
     m = json.loads((ROOT / "scenarios" / "scenario_metrics.json").read_text())
     ev = json.loads((ROOT / "evals" / "report.json").read_text())
@@ -126,7 +129,9 @@ def main():
 <div class="kpis">{"".join(f'<div class="kpi"><div class="v">{html.escape(v)}</div><div class="l">{html.escape(l)}</div></div>' for v, l in kpis)}</div>
 <h2 class="sec">Start here</h2><div class="grid">
 {card("design.html", "Solution design", DOCS[0][3], True)}
-{"".join(card(o, t, l, True) for o, _, t, l in APPS)}
+{"".join(card(o, t, l, True) for o, _, t, l in APPS[:1])}
+{card("demo2.html", "Demo 2 · Coordinator control tower (MVP 2)", "Truck GPS on a map, planned vs driver vs GPS ETA, green/amber/red per driver, one-click WhatsApp, and a dashboard of every driver conversation.", True)}
+{"".join(card(o, t, l, True) for o, _, t, l in APPS[1:])}
 </div>
 <h2 class="sec">Architecture</h2><div class="arch"><a href="architecture.svg"><img src="architecture.png" alt="SetuHaul architecture on AWS"></a></div>
 <h2 class="sec">Hand-in documents</h2><div class="grid">{"".join(card(o, t, l) for o, _, t, l in DOCS[1:])}

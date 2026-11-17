@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo 2 — Coordinator control tower — SetuHaul</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e7e3dc;--g:#15803d;--gbg:#dcfce7;--a:#b45309;--abg:#fef3c7;--r:#b91c1c;--rbg:#fee2e2;--b:#1d4ed8;--bbg:#dbeafe;--gr:#78716c;--grbg:#f1f0ee;--wa:#128c7e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif}
+nav.top{background:#1c1917;color:#fff;display:flex;gap:16px;align-items:center;padding:10px 20px;flex-wrap:wrap;position:sticky;top:0;z-index:1000}
+nav.top b{margin-right:8px}nav.top a{color:#d6d3d1;text-decoration:none;font-size:13.5px}nav.top a:hover,nav.top a.on{color:#fff}
+.wrap{max-width:1500px;margin:0 auto;padding:18px 20px 40px}
+h1{font-size:22px;margin:4px 0 2px}.sub{color:var(--mu);margin:0 0 14px;max-width:1000px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--ln);margin-bottom:16px}
+.tabs button{border:0;background:none;padding:10px 16px;font:600 14px Inter;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--ink)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;border:1px solid var(--ln);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:6px 11px;font:500 13px 'JetBrains Mono',monospace;cursor:pointer;color:var(--mu)}
+.seg button.on{background:var(--ink);color:#fff}
+.note{font-size:12.5px;color:var(--mu);background:#fff;border:1px dashed var(--ln);border-radius:8px;padding:6px 10px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:10px 12px;cursor:pointer}
+.kpi .v{font-size:24px;font-weight:700}.kpi .l{font-size:12px;color:var(--mu)}
+.kpi.sel{outline:2px solid var(--ink)}
+.kpi.RED .v{color:var(--r)}.kpi.AMBER .v{color:var(--a)}.kpi.GREEN .v{color:var(--g)}.kpi.BLUE .v{color:var(--b)}
+.grid2{display:grid;grid-template-columns:minmax(380px,40%) 1fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px}
+#map{height:620px;border-radius:10px}
+.maperr{height:620px;display:flex;align-items:center;justify-content:center;color:var(--mu);text-align:center;padding:20px}
+table{border-collapse:collapse;width:100%}th{font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--mu);text-align:left;padding:6px;border-bottom:1px solid var(--ln);font-weight:600}
+td{padding:7px 6px;border-bottom:1px solid var(--ln);vertical-align:top;font-size:13px}
+tr.row{cursor:pointer}tr.row:hover{background:#faf9f7}tr.row.focus{background:#fff7ed}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.RED.chip{background:var(--rbg);color:var(--r)}.AMBER.chip{background:var(--abg);color:var(--a)}.GREEN.chip{background:var(--gbg);color:var(--g)}
+.BLUE.chip{background:var(--bbg);color:var(--b)}.GREY.chip{background:var(--grbg);color:var(--gr)}
+.pri{font-size:11px;font-weight:700;color:var(--mu)}.pri.CRITICAL{color:var(--r)}.pri.HIGH{color:var(--a)}
+.why{font-size:12px;color:var(--mu);margin-top:3px}
+.btn{border:1px solid var(--ln);background:#fff;border-radius:7px;padding:5px 9px;font:600 12px Inter;cursor:pointer;color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}.btn.wa:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:default}
+.strip{width:230px}
+.eta3 div{white-space:nowrap}.eta3 .k{display:inline-block;width:46px;color:var(--mu);font-size:11px}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--mu);flex-wrap:wrap;margin:6px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* modal */
+.mb{position:fixed;inset:0;background:rgba(28,25,23,.45);display:none;align-items:center;justify-content:center;z-index:2000}
+.mb.on{display:flex}.modal{background:#fff;border-radius:14px;width:min(560px,94vw);padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 4px}.modal textarea{width:100%;height:150px;border:1px solid var(--ln);border-radius:8px;padding:10px;font:14px Inter;resize:vertical}
+.modal .row2{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap}
+/* conversations */
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.hb{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.hb .lab{width:170px;color:var(--ink)}.hb .tr{flex:1;background:#f1f0ee;border-radius:4px;height:14px;overflow:hidden}
+.hb .fi{height:100%;border-radius:4px}.hb .n{width:30px;text-align:right;font-weight:600}
+h2.sec{font-size:15px;margin:4px 0 10px}
+.thread{border:1px solid var(--ln);border-radius:10px;margin-bottom:10px;background:#fff}
+.thead{display:flex;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;flex-wrap:wrap}
+.thead .nm{font-weight:600;min-width:150px}.thead .meta{color:var(--mu);font-size:12.5px}
+.chat{display:none;padding:10px 14px 14px;background:#ece5dd;border-top:1px solid var(--ln);border-radius:0 0 10px 10px}
+.thread.open .chat{display:block}
+.msg{max-width:78%;padding:7px 10px;border-radius:8px;margin:6px 0;font-size:13px;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.msg.in{background:#fff}.msg.out{background:#dcf8c6;margin-left:auto}.msg .t{font-size:10.5px;color:var(--mu);margin-top:3px;text-align:right}
+.msg.sys{background:#fff3cd;margin:6px auto;text-align:center;font-size:12px;max-width:90%}
+.esc{border-left:4px solid var(--r);background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.tl{position:relative;height:44px;background:#faf9f7;border:1px solid var(--ln);border-radius:8px;margin-bottom:6px}
+.tl .dot{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;transform:translateX(-50%);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.tl .ax{position:absolute;bottom:-17px;font-size:10.5px;color:var(--mu);transform:translateX(-50%)}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.cgrid{grid-template-columns:1fr 1fr}.strip{display:none}}
+</style></head><body>
+<nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="prototype.html">Prototype</a><a class="on" href="demo2.html">Demo 2</a><a href="analysis.html">Analysis</a><a href="er.html">ER &amp; data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav>
+<div class="wrap">
+<h1>Demo 2 · Coordinator control tower <span class="chip GREY" style="vertical-align:4px">MVP 2</span></h1>
+<p class="sub">Where every truck is, when it will really reach the Jaipur DC, and whether it still makes its dock slot. Each truck is graded green, amber or red by fixed rules in <code>rules.yaml</code>; no AI decides the colour. The coordinator acts before a miss, with one click to WhatsApp the driver.</p>
+<div class="tabs"><button class="on" data-tab="tower">Live control tower</button><button data-tab="conv">Driver conversations</button><button data-tab="rules">How the colours are decided</button></div>
+
+<section id="tower">
+ <div class="bar"><span style="font-weight:600">Time of day (4 Aug 2026)</span><div class="seg" id="times"></div>
+  <button class="btn" id="play">▶ Play the day</button>
+  <span class="note">GPS positions are simulated along the real corridors (the supplied data has no GPS). Phone numbers are the dataset's dummy numbers.</span></div>
+ <div class="kpis" id="kpis"></div>
+ <div class="grid2">
+  <div class="card"><div id="map"></div>
+   <div class="legend"><span><i style="background:var(--r)"></i>Red: will miss / no slot / lost</span><span><i style="background:var(--a)"></i>Amber: at risk, act now</span><span><i style="background:var(--g)"></i>Green: on time</span><span><i style="background:var(--b)"></i>Unloading</span><span>◆ Jaipur DC</span><span>dashed = GPS silent, last fix</span></div></div>
+  <div class="card" style="overflow:auto">
+   <div class="legend"><b style="color:var(--ink)">ETA strip:</b><span><i style="background:#cbd5e1"></i>booked slot</span><span>│ planned</span><span><i style="background:#a8a29e;border-radius:50%"></i>driver said</span><span><i style="background:#0f766e;border-radius:50%"></i>GPS predicts</span><span><i style="background:#1c1917;width:2px"></i>now</span></div>
+   <table><thead><tr><th>Status</th><th>Driver · truck</th><th>Planned / driver / GPS ETA</th><th class="strip">ETA vs slot</th><th>Booking</th><th>Act</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+ </div>
+</section>
+
+<section id="conv" style="display:none">
+ <p class="sub">Summary of every driver ↔ SetuHaul conversation in the 4 August scenario run (12 drivers, EN / Hindi / Hinglish), so the coordinator sees outcomes, hand-offs and what still needs a person.</p>
+ <div class="kpis" id="ckpis"></div>
+ <div class="cgrid">
+  <div class="card"><h2 class="sec">Outcomes</h2><div id="outcomes"></div></div>
+  <div class="card"><h2 class="sec">Language of driver messages</h2><div id="langs"></div></div>
+  <div class="card"><h2 class="sec">What drivers asked (intent)</h2><div id="intents"></div></div>
+  <div class="card"><h2 class="sec">Needs a person</h2><div id="escq"></div></div>
+ </div>
+ <div class="card" style="margin-bottom:14px"><h2 class="sec">Message timeline (each dot = one driver message, colour = outcome of that thread)</h2><div class="tl" id="tl"></div><div style="height:14px"></div></div>
+ <div class="card"><h2 class="sec">Conversations (click to open the chat)</h2><div id="threads"></div></div>
+</section>
+
+<section id="rules" style="display:none"><div class="card" style="max-width:900px">
+ <h2 class="sec">Rules, evaluated top to bottom; first match wins</h2><table><thead><tr><th>#</th><th>Colour</th><th>Condition</th></tr></thead><tbody id="rtab"></tbody></table>
+ <p class="why" style="margin-top:12px">Dock-ready time = GPS-predicted arrival + gate-to-dock time. If GPS is silent, the driver's declared ETA plus a confidence buffer is used instead, and the FASTag toll watchdog checks whether the truck crossed the next plaza when expected. Thresholds (tolerance, yard wait, slip, GPS-silent minutes) are variables in <code>rules/rules.yaml → control_tower</code>. The GPS is polled on demand only (see the location ladder in the solution design), so the colour updates on each fix, ETA message or booking change.</p>
+ <p class="why">WhatsApp buttons open <code>wa.me</code> with a pre-written message the coordinator can edit before sending. In production the same templates go through the WhatsApp Business API as approved message templates, and every send is logged on the shipment.</p>
+</div></section>
+</div>
+
+<div class="mb" id="mb"><div class="modal">
+ <h3 id="mt">WhatsApp driver</h3><div class="why" id="ms"></div>
+ <div class="row2" style="margin:10px 0 6px"><div class="seg" id="lang"><button class="on" data-l="en">English</button><button data-l="hi">हिंदी</button></div><span class="why" id="mtpl"></span></div>
+ <textarea id="mtext"></textarea>
+ <div class="row2"><span class="why">Opens WhatsApp (app or web) with this text. You press send.</span>
+  <span><button class="btn" id="mclose">Cancel</button> <a class="btn wa" id="msend" target="_blank" rel="noopener">Open in WhatsApp</a></span></div>
+</div></div>
+
+<script>const D=/*DATA*/null;</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const COL={RED:'#b91c1c',AMBER:'#d97706',GREEN:'#15803d',BLUE:'#1d4ed8',GREY:'#a8a29e'};
+const ORDER={RED:0,AMBER:1,BLUE:2,GREEN:3,GREY:4};
+const LABEL={RED:'RED',AMBER:'AMBER',GREEN:'GREEN',BLUE:'UNLOADING',GREY:'—'};
+const PH={IN_TRANSIT:'in transit',IN_YARD:'in yard',UNLOADING:'unloading',UNLOADED:'unloaded',DEPARTED_DC:'done',NOT_DEPARTED:'not departed',CANCELLED:'cancelled'};
+let T=D.default, filt=null, focus=null, map=null, layer=null;
+const m2=h=>{if(!h)return null;const[a,b]=h.split(':').map(Number);return a*60+b};
+
+// ---------- tabs
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+ ['tower','conv','rules'].forEach(id=>$('#'+id).style.display=id===b.dataset.tab?'':'none'); if(map) setTimeout(()=>map.invalidateSize(),50)});
+
+// ---------- time selector
+$('#times').innerHTML=D.times.map(t=>`<button data-t="${t}">${t}</button>`).join('');
+$('#times').onclick=e=>{if(e.target.dataset.t){T=e.target.dataset.t;render()}};
+let timer=null;$('#play').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('#play').textContent='▶ Play the day';return}
+ let i=0;$('#play').textContent='■ Stop';T=D.times[0];render();timer=setInterval(()=>{i++;if(i>=D.times.length){clearInterval(timer);timer=null;$('#play').textContent='▶ Play the day';return}T=D.times[i];render()},1800)};
+
+// ---------- map
+function initMap(){ if(typeof L==='undefined'){ $('#map').outerHTML='<div class="maperr">Map tiles could not load (offline?). The table on the right still shows every truck.</div>'; return }
+ map=L.map('map',{zoomControl:true}).setView([26.9,75.6],6);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+ layer=L.layerGroup().addTo(map);
+}
+function drawMap(rows){ if(!map) return; layer.clearLayers();
+ const dc=D.dc['FAC-JAI-01'];
+ L.marker(dc,{icon:L.divIcon({className:'',html:'<div style="width:18px;height:18px;background:#1c1917;transform:rotate(45deg);border:2px solid #fff;box-shadow:0 0 0 1px #1c1917"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(layer).bindTooltip('SetuHaul Jaipur DC');
+ const pts=[dc];
+ rows.filter(r=>r.phase==='IN_TRANSIT'||r.phase==='NOT_DEPARTED').forEach(r=>{
+  const c=COL[r.status], f=focus===r.sid;
+  if(r.phase==='IN_TRANSIT') L.polyline(r.route,{color:c,weight:f?4:2,opacity:f?.9:.35}).addTo(layer);
+  const silent=r.gps_silent_min>0;
+  const mk=L.circleMarker(r.pos,{radius:f?11:8,color:silent?'#1c1917':'#fff',weight:2,dashArray:silent?'3 3':null,fillColor:c,fillOpacity:r.phase==='NOT_DEPARTED'?.35:.95}).addTo(layer);
+  mk.bindTooltip(`<b>${esc(r.driver)}</b> · ${r.sid}<br>${PH[r.phase]} · ${r.remaining_km} km to go${silent?`<br><b>GPS silent ${r.gps_silent_min} min</b> (last fix shown)`:''}<br>${esc(r.reasons[0]||'')}`);
+  mk.on('click',()=>{focus=r.sid;render();document.getElementById('r-'+r.sid)?.scrollIntoView({block:'center',behavior:'smooth'})});
+  pts.push(r.pos);
+ });
+ const yard=rows.filter(r=>['IN_YARD','UNLOADING'].includes(r.phase));
+ if(yard.length) L.circleMarker(dc,{radius:15,color:'#1d4ed8',weight:2,fill:false}).addTo(layer).bindTooltip(`${yard.length} at the DC: `+yard.map(r=>`${esc(r.driver)} (${PH[r.phase]})`).join(', '));
+ if(focus){const r=rows.find(x=>x.sid===focus); if(r) map.flyTo(r.pos,8,{duration:.6})}
+}
+
+// ---------- ETA strip
+function strip(r,axis){ const[lo,hi]=axis,W=230,x=m=>Math.max(0,Math.min(W,(m-lo)/(hi-lo)*W));
+ let s=`<svg width="${W}" height="30" style="display:block">`;
+ s+=`<line x1="0" y1="15" x2="${W}" y2="15" stroke="#e7e3dc"/>`;
+ if(r.booking){const[a,b]=r.booking.split(' ')[1].split('-').map(m2);s+=`<rect x="${x(a)}" y="7" width="${Math.max(2,x(b)-x(a))}" height="16" rx="3" fill="#cbd5e1"/>`}
+ const now=m2(T);s+=`<line x1="${x(now)}" y1="2" x2="${x(now)}" y2="28" stroke="#1c1917" stroke-width="1.5"/>`;
+ if(r.planned_eta)s+=`<line x1="${x(m2(r.planned_eta))}" y1="5" x2="${x(m2(r.planned_eta))}" y2="25" stroke="#57534e" stroke-width="2"/>`;
+ if(r.declared_eta)s+=`<circle cx="${x(m2(r.declared_eta))}" cy="15" r="5" fill="#a8a29e"/>`;
+ if(r.gps_eta)s+=`<circle cx="${x(m2(r.gps_eta))}" cy="15" r="5" fill="#0f766e" stroke="#fff"/>`;
+ return s+'</svg>' }
+
+// ---------- table + kpis
+function render(){
+ document.querySelectorAll('#times button').forEach(b=>b.classList.toggle('on',b.dataset.t===T));
+ const all=D.snaps[T];
+ const live=all.filter(r=>!['CANCELLED','DEPARTED_DC','UNLOADED'].includes(r.phase));
+ const c=s=>live.filter(r=>r.status===s).length;
+ const kp=[['RED',c('RED'),'red: act now'],['AMBER',c('AMBER'),'amber: at risk'],['GREEN',c('GREEN'),'green: on time'],['BLUE',c('BLUE'),'unloading'],
+  ['TRANSIT',all.filter(r=>r.phase==='IN_TRANSIT').length,'trucks on the road'],['SILENT',all.filter(r=>r.gps_silent_min).length,'GPS silent']];
+ $('#kpis').innerHTML=kp.map(([k,v,l])=>`<div class="kpi ${k}${filt===k?' sel':''}" data-k="${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+ document.querySelectorAll('#kpis .kpi').forEach(e=>e.onclick=()=>{filt=filt===e.dataset.k?null:e.dataset.k;render()});
+ let rows=[...all].sort((a,b)=>(ORDER[a.status]-ORDER[b.status])||((m2(a.dock_ready)||9999)-(m2(b.dock_ready)||9999)));
+ if(filt) rows=rows.filter(r=>filt==='TRANSIT'?r.phase==='IN_TRANSIT':filt==='SILENT'?r.gps_silent_min>0:r.status===filt);
+ const ms=[];all.forEach(r=>[r.planned_eta,r.declared_eta,r.gps_eta].forEach(v=>v&&ms.push(m2(v))));ms.push(m2(T));
+ const axis=[Math.floor((Math.min(...ms)-30)/60)*60,Math.ceil((Math.max(...ms)+30)/60)*60];
+ $('#rows').innerHTML=rows.map(r=>{
+  const act=!['CANCELLED','DEPARTED_DC','UNLOADED'].includes(r.phase);
+  const eta=`<div class="eta3 mono"><div><span class="k">plan</span>${r.planned_eta||'—'}</div><div><span class="k">driver</span>${r.declared_eta?r.declared_eta+(r.eta_conf==='LOW'?' <span class="pri HIGH">LOW</span>':''):'—'}</div><div><span class="k">GPS</span>${r.gps_eta?`<b>${r.gps_eta}</b>`:(r.gps_silent_min?`<span class="pri CRITICAL">silent ${r.gps_silent_min}m</span>`:'—')}</div></div>`;
+  return `<tr class="row${focus===r.sid?' focus':''}" id="r-${r.sid}" data-sid="${r.sid}">
+   <td><span class="chip ${r.status}">${LABEL[r.status]}</span></td>
+   <td><b>${esc(r.driver)}</b> <span class="pri ${r.priority}">${r.priority}</span><div class="mono" style="color:var(--mu)">${r.sid} · ${esc(r.origin)} · ${PH[r.phase]}${r.phase==='IN_TRANSIT'?` · ${r.remaining_km} km`:''}</div><div class="why">${r.reasons.map(esc).join(' · ')}</div></td>
+   <td>${eta}${r.slip_min>0&&act?`<div class="why">+${r.slip_min} min vs plan</div>`:''}</td>
+   <td class="strip">${act?strip(r,axis):''}</td>
+   <td class="mono">${r.booking?esc(r.booking)+`<div class="why">${(r.booking_status||'').replace('_',' ').toLowerCase()}</div>`:'<span class="why">none</span>'}${r.next_best?`<div class="why">best now: ${esc(r.next_best)}</div>`:''}</td>
+   <td>${act?`<button class="btn wa" data-wa="${r.sid}">WhatsApp</button><div style="height:5px"></div><a class="btn" href="tel:${r.phone.replace(/[^+\d]/g,'')}">Call</a>`:''}</td></tr>`}).join('');
+ document.querySelectorAll('tr.row').forEach(tr=>tr.onclick=e=>{if(e.target.closest('.btn'))return;focus=focus===tr.dataset.sid?null:tr.dataset.sid;render()});
+ document.querySelectorAll('[data-wa]').forEach(b=>b.onclick=e=>{e.stopPropagation();openWA(all.find(r=>r.sid===b.dataset.wa))});
+ drawMap(all);
+}
+
+// ---------- WhatsApp
+let cur=null, lang='en';
+function tplKey(r){ if(r.gps_silent_min) return 'SILENT'; if(r.phase==='IN_YARD') return 'YARD'; return r.status==='RED'?'RED':r.status==='GREEN'?'GREEN':'AMBER' }
+function fill(r){ const k=tplKey(r), t=D.templates[k][lang], first=r.driver.split(' ')[0];
+ const nxt=r.next_best?(lang==='en'?`The best slot available now is ${r.next_best}. `:`अभी सबसे अच्छा स्लॉट ${r.next_best} है। `):'';
+ $('#mtpl').textContent='template: '+k+(lang==='hi'?' · Hindi':' · English');
+ return t.replace('{name}',first).replace('{sid}',r.sid).replace(/\{booking\}/g,r.booking||(lang==='en'?'your slot':'आपका स्लॉट')).replace('{slip}',Math.max(0,r.slip_min)).replace('{mins}',r.gps_silent_min).replace('{next}',nxt) }
+function upd(){ $('#msend').href='https://wa.me/'+cur.phone.replace(/\D/g,'')+'?text='+encodeURIComponent($('#mtext').value) }
+function openWA(r){ cur=r; $('#mt').textContent='WhatsApp '+r.driver; $('#ms').innerHTML=`${r.phone} · ${r.sid} · <span class="chip ${r.status}">${LABEL[r.status]}</span> ${esc(r.reasons[0]||'')}`;
+ $('#mtext').value=fill(r); upd(); $('#mb').classList.add('on') }
+$('#mtext').oninput=upd;
+$('#lang').onclick=e=>{if(!e.target.dataset.l)return;lang=e.target.dataset.l;document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b===e.target));$('#mtext').value=fill(cur);upd()};
+$('#mclose').onclick=()=>$('#mb').classList.remove('on');$('#mb').onclick=e=>{if(e.target.id==='mb')$('#mb').classList.remove('on')};
+$('#msend').addEventListener('click',()=>setTimeout(()=>$('#mb').classList.remove('on'),300));
+
+// ---------- conversations
+const OC={'Booked':'#15803d','Pending approval':'#d97706','Escalated':'#b91c1c','Current booking kept':'#0f766e','Closed':'#78716c','Options shown, no booking':'#a8a29e'};
+function bars(el,obj,colors){const mx=Math.max(...Object.values(obj),1);el.innerHTML=Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="hb"><span class="lab">${esc(k)}</span><span class="tr"><span class="fi" style="display:block;width:${v/mx*100}%;background:${(colors&&colors[k])||'#57534e'}"></span></span><span class="n">${v}</span></div>`).join('')}
+function conv(){
+ const C=D.convo, msgs=C.flatMap(c=>c.messages.map(m=>({...m,c})));
+ const cnt=(arr,f)=>arr.reduce((o,x)=>{const k=f(x);if(k)o[k]=(o[k]||0)+1;return o},{});
+ const M=D.metrics;
+ const k=[[C.length,'driver conversations'],[msgs.length,'driver messages'],[M['share resolved without manual takeover'],'resolved without a person'],
+  [M['time from first message to usable outcome (median min)']+' min','median time to a usable answer'],[C.filter(c=>c.esc).length,'escalated to a person'],[M['conflicting or duplicate allocations'],'double bookings']];
+ $('#ckpis').innerHTML=k.map(([v,l])=>`<div class="kpi"><div class="v">${esc(v)}</div><div class="l">${l}</div></div>`).join('');
+ bars($('#outcomes'),cnt(C,c=>c.outcome),OC);
+ const LN={en:'English',hi:'Hindi (Devanagari)',hinglish:'Hinglish'};
+ bars($('#langs'),cnt(msgs.filter(m=>!m.dup),m=>LN[m.lang]||m.lang),{'English':'#1d4ed8','Hindi (Devanagari)':'#b45309','Hinglish':'#7c3aed'});
+ bars($('#intents'),cnt(msgs.filter(m=>!m.dup),m=>(m.intent||'').replace(/_/g,' ').toLowerCase()));
+ const q=C.filter(c=>c.esc||c.outcome==='Pending approval');
+ $('#escq').innerHTML=q.length?q.map(c=>`<div class="esc" style="border-color:${OC[c.outcome]}"><b>${esc(c.driver)}</b> <span class="chip ${c.esc?'RED':'AMBER'}">${c.esc?'ESCALATED':'APPROVAL'}</span><div class="why">${c.esc?esc(c.esc.reason)+' → '+esc(c.esc.name)+' ('+esc(c.esc.role)+')'+(c.esc.rec?'<br>'+esc(c.esc.rec):''):'Booking '+(c.commit?esc(c.commit.dock+' '+c.commit.start):'')+' waiting for warehouse approval'}</div></div>`).join('')
+  :'<p class="why">Nothing waiting.</p>';
+ // timeline
+ const ts=msgs.map(m=>m2(m.t)).concat(D.sys.map(s=>m2(s.time))), lo=Math.floor((Math.min(...ts)-10)/30)*30, hi=Math.ceil((Math.max(...ts)+10)/30)*30, X=m=>(m-lo)/(hi-lo)*100;
+ let h=msgs.map(m=>`<span class="dot" title="${m.t} ${esc(m.c.driver)}: ${esc(m.text)}" style="left:${X(m2(m.t))}%;background:${OC[m.c.outcome]};${m.dup?'opacity:.35':''}"></span>`).join('');
+ h+=D.sys.map(s=>`<span title="${s.time} ${esc(s.text)}" style="position:absolute;left:${X(m2(s.time))}%;top:4px;bottom:4px;width:2px;background:#1c1917;opacity:.35"></span>`).join('');
+ for(let m=lo;m<=hi;m+=30)h+=`<span class="ax" style="left:${X(m)}%">${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}</span>`;
+ $('#tl').innerHTML=h;
+ // threads
+ $('#threads').innerHTML=C.map((c,i)=>`<div class="thread" id="th${i}"><div class="thead" onclick="this.parentNode.classList.toggle('open')">
+  <span class="nm">${esc(c.driver)}</span><span class="chip" style="background:${OC[c.outcome]}22;color:${OC[c.outcome]}">${esc(c.outcome)}</span>
+  <span class="meta">${c.first}–${c.last} · ${c.turns} msg · ${c.langs.map(l=>LN[l]||l).join(', ')}${c.clar?` · ${c.clar} clarification`:''}${c.dups?` · ${c.dups} duplicate suppressed`:''}${c.commit?` · ${esc(c.commit.dock)} ${c.commit.start} (${esc(c.commit.status.toLowerCase())})`:''}</span></div>
+  <div class="chat">${c.messages.map(m=>`<div class="msg in">${esc(m.text)}<div class="t">${m.t} · ${esc((m.intent||'').toLowerCase())}${m.dup?' · duplicate, not re-processed':''}</div></div>${m.dup?'':`<div class="msg out">${esc(m.reply)}<div class="t">${m.t} · SetuHaul · ${esc((m.state||'').toLowerCase())}</div></div>`}`).join('')}
+  ${c.esc?`<div class="msg sys">Handed to ${esc(c.esc.name)} (${esc(c.esc.role)}): ${esc(c.esc.reason)}</div>`:''}</div></div>`).join('');
+}
+
+// ---------- rules
+$('#rtab').innerHTML=D.rules.map((r,i)=>`<tr><td>${i+1}</td><td><span class="chip ${r.status}">${r.status}</span></td><td>${esc(r.when)}</td></tr>`).join('');
+
+initMap(); render(); conv();
+if(location.hash==='#conversations') document.querySelector('[data-tab=conv]').click();
+</script></body></html>
