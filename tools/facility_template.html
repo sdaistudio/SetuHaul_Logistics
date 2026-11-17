@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facility day: coordinator to agents — SetuHaul</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e7e3dc;--cr:#b91c1c;--hi:#d97706;--no:#2563eb;--lo:#78716c;--ok:#15803d;--okbg:#dcfce7;--wn:#b45309;--wnbg:#fef3c7;--er:#b91c1c;--erbg:#fee2e2;--pu:#7e22ce;--pubg:#f3e8ff;--pk:#be185d;--pkbg:#fce7f3;--bl:#0369a1;--blbg:#e0f2fe}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,sans-serif}
+nav.top{background:#1c1917;color:#fff;display:flex;gap:16px;align-items:center;padding:10px 20px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+nav.top b{margin-right:8px}nav.top a{color:#d6d3d1;text-decoration:none;font-size:13.5px}nav.top a.on,nav.top a:hover{color:#fff}
+.wrap{max-width:1480px;margin:0 auto;padding:18px 20px 60px}
+h1{font-size:23px;margin:4px 0 4px}h2{font-size:17px;margin:22px 0 10px}h3{font-size:14.5px;margin:14px 0 8px}
+.sub{color:var(--mu);margin:0 0 12px;max-width:1100px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--ln);margin:10px 0 14px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:10px 14px;font:600 14px Inter;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--ink)}
+.evbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px 12px;position:sticky;top:44px;z-index:50}
+.evbar button{border:1px solid var(--ln);background:#fff;border-radius:8px;padding:6px 10px;font:500 12.5px Inter;cursor:pointer;color:var(--ink)}
+.evbar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.evbar button .wi{font-size:10.5px;color:var(--pk);font-weight:700;margin-right:4px}.evbar button.on .wi{color:#fbcfe8}
+.evwhat{color:var(--mu);font-size:13px;flex-basis:100%}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 12px}
+.kpi{background:#fff;border:1px solid var(--ln);border-radius:10px;padding:10px 12px}.kpi .v{font-size:21px;font-weight:700}.kpi .l{font-size:12px;color:var(--mu)}
+table{border-collapse:collapse;width:100%}th{font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--mu);text-align:left;padding:6px;border-bottom:1px solid var(--ln);font-weight:600}
+td{padding:7px 6px;border-bottom:1px solid var(--ln);vertical-align:top;font-size:13px}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.s-WILL_MISS,.c-er{background:var(--erbg);color:var(--er)}.s-NO_BOOKING{background:#ffedd5;color:#c2410c}.s-AT_RISK,.c-wn{background:var(--wnbg);color:var(--wn)}
+.s-IN_YARD{background:var(--blbg);color:var(--bl)}.s-UNLOADING{background:#e0e7ff;color:#3730a3}.s-ON_TIME,.c-ok{background:var(--okbg);color:var(--ok)}
+.s-NOT_DEPARTED,.s-DONE,.s-CANCELLED,.c-mu{background:#f1f0ee;color:var(--mu)}.c-pu{background:var(--pubg);color:var(--pu)}.c-pk{background:var(--pkbg);color:var(--pk)}
+.p-CRITICAL{color:var(--cr);font-weight:700}.p-HIGH{color:var(--hi);font-weight:700}.p-NORMAL{color:var(--no);font-weight:600}.p-LOW{color:var(--lo);font-weight:600}
+.why{color:var(--mu);font-size:12.5px}
+.btn{border:1px solid var(--ln);background:#fff;border-radius:8px;padding:8px 14px;font:600 13.5px Inter;cursor:pointer;color:var(--ink)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.go{background:var(--ok);color:#fff;border-color:var(--ok)}.btn:disabled{opacity:.45;cursor:default}
+/* gantt */
+.gantt{position:relative;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:8px 10px 6px}
+.grow{display:flex;align-items:stretch;height:44px;border-bottom:1px dashed #efece6}.grow:last-child{border-bottom:0}
+.glab{width:150px;flex:none;font-size:12px;padding:4px 6px 0 0}.glab b{font-size:13px}.glab span{color:var(--mu);display:block;font-size:11px}
+.gtrack{position:relative;flex:1}
+.gx{display:flex;margin-left:150px;font-size:10.5px;color:var(--mu);position:relative;height:16px}
+.gx span{position:absolute;transform:translateX(-50%)}
+.slot{position:absolute;top:4px;bottom:4px;border:1px solid #ece9e3;border-radius:4px;background:#faf9f7}
+.slot.blk{background:repeating-linear-gradient(45deg,#f1f0ee,#f1f0ee 4px,#e7e5e4 4px,#e7e5e4 8px)}
+.ev{position:absolute;top:2px;bottom:2px;border-radius:4px;background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 5px,#fecaca 5px,#fecaca 10px);border:1px solid #fca5a5;font-size:10px;color:var(--er);padding:1px 4px;overflow:hidden;white-space:nowrap}
+.bk{position:absolute;top:9px;bottom:9px;border-radius:5px;font-size:10.5px;color:#fff;padding:2px 4px;overflow:hidden;white-space:nowrap;font-weight:600;cursor:default;box-shadow:0 1px 1px rgba(0,0,0,.12)}
+.bk.CRITICAL{background:var(--cr)}.bk.HIGH{background:var(--hi)}.bk.NORMAL{background:var(--no)}.bk.LOW{background:var(--lo)}
+.bk.pend{opacity:.75;outline:2px dashed #1c1917;outline-offset:-2px}.bk.new{outline:3px solid #22c55e;outline-offset:0}
+.bk.work{background:#312e81}.bk.done{background:#a8a29e}
+.now{position:absolute;top:0;bottom:0;width:2px;background:#1c1917;opacity:.75;z-index:5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--mu);margin:6px 0}.legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* cards */
+.acard{border:1px solid var(--ln);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.acard.need{border-left:4px solid var(--wn)}.acard.auto{border-left:4px solid var(--ok)}.acard.esc{border-left:4px solid var(--er)}
+.acard .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.move{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f6f5f2;border-radius:6px;padding:1px 6px}
+.msg{background:#f6f5f2;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:12.5px;white-space:pre-wrap}
+.msg.wa{background:#dcf8c6}
+details summary{cursor:pointer;color:var(--no);font-size:12.5px;margin-top:6px}
+.steps{border-left:2px solid var(--ln);margin-left:8px;padding-left:14px}
+.step{position:relative;margin:0 0 10px}.step:before{content:"";position:absolute;left:-21px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--mu)}
+.step.bad:before{border-color:var(--er);background:var(--erbg)}
+.ag{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-right:6px}
+.ag-IntakeAgent,.ag-CommsAgent{background:var(--pubg);color:var(--pu)}.ag-PlannerAgent,.ag-ExecutorAgent{background:var(--pkbg);color:var(--pk)}
+.ag-VerifierAgent,.ag-MonitorAgent{background:var(--blbg);color:var(--bl)}.ag-PolicyGate{background:#1c1917;color:#fff}.ag-EscalationAgent{background:var(--wnbg);color:var(--wn)}
+/* parties */
+.flow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.party{flex:1;min-width:160px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px 12px;position:relative}
+.party b{display:block;font-size:14px}.party .r{font-size:12px;color:var(--mu)}.party .d{font-size:11.5px;margin-top:6px;color:#44403c}
+.party.us{border:2px solid var(--ink)}.arrow{align-self:center;color:var(--mu);font-size:18px}
+.lane{display:grid;grid-template-columns:150px repeat(7,1fr);gap:6px;align-items:stretch;margin:6px 0}
+.lane .lh{font-weight:700;font-size:12.5px;align-self:center}
+.lane .bx{border-radius:8px;padding:7px 8px;font-size:12px;background:#fff;border:1px solid var(--ln)}
+.bx.h{background:var(--wnbg);border-color:#fcd34d}.bx.a{background:var(--pubg);border-color:#d8b4fe}.bx.t{background:var(--pkbg);border-color:#f9a8d4}.bx.d{background:var(--blbg);border-color:#7dd3fc}
+.bar{height:14px;border-radius:4px;background:var(--no)}
+.pass{color:var(--ok);font-weight:700}.fail{color:var(--er);font-weight:700}
+.note{font-size:12.5px;color:var(--mu);background:#fff;border:1px dashed var(--ln);border-radius:8px;padding:6px 10px;margin:8px 0}
+@media(max-width:1100px){.grid2,.grid3{grid-template-columns:1fr}.lane{grid-template-columns:1fr}}
+</style></head><body>
+<nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a class="on" href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER &amp; data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav>
+<div class="wrap">
+<h1>Facility day: from coordinator tool to agents</h1>
+<p class="sub">One facility (Jaipur DC, six docks: standard, heavy, reefer), one day. First the coordinator gets more power with a scheduling algorithm (Stage 1). Then the same process is run by agents, with guardrails and a person at every decision that is not safe to automate (Stage 2). Every number below comes from running the code on the supplied data.</p>
+<div class="tabs" id="tabs">
+ <button data-t="t1" class="on">1 · Parties &amp; flow</button><button data-t="t2">2 · The facility day</button>
+ <button data-t="t3">3 · Stage 1: coordinator console</button><button data-t="t4">4 · Stage 2: agents</button>
+ <button data-t="t5">5 · Evaluation &amp; guardrails</button></div>
+<div class="evbar" id="evbar" style="display:none"></div>
+
+<section id="t1"></section><section id="t2" style="display:none"></section><section id="t3" style="display:none"></section>
+<section id="t4" style="display:none"></section><section id="t5" style="display:none"></section>
+</div>
+<script>const D=/*DATA*/null;</script>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const m=h=>{const[a,b]=h.split(':').map(Number);return a*60+b}, X0=6*60, X1=22*60, pct=h=>((Math.max(X0,Math.min(X1,m(h)))-X0)/(X1-X0)*100);
+let EV=D.events[2], TAB='t1', S1={ran:false,approved:false,improved:false};
+const STAT={WILL_MISS:'will miss',NO_BOOKING:'no booking',AT_RISK:'at risk',IN_YARD:'in yard',UNLOADING:'unloading',ON_TIME:'on time',NOT_DEPARTED:'not departed',DONE:'done',CANCELLED:'cancelled'};
+const KIND={REBOOK:['c-wn','rebook'],NEW:['c-pu','new booking'],YARD:['c-mu','yard → dock'],MOVE_PROMISE:['c-pk','move a working booking'],ESCALATE:['c-er','no dock: escalate']};
+
+// ---------------------------------------------------------------- tabs / events
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+ ['t1','t2','t3','t4','t5'].forEach(t=>$('#'+t).style.display=t===TAB?'':'none');$('#evbar').style.display=['t2','t3','t4'].includes(TAB)?'':'none';render()});
+function evbar(){$('#evbar').innerHTML='<b style="margin-right:4px">Event</b>'+D.events.map(e=>`<button data-e="${e.id}" class="${e===EV?'on':''}">${e.kind==='what-if'?'<span class="wi">WHAT-IF</span>':''}${esc(e.title)}</button>`).join('')+`<div class="evwhat">${esc(EV.what)}</div>`;
+ document.querySelectorAll('#evbar [data-e]').forEach(b=>b.onclick=()=>{EV=D.events.find(e=>e.id===b.dataset.e);S1={ran:false,approved:false,improved:false};render()})}
+
+// ---------------------------------------------------------------- gantt
+function gantt(snap,{newOnly=false}={}){
+ const docks=snap.docks, ticks=[];for(let h=6;h<=22;h+=2)ticks.push(`<span style="left:${(h*60-X0)/(X1-X0)*100}%">${String(h).padStart(2,'0')}:00</span>`);
+ let html=`<div class="gantt"><div class="gx"><div style="position:relative;flex:1">${ticks.join('')}</div></div>`;
+ for(const d of docks){
+  const sl=snap.slots.filter(s=>s.dock===d.code).map(s=>`<div class="slot ${s.status!=='OPEN'?'blk':''}" title="${s.start}-${s.end} ${s.status}${s.why?' · '+esc(s.why):''}" style="left:${pct(s.start)}%;width:${pct(s.end)-pct(s.start)}%"></div>`).join('');
+  const ev=snap.events.filter(e=>e.dock===d.code).map(e=>`<div class="ev" title="${esc(e.type+' '+e.from+'-'+e.to+' '+e.why)}" style="left:${pct(e.from)}%;width:${pct(e.to)-pct(e.from)}%">${esc(e.type.toLowerCase())}</div>`).join('');
+  const wk=snap.work.filter(w=>w.dock===d.code).map(w=>`<div class="bk ${w.done?'done':'work'}" title="${w.shipment} on the dock ${w.from}-${w.to}" style="left:${pct(w.from)}%;width:${Math.max(.6,pct(w.to)-pct(w.from))}%">${w.shipment.slice(3)} ${w.done?'done':'unloading'}</div>`).join('');
+  const bk=snap.bookings.filter(b=>b.dock===d.code).map(b=>`<div class="bk ${b.priority} ${b.status==='PENDING_CONFIRMATION'?'pend':''} ${b.new?'new':''}" title="${b.shipment} ${b.priority} · ${b.from}-${b.to} (window ${b.window}) · ${b.status.toLowerCase()}${b.new?' · booked by this re-plan':''}" style="left:${pct(b.from)}%;width:${Math.max(.6,pct(b.to)-pct(b.from))}%">${b.shipment.slice(3)}</div>`).join('');
+  html+=`<div class="grow"><div class="glab"><b>${d.code}</b><span>${d.type.toLowerCase()} · ${d.max_t} t${d.reefer?' · reefer':''}</span></div><div class="gtrack">${sl}${ev}${wk}${bk}<div class="now" style="left:${pct(snap.at)}%" title="now ${snap.at}"></div></div></div>`;}
+ return html+`</div><div class="legend"><span><i style="background:var(--cr)"></i>critical</span><span><i style="background:var(--hi)"></i>high</span><span><i style="background:var(--no)"></i>normal</span><span><i style="background:var(--lo)"></i>low</span><span><i style="background:#312e81"></i>unloading now</span><span><i style="outline:2px dashed #1c1917;background:#ddd"></i>pending approval</span><span><i style="outline:3px solid #22c55e;background:#ddd"></i>booked by the re-plan</span><span><i style="background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 3px,#fecaca 3px,#fecaca 6px)"></i>breakdown / maintenance</span><span><i style="background:#faf9f7;border:1px solid #ddd"></i>slot window</span><span>│ now ${snap.at}</span></div>`;}
+function truckTable(trucks,filter){
+ const rows=trucks.filter(filter||(()=>true));
+ return `<table><thead><tr><th>Status</th><th>Truck</th><th>Load</th><th>Booking</th><th>ETA</th><th>Why</th></tr></thead><tbody>${rows.map(t=>`<tr><td><span class="chip s-${t.status}">${STAT[t.status]}</span></td><td><b>${t.shipment}</b> <span class="p-${t.priority}">${t.priority}</span><div class="why">${esc(t.driver)} · ${esc(t.carrier)}</div></td><td>${t.dock_type.toLowerCase()} · ${t.weight_t} t<div class="why">${esc(t.product)} → ${esc(t.customer)}</div></td><td class="mono">${t.booking||'—'}${t.booking_status==='PENDING_CONFIRMATION'?' <span class="chip c-wn">pending</span>':''}</td><td class="mono">${t.eta||'—'} ${t.eta_conf?`<span class="why">${t.eta_conf}</span>`:''}</td><td class="why">${esc(t.why)}</td></tr>`).join('')}</tbody></table>`}
+const attention=t=>['WILL_MISS','NO_BOOKING','AT_RISK','IN_YARD'].includes(t.status);
+
+// ---------------------------------------------------------------- tab 1
+function t1(){
+ const ws=D.events[2].before; const c=D.costs, w=D.weights, a=D.autonomy;
+ $('#t1').innerHTML=`
+ <h2>Who is involved in one truck's journey</h2>
+ <div class="flow">
+  <div class="party"><b>Shipper / customer who orders the move</b><div class="r">e.g. a retailer or a marketplace</div><div class="d">Asks for goods to go from a pickup point to a destination.</div></div><div class="arrow">→</div>
+  <div class="party"><b>Dispatcher (carrier)</b><div class="r">assigns truck and driver</div><div class="d">In the data: <span class="mono">carriers</span> (NorthStar Roadways, Aravali Freight, Shakti Transport, BlueRoute). Told when its trucks' times change.</div></div><div class="arrow">→</div>
+  <div class="party"><b>Driver</b><div class="r">on the road, WhatsApp, own language</div><div class="d"><span class="mono">drivers</span>, <span class="mono">chat_threads</span>. Reports breakdowns, traffic, early arrival; gets a new slot in their language.</div></div><div class="arrow">→</div>
+  <div class="party us"><b>SetuHaul coordinator</b><div class="r">control tower: the user of Stage 1</div><div class="d">Talks to drivers and to the warehouse. Stage 1 gives this person the algorithm; Stage 2 gives the legwork to agents.</div></div><div class="arrow">↔</div>
+  <div class="party"><b>Warehouse coordinator</b><div class="r">at the facility</div><div class="d"><span class="mono">facility_contacts</span> (Neha Bansal, Jaipur). Confirms dock readiness, approves exceptions, receives escalations.</div></div><div class="arrow">→</div>
+  <div class="party"><b>Customer (consignee)</b><div class="r">destination of the goods</div><div class="d"><span class="mono">shipments.customer_name</span>. Told only when unloading moves more than ${a.notify_customer_if_later_than_min} min later than planned.</div></div>
+ </div>
+ <h2>The facility: six docks, rules, one day</h2>
+ <div class="grid2"><div class="card"><table><thead><tr><th>Dock</th><th>Type</th><th>Max weight</th><th>Reefer</th></tr></thead><tbody>${ws.docks.map(d=>`<tr><td><b>${d.code}</b></td><td>${d.type.toLowerCase()}</td><td>${d.max_t} t</td><td>${d.reefer?'yes':'—'}</td></tr>`).join('')}</tbody></table></div>
+ <div class="card"><table><thead><tr><th>Facility rule (facility_rules)</th></tr></thead><tbody>${ws.rules.map(r=>`<tr><td>${esc(r.description)}</td></tr>`).join('')}<tr><td>Open ${ws.facility.open}–${ws.facility.close}; ${ws.slots.length} one-hour (D6: 90-minute) slots across the docks; one booking per slot; unloading time per shipment from the data.</td></tr></tbody></table></div></div>
+ <h2>The same process, done two ways</h2>
+ <div class="card">
+ <div class="lane"><div class="lh"></div>${['See the day','Spot trouble','Find slots','Decide','Book','Tell everyone','Check'].map(s=>`<div class="lh" style="text-align:center">${s}</div>`).join('')}</div>
+ <div class="lane"><div class="lh">Stage 1<br><span class="why">coordinator + algorithm</span></div>
+  <div class="bx d">Dock board: every slot, booking, breakdown, truck</div><div class="bx d">Status per truck: will miss / no booking / at risk / in yard</div>
+  <div class="bx t">Presses <b>Run</b>: exact solver re-plans all trucks at once; compared with dispatch rules</div><div class="bx h">Reads cards: why, cost, what needs approval; approves</div>
+  <div class="bx t">Capacity layer books at the planned times, re-checked, idempotent</div><div class="bx a">Messages drafted for driver (own language), warehouse, dispatcher, customer</div><div class="bx d">Independent checker: no rule broken</div></div>
+ <div class="lane"><div class="lh">Stage 2<br><span class="why">agents + guardrails</span></div>
+  <div class="bx a">IntakeAgent reads driver messages (EN · HI · Hinglish; script detection for others)</div><div class="bx d">MonitorAgent decides if a re-plan is needed</div>
+  <div class="bx t">PlannerAgent calls the same solver (read-only)</div><div class="bx h">PolicyGate (rules.yaml) splits: automatic / coordinator / escalate</div>
+  <div class="bx t">ExecutorAgent: the only agent that may book</div><div class="bx a">CommsAgent: templates; any LLM wording must pass the grounding guard</div><div class="bx d">VerifierAgent before and after; EscalationAgent for no-dock</div></div>
+ <p class="why" style="margin:10px 0 0">Colours: <span class="chip c-pu">language</span> <span class="chip c-pk">decision tools (deterministic)</span> <span class="chip s-IN_YARD">data &amp; checks</span> <span class="chip c-wn">a person</span></p></div>
+ <h2>How a slot is found (the algorithm)</h2>
+ <div class="grid2"><div class="card">
+ <p><b>Model.</b> Each truck is a job; each dock is a machine. A truck can start once it is at the gate plus ${'15'} min to reach the dock (or now, if it is already in the yard), only on a compatible dock (type, reefer, weight), inside an open slot window, never over a breakdown or work already on the dock, and before 21:00 without approval. Unloading takes the shipment's own time.</p>
+ <p><b>Search.</b> Exact branch and bound over real slots: each truck tries its compatible slots; a lower bound prunes branches that cannot beat the best plan found; a greedy plan gives the first answer. It stops at a fixed node budget (not a clock), so the same snapshot always gives the same plan, and reports whether the plan is proven optimal or the gap to the bound. OR-Tools CP-SAT solves the same model independently as a cross-check.</p>
+ <p><b>Two tiers.</b> <i>Repair</i> keeps every booking that still works and places only trucks that need a slot (missed, none, or their dock is down): safe to automate. <i>Improve</i> lets every truck move and shows what that would save; any move of a working booking needs a person.</p></div>
+ <div class="card"><b>Objective (rules/rules.yaml, every number configurable)</b><table><tbody>
+ <tr><td>Waiting, per minute × priority weight</td><td class="mono">${c.wait_per_min} × (CRITICAL ${w.CRITICAL}, HIGH ${w.HIGH}, NORMAL ${w.NORMAL}, LOW ${w.LOW})</td></tr>
+ <tr><td>Starting after the promised slot + ${c.promise_grace_min} min grace, per minute × weight</td><td class="mono">${c.late_vs_promise_per_min}</td></tr>
+ <tr><td>Moving a booking that still worked</td><td class="mono">${c.move_kept_promise}</td></tr>
+ <tr><td>Start after 21:00 (needs approval)</td><td class="mono">${c.needs_approval}</td></tr>
+ <tr><td>No dock today (escalation) × weight</td><td class="mono">${c.unscheduled}</td></tr></tbody></table>
+ <p class="why">Priority comes only from the shipment record. A driver writing "urgent" changes nothing.</p></div></div>`;}
+
+// ---------------------------------------------------------------- tab 2
+function t2(){
+ const s=EV.before, cnt={};s.trucks.forEach(t=>cnt[t.status]=(cnt[t.status]||0)+1);
+ $('#t2').innerHTML=`<div class="kpis">${['WILL_MISS','NO_BOOKING','AT_RISK','IN_YARD','UNLOADING','ON_TIME','NOT_DEPARTED'].map(k=>`<div class="kpi"><div class="v">${cnt[k]||0}</div><div class="l"><span class="chip s-${k}">${STAT[k]}</span></div></div>`).join('')}</div>
+ ${gantt(s)}
+ ${D.anomalies.length?`<div class="note">Replaying the day "as known at ${s.at}" uses only data recorded by then. Data issue met while replaying: ${D.anomalies.map(esc).join('; ')}.</div>`:''}
+ <h2>Inbound trucks at ${s.at}</h2><div class="card" style="overflow:auto">${truckTable(s.trucks)}</div>`;}
+
+// ---------------------------------------------------------------- tab 3
+function card(a,mode){
+ const k=KIND[a.kind]||['c-mu',a.kind], need=a.approval.length||a.blocked_by_approval?.length;
+ const dm=a.messages.driver;
+ return `<div class="acard ${a.kind==='ESCALATE'?'esc':need?'need':'auto'}"><div class="hd"><span class="chip ${k[0]}">${k[1]}</span><b>${a.shipment}</b><span class="p-${a.priority}">${a.priority}</span><span class="why">${esc(a.driver)} · ${esc(a.carrier)}</span>
+ <span class="move">${a.from||'no booking'} → ${a.to||'no dock'}</span>${a.cost?`<span class="why">cost ${a.cost}</span>`:''}</div>
+ <div class="why" style="margin-top:4px">${a.why.map(esc).join(' · ')}</div>
+ ${a.approval.length?`<div style="margin-top:4px">${a.approval.map(x=>`<span class="chip c-wn">needs a person: ${esc(x)}</span>`).join(' ')}</div>`:''}
+ ${a.blocked_by_approval?.length?`<div class="why" style="margin-top:4px">Waits for: ${a.blocked_by_approval.join(', ')} (their dock time is needed first)</div>`:''}
+ <details><summary>Messages (${Object.keys(a.messages).length})</summary>
+  <div class="msg wa"><b>WhatsApp to ${esc(a.driver)}</b> · ${dm.detected} detected${dm.needs_translation?' · <span class="fail">no reviewed template: sent in English + flagged for translation</span>':''} · ${esc(dm.send)}<br>${esc(dm.text)}</div>
+  ${a.messages.customer?`<div class="msg"><b>E-mail to ${esc(a.customer)}</b><br>${esc(a.messages.customer.text)}</div>`:''}
+  ${a.guard.length?`<div class="fail">Guard: ${a.guard.map(esc).join(', ')}</div>`:'<div class="why">Grounding guard: every time and dock in these messages comes from the plan.</div>'}
+ </details></div>`;}
+function t3(){
+ const s1=EV.stage1, r=s1.repair, im=s1.improve, attn=EV.before.trucks.filter(attention);
+ let h=`<div class="grid2" style="grid-template-columns:minmax(360px,32%) 1fr"><div><div class="card"><h3 style="margin-top:0">Worklist at ${EV.at} (${attn.length} trucks need attention)</h3>
+ ${attn.map(t=>`<div style="padding:6px 0;border-bottom:1px solid var(--ln)"><span class="chip s-${t.status}">${STAT[t.status]}</span> <b>${t.shipment}</b> <span class="p-${t.priority}">${t.priority}</span> <span class="mono">${t.booking||''}</span><div class="why">${esc(t.why)}</div></div>`).join('')||'<p class="why">Nothing needs attention.</p>'}
+ <div style="margin-top:12px"><button class="btn pri" id="run" ${S1.ran?'disabled':''}>▶ Run scheduling algorithm</button></div>
+ <p class="why">The coordinator does not hunt for slots by hand. One click re-plans every open truck at this facility against every dock, slot, breakdown and rule.</p></div></div>
+ <div>${S1.approved?gantt(S1.improved&&im.after?im.after:r.after):gantt(EV.before)}`;
+ if(!S1.ran){h+=`<div class="note">Board before any change. Run the algorithm to get the proposed plan.</div></div></div>`;$('#t3').innerHTML=h;$('#run').onclick=()=>{S1.ran=true;render()};return}
+ const sv=r.solver;
+ h+=`<div class="kpis"><div class="kpi"><div class="v">${sv.status==='PROVEN_OPTIMAL'?'optimal':'best found'}</div><div class="l">repair plan ${sv.status==='PROVEN_OPTIMAL'?'(proven)':'gap '+(sv.cost-sv.lower_bound)}</div></div>
+  <div class="kpi"><div class="v">${r.actions.length}</div><div class="l">changes proposed</div></div><div class="kpi"><div class="v">${r.kept.length}</div><div class="l">working bookings kept</div></div>
+  <div class="kpi"><div class="v">${sv.nodes.toLocaleString()}</div><div class="l">search nodes, ${sv.ms} ms</div></div>
+  <div class="kpi"><div class="v">${im.saving>0?im.saving.toLocaleString():'0'}</div><div class="l">extra saving if working bookings may move</div></div></div>
+  ${S1.approved?`<div class="card" style="margin-bottom:10px"><b>${S1.improved?'Repair + improvement':'Repair plan'} approved by the coordinator.</b> Booked: ${(S1.improved?im.executed:r.executed).filter(x=>x.ok).length}/${(S1.improved?im.executed:r.executed).length}. Independent check: ${(S1.improved?im.verify:r.verify).length?'<span class="fail">'+(S1.improved?im.verify:r.verify).map(esc).join('; ')+'</span>':'<span class="pass">no rule broken (no double booking, no overlap, no booking on a down dock, compatible docks)</span>'}.
+   ${(S1.improved?im.executed:r.executed).filter(x=>!x.ok).map(x=>`<div class="fail">${x.shipment}: ${esc(x.detail)}</div>`).join('')}</div>`:''}
+  </div></div>
+ <h2>Tier 1 · Repair: trucks that need a slot (working bookings stay)</h2>
+ <div class="grid2"><div>${r.actions.map(a=>card(a)).join('')||'<p class="why">No truck needs a slot.</p>'}</div>
+ <div><div class="card"><b>Same snapshot, other ways to schedule</b> <span class="why">(full re-plan of every truck, scored on the same measures)</span>
+ <table><thead><tr><th>Policy</th><th>No dock</th><th>Missed appts</th><th>Weighted wait</th><th>Changes</th><th>Avg wait</th></tr></thead><tbody>${r.baselines.map(b=>`<tr><td>${esc(b.policy)}</td><td>${b.metrics.unscheduled}</td><td>${b.metrics.missed_appointments}</td><td>${b.metrics.weighted_wait.toLocaleString()}</td><td>${b.metrics.schedule_changes}</td><td>${b.metrics.avg_wait_min}</td></tr>`).join('')}</tbody></table>
+ <p class="why">First-come-first-served and earliest-due-date are what a coordinator would do by hand. Weighted wait is minutes × priority weight.</p></div>
+ ${Object.keys(r.groups||{}).length?`<div class="card" style="margin-top:10px"><b>Approval groups</b><p class="why">Approving one card releases the cards that only wait for it.</p>${Object.entries(r.groups).map(([k,v])=>`<div><b>${k}</b> → ${v.length?v.join(', '):'nothing else'}</div>`).join('')}</div>`:''}
+ ${r.messages.warehouse?`<div class="card" style="margin-top:10px"><b>Messages once approved</b><div class="msg"><b>E-mail to the warehouse coordinator</b>\n${esc(r.messages.warehouse)}</div>${Object.entries(r.messages.dispatchers).map(([c,t])=>`<div class="msg"><b>E-mail to dispatcher ${esc(c)}</b>\n${esc(t)}</div>`).join('')}</div>`:''}
+ <div style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap"><button class="btn go" id="appr" ${S1.approved&&!S1.improved?'disabled':''}>✔ Approve repair plan (${r.actions.filter(a=>a.kind!=='ESCALATE').length} bookings)</button>
+ ${im.after?`<button class="btn" id="imp" ${S1.improved?'disabled':''}>Also approve improvement (saves ${im.saving.toLocaleString()})</button>`:''}${S1.approved?'<button class="btn" id="reset">Reset</button>':''}</div></div></div>
+ <h2>Tier 2 · Improve: what moving working bookings would gain</h2>
+ <div class="card"><p>Keeping every working booking costs <b>${im.keep_cost.toLocaleString()}</b>; the best full re-plan found costs <b>${im.solver.cost.toLocaleString()}</b> (${im.solver.status==='PROVEN_OPTIMAL'?'proven optimal':'best within the node budget'}): a saving of <b>${im.saving.toLocaleString()}</b>. Agents propose this only above ${im.threshold.toLocaleString()}, because each move disturbs a driver who was on time.</p>
+ ${im.actions.filter(a=>a.kind==='MOVE_PROMISE').map(a=>card(a)).join('')||'<p class="why">No working booking would move.</p>'}</div>`;
+ $('#t3').innerHTML=h;
+ $('#appr')&&($('#appr').onclick=()=>{S1.approved=true;S1.improved=false;render();window.scrollTo({top:0,behavior:'smooth'})});
+ $('#imp')&&($('#imp').onclick=()=>{S1.approved=true;S1.improved=true;render();window.scrollTo({top:0,behavior:'smooth'})});
+ $('#reset')&&($('#reset').onclick=()=>{S1={ran:true,approved:false,improved:false};render()});}
+
+// ---------------------------------------------------------------- tab 4
+function t4(){
+ const s=EV.stage2, a=D.autonomy;
+ const perm=Object.entries(D.permissions).map(([k,v])=>`<tr><td><span class="ag ag-${k}">${k}</span></td><td class="mono">${v.length?v.join(', '):'— (pure rules)'}</td></tr>`).join('');
+ const card2=(x,cls,extra)=>`<div class="acard ${cls}"><div class="hd"><b>${x.shipment}</b><span class="p-${x.priority}">${x.priority||''}</span><span class="why">${esc(x.driver||'')}</span>${x.to||x.from?`<span class="move">${x.from||'no booking'} → ${x.to||'no dock'}</span>`:''}</div>${extra}</div>`;
+ $('#t4').innerHTML=`<div class="grid2" style="grid-template-columns:1fr 1fr">
+ <div class="card"><b>Agents and the only tools each may call</b><table><tbody>${perm}</tbody></table>
+ <p class="why">A call outside this list stops the run and pages a person. Budget: ${a.max_tool_calls_per_event} tool calls per event; at most ${a.max_auto_bookings_per_event} automatic bookings per event.</p></div>
+ <div class="card"><b>PolicyGate (rules.yaml → agent_autonomy, mode: ${a.mode})</b><table><tbody>
+ <tr><td>May run without a person</td><td>${a.auto_execute_kinds.map(k=>`<span class="chip ${KIND[k][0]}">${KIND[k][1]}</span>`).join(' ')}</td></tr>
+ <tr><td>Always a person</td><td>${a.never_auto.map(k=>`<span class="chip ${KIND[k][0]}">${KIND[k][1]}</span>`).join(' ')}</td></tr>
+ <tr><td>Never automatic if</td><td>low-confidence ETA · data conflict · start after 21:00 · depends on a move that needs approval</td></tr>
+ <tr><td>Shadow mode</td><td>agents propose, people execute everything (for the first weeks, to measure agreement)</td></tr>
+ <tr><td>Where an LLM may help</td><td>reading an unusual message (schema-checked) and rewording a reply (grounding-checked). Never choosing a slot.</td></tr></tbody></table></div></div>
+ <h2>Run at ${EV.at}: ${esc(EV.title)}</h2>
+ <div class="kpis"><div class="kpi"><div class="v">${s.auto.length}</div><div class="l">booked automatically</div></div><div class="kpi"><div class="v">${s.queue.length}</div><div class="l">waiting for the coordinator</div></div>
+ <div class="kpi"><div class="v">${s.escalations.length}</div><div class="l">escalated to a person</div></div><div class="kpi"><div class="v">${s.messages.length}</div><div class="l">messages queued</div></div>
+ <div class="kpi"><div class="v ${s.verify_after.length?'fail':'pass'}">${s.verify_after.length?s.verify_after.length+' issue(s)':'0'}</div><div class="l">rules broken by the agents</div></div></div>
+ ${s.open_with_person?.length?`<div class="note">Still open, waiting for the coordinator: ${s.open_with_person.map(esc).join('; ')}</div>`:''}
+ <div class="grid2" style="grid-template-columns:minmax(380px,38%) 1fr"><div class="card"><b>Trace</b><div class="steps" style="margin-top:10px">${s.steps.map(x=>`<div class="step ${x.ok?'':'bad'}"><span class="ag ag-${x.agent}">${x.agent}</span><span class="mono">${esc(x.tool)}</span> <span class="why">${x.ms?x.ms+' ms':''}</span><div>${esc(x.detail)}</div><div class="why">→ ${esc(x.result)}</div>${x.guard.length?`<div class="fail">${x.guard.map(esc).join(', ')}</div>`:''}</div>`).join('')}</div>
+ ${s.stopped?`<div class="note">Run stopped: ${esc(s.stopped)}</div>`:''}</div>
+ <div><b>Driver messages read by the IntakeAgent</b><div class="card" style="margin:6px 0 12px;overflow:auto"><table><thead><tr><th>Time</th><th>Driver</th><th>Message</th><th>Understood</th><th>What happened</th></tr></thead><tbody>${s.intake.map(i=>`<tr><td class="mono">${i.time}</td><td>${i.driver}</td><td>${esc(i.text)}</td><td class="why">${i.lang} · ${(i.intents||[]).join('/')}${i.eta?' · ETA '+i.eta:''}${i.flags.length?' · <span class="fail">'+i.flags.join(', ')+'</span>':''}</td><td class="why">${esc(i.action||'—')}</td></tr>`).join('')||'<tr><td colspan=5 class="why">No new driver messages.</td></tr>'}</tbody></table></div>
+ ${gantt(s.after)}</div></div>
+ <div class="grid3"><div><h3>Booked automatically</h3>${s.auto.map(x=>card2(x,'auto',`<div class="why">${x.kind.toLowerCase()} → booked ${x.result.dock} ${x.result.start} (${x.result.status.toLowerCase()})</div>`)).join('')||'<p class="why">None.</p>'}</div>
+ <div><h3>Waiting for the coordinator</h3>${s.queue.map(x=>card2(x,'need',`<div class="why">${x.why.map(esc).join(' · ')}</div>${x.group?.length?`<div class="why">Approving it also releases: ${x.group.join(', ')}</div>`:''}`)).join('')||'<p class="why">None.</p>'}
+  ${s.improvement.proposed?`<div class="acard need"><b>Improvement proposal</b><div class="why">Moving ${s.improvement.moves.length} working booking(s) saves ${s.improvement.saving.toLocaleString()} (from ${s.improvement.keep_cost.toLocaleString()} to ${s.improvement.improved_cost.toLocaleString()}).</div>${s.improvement.moves.map(m=>`<div class="mono" style="font-size:12px">${m.shipment} ${m.from} → ${m.to}</div>`).join('')}</div>`:''}</div>
+ <div><h3>Escalated</h3>${s.escalations.map(x=>card2(x,'esc',`<div class="why">${x.escalation} → ${esc(x.to)} (${(x.role||'').toLowerCase().replace(/_/g,' ')})${x.why?' · '+esc(x.why):''}</div>`)).join('')||'<p class="why">None.</p>'}</div></div>
+ <h3>Messages to every party</h3><div class="grid2">${s.messages.map(x=>`<div class="msg ${x.channel==='WHATSAPP'?'wa':''}"><b>${esc(x.to)}</b> · ${x.channel}${x.detected?' · '+x.detected+' detected':''}${x.needs_translation?' · flagged for translation':''}${x.llm_rejected?.length?' · <span class="fail">LLM wording rejected: '+x.llm_rejected.join(', ')+'</span>':''}\n${esc(x.text)}</div>`).join('')||'<p class="why">No messages.</p>'}</div>`;}
+
+// ---------------------------------------------------------------- tab 5
+function t5(){
+ const e=D.evals; if(!e){$('#t5').innerHTML='<p class="why">Run evals/facility_evals.py to generate the report.</p>';return}
+ const q=Object.entries(e.quality), mx=Math.max(...q.map(([k,v])=>v.weighted_wait));
+ $('#t5').innerHTML=`<p class="sub">${e.scenarios} seeded disruption days from the 09:50 snapshot: random late ETAs drawn from the real ETA slips in the data, random dock breakdowns, sometimes the reefer case. Agents run in assist mode. Plus ${e.redteam.length} red-team attacks and ${e.language.length} language cases. Generated by <span class="mono">evals/facility_evals.py</span>; CI fails if a gate fails.</p>
+ <div class="grid2"><div class="card"><b>Gates</b><table><thead><tr><th>Gate</th><th>Value</th><th>Rule</th><th></th></tr></thead><tbody>${e.gates.map(g=>`<tr><td>${esc(g.gate)}</td><td class="mono">${g.value}</td><td class="mono">${g.rule}</td><td class="${g.pass?'pass':'fail'}">${g.pass?'PASS':'FAIL'}</td></tr>`).join('')}</tbody></table></div>
+ <div><div class="kpis"><div class="kpi"><div class="v">${e.automation.auto}</div><div class="l">bookings made by agents</div></div><div class="kpi"><div class="v">${e.automation.queued}</div><div class="l">sent to the coordinator</div></div><div class="kpi"><div class="v">${e.automation.escalated}</div><div class="l">escalated</div></div>
+ <div class="kpi"><div class="v">${e.runtime.planner_ms_p95} ms</div><div class="l">planner p95 (p50 ${e.runtime.planner_ms_p50})</div></div><div class="kpi"><div class="v">${e.runtime.run_s_p95} s</div><div class="l">whole agent run p95</div></div><div class="kpi"><div class="v">${e.cpsat_checked}</div><div class="l">plans cross-checked by CP-SAT</div></div></div>
+ <div class="card"><b>Priority-weighted waiting, average over the days</b> <span class="why">(full re-plan of every truck; lower is better)</span>
+ ${q.map(([k,v])=>`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="width:260px;font-size:12.5px">${esc(k)}</span><div style="flex:1;background:#f1f0ee;border-radius:4px"><div class="bar" style="width:${v.weighted_wait/mx*100}%;background:${k.startsWith('OPTIMAL')?'var(--ok)':'var(--no)'}"></div></div><span class="mono" style="width:60px;text-align:right">${v.weighted_wait.toLocaleString()}</span></div>`).join('')}
+ <p class="why">${e.open_with_person?`${e.open_with_person} times a truck stayed booked on a broken dock after the run because its re-booking waits on a move only a person may approve; each was in the coordinator's queue.`:'After every run, no truck was left booked on a broken dock without being re-booked, queued for the coordinator or escalated.'}</p>
+ <p class="why">Dispatch rules are scored in continuous time and ignore the one-booking-per-slot rule, so they can look able to fit a truck the slot-based optimal plan cannot; only the optimal plan is directly bookable. Optimal is lower than or equal to first-come-first-served on ${e.optimal_beats_or_ties_fcfs} days. Missed appointments per day: ${q.map(([k,v])=>`${k.split(' ')[0]} ${v.missed}`).join(' · ')}.</p></div></div></div>
+ <h2>Red team: each attack must be stopped</h2><div class="card" style="overflow:auto"><table><thead><tr><th>Attack</th><th>Expected</th><th>Result</th><th>Evidence from the run</th></tr></thead><tbody>${e.redteam.map(c=>`<tr><td><b>${esc(c.case)}</b><div class="why">${esc(c.attack)}</div></td><td class="why">${esc(c.expected)}</td><td class="${c.pass?'pass':'fail'}">${c.pass?'STOPPED':'NOT STOPPED'}</td><td class="why mono" style="font-size:11.5px">${esc(c.detail)}</td></tr>`).join('')}</tbody></table></div>
+ <h2>Language detection (by script, no LLM)</h2><div class="card"><table><thead><tr><th>Driver text</th><th>Expected</th><th>Detected</th></tr></thead><tbody>${e.language.map(c=>`<tr><td>${esc(c.text)}</td><td>${c.expected}</td><td class="${c.pass?'pass':'fail'}">${c.got}</td></tr>`).join('')}</tbody></table>
+ <p class="why">Reviewed reply templates exist for English, Hindi and Hinglish. Tamil, Telugu, Kannada, Malayalam, Bengali, Gujarati, Punjabi and Odia are detected; until reviewed templates exist, the message goes in English, flagged for translation (Amazon Translate with a reviewed glossary in production) and a coordinator call.</p></div>`;}
+
+function render(){evbar();({t1,t2,t3,t4,t5})[TAB]()}
+render();
+</script></body></html>

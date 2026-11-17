@@ -59,7 +59,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-593D5A29",
+      "appointment_id": "APT-35BE23A1",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-043",
       "dock": "D4",
@@ -108,7 +108,7 @@
         "end": "13:30",
         "window": "12:00-13:00",
         "needs_approval": false,
-        "facility_cost": 54575,
+        "facility_cost": 55495,
         "strands": [
           "SHP1015"
         ]
@@ -120,7 +120,7 @@
         "end": "13:45",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 56375,
+        "facility_cost": 57295,
         "strands": [
           "SHP1015"
         ]
@@ -132,7 +132,7 @@
         "end": "14:30",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 61775,
+        "facility_cost": 62695,
         "strands": [
           "SHP1015"
         ]
@@ -206,7 +206,7 @@
         "end": "13:15",
         "window": "12:00-13:00",
         "needs_approval": false,
-        "facility_cost": 54575,
+        "facility_cost": 55735,
         "strands": [
           "SHP1015"
         ]
@@ -326,7 +326,7 @@
         "end": "20:15",
         "window": "19:00-20:00",
         "needs_approval": false,
-        "facility_cost": 54125,
+        "facility_cost": 55685,
         "strands": [
           "SHP1015"
         ]
@@ -338,7 +338,7 @@
         "end": "21:00",
         "window": "20:00-21:00",
         "needs_approval": false,
-        "facility_cost": 56150,
+        "facility_cost": 57710,
         "strands": [
           "SHP1015"
         ]
@@ -370,7 +370,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-FFF2EC1B",
+      "appointment_id": "APT-38C6C9D4",
       "status": "PENDING_CONFIRMATION",
       "slot_id": "SLOT-JAI-012",
       "dock": "D1",
@@ -416,7 +416,7 @@
         "end": "13:45",
         "window": "12:00-13:00",
         "needs_approval": false,
-        "facility_cost": 73775,
+        "facility_cost": 75095,
         "strands": [
           "SHP1015"
         ]
@@ -428,7 +428,7 @@
         "end": "14:15",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 82775,
+        "facility_cost": 84095,
         "strands": [
           "SHP1015"
         ]
@@ -440,7 +440,7 @@
         "end": "15:15",
         "window": "14:00-15:00",
         "needs_approval": false,
-        "facility_cost": 97175,
+        "facility_cost": 98495,
         "strands": [
           "SHP1015"
         ]
@@ -484,7 +484,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-1134C55A",
+      "appointment_id": "APT-ABF36899",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-019",
       "dock": "D2",
@@ -529,7 +529,7 @@
         "end": "14:30",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 72875,
+        "facility_cost": 74355,
         "strands": [
           "SHP1015"
         ]
@@ -541,7 +541,7 @@
         "end": "14:15",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 72875,
+        "facility_cost": 74355,
         "strands": [
           "SHP1015"
         ]
@@ -553,7 +553,7 @@
         "end": "15:15",
         "window": "14:00-15:00",
         "needs_approval": false,
-        "facility_cost": 86375,
+        "facility_cost": 87855,
         "strands": [
           "SHP1015"
         ]
@@ -589,7 +589,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-DB0FF79C",
+      "appointment_id": "APT-39CB51B5",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-020",
       "dock": "D2",
@@ -627,7 +627,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-904F0B4F",
+      "appointment_id": "APT-30BCFECC",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-047",
       "dock": "D4",
@@ -681,7 +681,7 @@
         "end": "14:10",
         "window": "12:30-14:00",
         "needs_approval": false,
-        "facility_cost": 41000,
+        "facility_cost": 43200,
         "strands": [
           "SHP1015"
         ]
@@ -693,7 +693,7 @@
         "end": "15:30",
         "window": "14:00-15:30",
         "needs_approval": false,
-        "facility_cost": 44200,
+        "facility_cost": 46400,
         "strands": [
           "SHP1015"
         ]
@@ -705,7 +705,7 @@
         "end": "17:00",
         "window": "15:30-17:00",
         "needs_approval": false,
-        "facility_cost": 47800,
+        "facility_cost": 50000,
         "strands": [
           "SHP1015"
         ]
@@ -747,7 +747,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-424BA5C5",
+      "appointment_id": "APT-E0DA13FC",
       "status": "PENDING_CONFIRMATION",
       "slot_id": "SLOT-JAI-074",
       "dock": "D6",
@@ -824,7 +824,7 @@
         "end": "12:55",
         "window": "12:00-13:00",
         "needs_approval": false,
-        "facility_cost": 42400,
+        "facility_cost": 44920,
         "strands": [
           "SHP1015"
         ]
@@ -836,7 +836,7 @@
         "end": "13:55",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 49600,
+        "facility_cost": 52120,
         "strands": [
           "SHP1015"
         ]
@@ -848,7 +848,7 @@
         "end": "14:55",
         "window": "14:00-15:00",
         "needs_approval": false,
-        "facility_cost": 56800,
+        "facility_cost": 59320,
         "strands": [
           "SHP1015"
         ]
@@ -890,7 +890,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-97E21AB0",
+      "appointment_id": "APT-CF1A14AC",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-061",
       "dock": "D5",
@@ -949,7 +949,7 @@
         "end": "14:05",
         "window": "13:00-14:00",
         "needs_approval": false,
-        "facility_cost": 40450,
+        "facility_cost": 66170,
         "strands": [
           "SHP1015"
         ]
@@ -961,7 +961,7 @@
         "end": "14:50",
         "window": "14:00-15:00",
         "needs_approval": false,
-        "facility_cost": 41125,
+        "facility_cost": 66845,
         "strands": [
           "SHP1015"
         ]
@@ -973,7 +973,7 @@
         "end": "15:20",
         "window": "14:00-15:00",
         "needs_approval": false,
-        "facility_cost": 41575,
+        "facility_cost": 67295,
         "strands": [
           "SHP1015"
         ]
@@ -1023,7 +1023,7 @@
         "end": "15:50",
         "window": "15:00-16:00",
         "needs_approval": false,
-        "facility_cost": 41500,
+        "facility_cost": 67140,
         "strands": [
           "SHP1015"
         ]
@@ -1035,7 +1035,7 @@
         "end": "16:50",
         "window": "16:00-17:00",
         "needs_approval": false,
-        "facility_cost": 42400,
+        "facility_cost": 68040,
         "strands": [
           "SHP1015"
         ]
@@ -1135,7 +1135,7 @@
     "clarification": false,
     "guard": [],
     "escalation": {
-      "escalation_id": "ESC-A5053CF6",
+      "escalation_id": "ESC-3ADC7DAB",
       "reason": "SAFETY",
       "why": "Driver safety: a person must take over immediately.",
       "raised_at": "2026-08-04T10:30:00+05:30",
@@ -1186,7 +1186,7 @@
     "clarification": false,
     "guard": [],
     "escalation": {
-      "escalation_id": "ESC-3E0D7154",
+      "escalation_id": "ESC-6867D790",
       "reason": "NO_FEASIBLE_SLOT",
       "why": "No compatible slot after declared ETA.",
       "raised_at": "2026-08-04T16:24:00+05:30",

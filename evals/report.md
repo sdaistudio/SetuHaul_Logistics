@@ -62,14 +62,14 @@ Held-out failures (left unfixed on purpose):
 
 | At | Mode | Trucks | B&B | B&B cost | Nodes | B&B ms | CP-SAT | CP-SAT cost | CP-SAT ms | Match |
 |---|---|---:|---|---:|---:|---:|---|---:|---:|---|
-| 08:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 8.7 | True |
-| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55850 | 4795 | 83 | OPTIMAL | 55850 | 198.8 | True |
-| 09:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 10.1 | True |
-| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56825 | 4725 | 92 | OPTIMAL | 56825 | 273.0 | True |
-| 09:45 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 9.1 | True |
-| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59925 | 12091 | 230 | OPTIMAL | 59925 | 494.7 | True |
-| 10:30 | chat | 4 | PROVEN_OPTIMAL | 54575 | 25 | 1 | OPTIMAL | 54575 | 8.4 | True |
-| 10:30 | plan | 16 | PROVEN_OPTIMAL | 73950 | 56554 | 1046 | OPTIMAL | 73950 | 2878.3 | True |
+| 08:30 | chat | 5 | PROVEN_OPTIMAL | 54575 | 39 | 1 | OPTIMAL | 54575 | 18.4 | True |
+| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55050 | 4795 | 83 | OPTIMAL | 55050 | 230.7 | True |
+| 09:30 | chat | 5 | PROVEN_OPTIMAL | 55175 | 39 | 1 | OPTIMAL | 55175 | 17.3 | True |
+| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56025 | 4725 | 97 | OPTIMAL | 56025 | 359.9 | True |
+| 09:45 | chat | 5 | PROVEN_OPTIMAL | 56375 | 53 | 1 | OPTIMAL | 56375 | 13.5 | True |
+| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59125 | 12091 | 222 | OPTIMAL | 59125 | 731.0 | True |
+| 10:30 | chat | 5 | PROVEN_OPTIMAL | 77375 | 76 | 1 | OPTIMAL | 77375 | 15.8 | True |
+| 10:30 | plan | 16 | PROVEN_OPTIMAL | 72350 | 56554 | 1214 | OPTIMAL | 72350 | 2819.2 | True |
 
 ## Scenario-run measures (brief, page 9)
 

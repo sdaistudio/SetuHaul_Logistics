@@ -22,6 +22,8 @@ REPO = "https://github.com/sdaistudio/SetuHaul_Logistics"
 DOCS = [  # (output, source markdown, title, one line)
     ("design.html", "docs/00_solution_design.md", "Solution design", "Options, architecture on AWS, deterministic core, solver, guardrails, evals, results and open decisions."),
     ("system-design.html", "docs/07_system_design_L1_L2.md", "L1 / L2 system design", "Who decides what (model, tool, database, person); model.py / tool.py / database.py contracts; data fetched per situation; facility scheduling tool."),
+    ("facility-design.html", "docs/09_facility_flow.md", "Facility flow: design", "Parties, Stage 1 coordinator console, Stage 2 agents and their guardrails."),
+    ("facility-eval.html", "evals/facility_report.md", "Facility flow: evaluation and guardrails", "40 seeded disruption days, gates, plan quality vs dispatch rules, red team, language detection."),
     ("walkthrough.html", "docs/08_situation_walkthrough.md", "Situation walkthrough", "Every ladder level run through the workflow: model step, tool calls, tables read and written, reply."),
     ("problem.html", "docs/01_problem_definition.md", "Problem definition sheet", "Facts, estimates, assumptions and unknowns; the 20 data issues."),
     ("decisions.html", "docs/02_decision_register.md", "Decision register", "D1–D13: every decision the brief asks for, with reason and evidence."),
@@ -65,7 +67,7 @@ FONTS = '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500
 
 
 def topbar() -> str:
-    links = [("index.html", "Home"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"),
+    links = [("index.html", "Home"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"), ("facility.html", "Facility flow"),
              ("analysis.html", "Analysis"), ("er.html", "ER & data"), ("decisions.html", "Decisions"),
              ("solver.html", "Solver"), ("readout.html", "Readout"), (REPO, "GitHub")]
     return '<nav class="top"><b>SetuHaul</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
@@ -115,6 +117,8 @@ def main():
 
     import build_demo2
     build_demo2.main()
+    import build_facility_flow
+    build_facility_flow.main()
 
     import json
     m = json.loads((ROOT / "scenarios" / "scenario_metrics.json").read_text())
@@ -134,6 +138,7 @@ def main():
 {card("design.html", "Solution design", DOCS[0][3], True)}
 {card("system-design.html", "L1 / L2 system design", DOCS[1][3], True)}
 {"".join(card(o, t, l, True) for o, _, t, l in APPS[:1])}
+{card("facility.html", "Facility day: coordinator tool → agents", "Six docks, one day. Stage 1: the coordinator runs an exact scheduling algorithm and approves action cards. Stage 2: the same process run by agents with a policy gate. 40-day evaluation and 17 red-team guardrail tests.", True)}
 {card("demo2.html", "Demo 2 · Coordinator control tower (MVP 2)", "Truck GPS on a map, planned vs driver vs GPS ETA, green/amber/red per driver, one-click WhatsApp, and a dashboard of every driver conversation.", True)}
 {"".join(card(o, t, l, True) for o, _, t, l in APPS[1:])}
 </div>

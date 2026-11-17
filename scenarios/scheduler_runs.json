@@ -91,9 +91,9 @@
           "critical_wait_min": 0,
           "missed_appointments": 2,
           "schedule_changes": 6,
-          "solver_cost": 57825,
+          "solver_cost": 56625,
           "solver_nodes": 4725,
-          "solver_ms": 80
+          "solver_ms": 83
         }
       }
     ],
@@ -336,9 +336,9 @@
           "critical_wait_min": 0,
           "missed_appointments": 0,
           "schedule_changes": 7,
-          "solver_cost": 54175,
+          "solver_cost": 52975,
           "solver_nodes": 88869,
-          "solver_ms": 1843
+          "solver_ms": 1850
         }
       }
     ],

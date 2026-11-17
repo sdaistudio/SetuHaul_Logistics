@@ -328,7 +328,9 @@ def _truck_from_db(conn, fs: FacilityState, sh, eta: EtaEstimate, cons: Constrai
               deadline=cons.latest_gate_out)
     if appt:
         t.promise_slot, t.promise_start = appt["slot_id"], parse(appt["slot_start_ts"])
-        t.promise_reachable = arrive < parse(appt["slot_end_ts"])
+        # a promise only "still works" if the truck can reach it in time AND the slot is
+        # feasible for it (e.g. a 21 t load booked on a 20 t dock never had a working promise)
+        t.promise_reachable = arrive < parse(appt["slot_end_ts"]) and any(c.slot_id == appt["slot_id"] for _, c in cands)
         if t.promise_reachable and all(c.slot_id != appt["slot_id"] for c in t.cands):
             # keep the promised slot in the tree even if it is not among the earliest N
             for _, c in cands:
@@ -372,7 +374,31 @@ def _needs_slot(conn, fs: FacilityState, sid: str) -> bool:
         return sh["current_status"] in ("IN_TRANSIT", "WAITING", "AT_GATE")
     if appt["appointment_status"] == "IN_PROGRESS":
         return False
+    if booking_dock_down(conn, sid):
+        return True                       # a booking on a dock that is now broken / blocked does not "work"
     return certain_miss(resolve_eta(conn, sid), parse(appt["slot_end_ts"]))
+
+
+def booking_dock_down(conn, sid: str) -> str | None:
+    """Reason text if the shipment's live booking sits on a slot that is blocked or overlaps a dock
+    breakdown / maintenance / block, else None."""
+    r = conn.execute("""SELECT sl.slot_id, sl.dock_id, sl.slot_status, sl.slot_start_ts, sl.slot_end_ts,
+                               p.planned_start_ts, p.planned_end_ts FROM appointments a
+                        JOIN appointment_slots sl USING(slot_id) LEFT JOIN appointment_plan p USING(appointment_id)
+                        WHERE a.shipment_id=? AND a.is_current=1
+                        AND a.appointment_status IN ('PENDING_CONFIRMATION','CONFIRMED')""", (sid,)).fetchone()
+    if r is None:
+        return None
+    if r["slot_status"] != "OPEN":
+        return f"booked slot is {r['slot_status'].lower()}"
+    # our own bookings carry a planned unloading interval; older ones only the slot window
+    s0, s1 = (r["planned_start_ts"], r["planned_end_ts"]) if r["planned_start_ts"] else (r["slot_start_ts"], r["slot_end_ts"])
+    e = conn.execute("""SELECT event_type, event_start_ts, event_end_ts FROM dock_status_events WHERE dock_id=?
+                        AND event_type IN ('BREAKDOWN','MAINTENANCE','BLOCKED') AND event_start_ts < ?
+                        AND COALESCE(event_end_ts, '9999') > ?""", (r["dock_id"], s1, s0)).fetchone()
+    if e:
+        return f"dock {e['event_type'].lower()} {e['event_start_ts'][11:16]}-{(e['event_end_ts'] or '')[11:16]}"
+    return None
 
 
 def build_problem(conn, facility_id: str, now: datetime, mode: str = "plan", focus: str | None = None,

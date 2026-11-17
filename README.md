@@ -9,6 +9,7 @@
 | Discussion prototype | https://sdaistudio.github.io/SetuHaul_Logistics/prototype.html |
 | L1 / L2 system design | https://sdaistudio.github.io/SetuHaul_Logistics/system-design.html |
 | Situation walkthrough (data fetched per case) | https://sdaistudio.github.io/SetuHaul_Logistics/walkthrough.html |
+| Facility flow: coordinator console → agents, evaluation & guardrails | https://sdaistudio.github.io/SetuHaul_Logistics/facility.html |
 | Demo 2 · coordinator control tower (GPS, RAG, WhatsApp, conversation dashboard) | https://sdaistudio.github.io/SetuHaul_Logistics/demo2.html |
 | Data analysis | https://sdaistudio.github.io/SetuHaul_Logistics/analysis.html |
 | ER diagram & data browser | https://sdaistudio.github.io/SetuHaul_Logistics/er.html |
@@ -78,6 +79,10 @@ data/              the supplied snapshot (never modified; work happens on copies
 | `setuhaul/scheduling_tool.py` | Facility scheduling tool | Explicit objective; FCFS / EDD / weighted / commitment-first vs optimal; protected work; proposes moves for approval, never writes. `python -m setuhaul.scheduling_tool --at 09:50 --eta SHP1009=12:20` |
 
 `python tools/situation_walkthrough.py` runs every ladder level through the workflow and records the model step, tool calls and tables touched; `python tools/build_design_doc.py` regenerates the L1/L2 design from the code and that run.
+
+## Facility flow (Stage 1 coordinator console, Stage 2 agents)
+
+`setuhaul/facility_day.py` (as-of replay, dock board), `setuhaul/coordinator.py` (repair / improve plans, action cards, execution, independent verifier), `setuhaul/agents.py` (agents, tool allow-lists, policy gate), `setuhaul/comms.py` (party messages, script-based language detection, grounding guard), `evals/facility_evals.py` (40 disruption days, gates, red team). Policy in `rules/rules.yaml → agent_autonomy`.
 
 ## Run it (Python 3.10+, PyYAML; OR-Tools optional for the CP-SAT cross-check)
 

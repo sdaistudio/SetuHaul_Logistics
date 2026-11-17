@@ -70,6 +70,8 @@ solver:
   plan_time_budget_ms: 3000       # facility re-plan (anytime: returns best + proven gap)
   chat_time_budget_ms: 400        # per candidate when ranking a driver's options
   node_limit: 400000
+  replan_node_limit: 60000       # coordinator / agent re-plan: a NODE budget, not a time budget, so the same
+                                  # snapshot always gives the same plan (reproducible, testable, explainable)
   candidate_slots_per_truck: 14   # earliest feasible slots considered per truck
   chat_candidates_evaluated: 8    # driver's own slots evaluated with look-ahead
   option_ranking: solver          # solver | earliest
@@ -128,3 +130,16 @@ control_tower:
     - {status: AMBER, when: "planned departure passed but truck not departed"}
     - {status: AMBER, when: "waiting in yard > yard_wait_amber_min"}
     - {status: GREEN, when: "booking reachable and dock-ready <= slot start + tolerance"}
+
+# ---------------------------------------------- agentic facility flow (Stage 2) ---
+agent_autonomy:
+  mode: assist                      # shadow: agents propose, people execute everything
+                                    # assist: agents execute only the safe class below; the rest goes to a person
+  auto_execute_kinds: [REBOOK, NEW, YARD]   # the truck's own booking is unreachable / missing / it is in the yard
+  never_auto: [MOVE_PROMISE, ESCALATE]      # moving a booking that still works, or no dock: always a person
+  block_auto_if: [LOW_CONFIDENCE_ETA, DATA_CONFLICT, AFTER_LAST_NEW_START]
+  max_auto_bookings_per_event: 6    # beyond this, the rest waits for a person (blast-radius limit)
+  max_tool_calls_per_event: 60      # step budget for one orchestrator run
+  notify_customer_if_later_than_min: 60
+  replan_triggers: [WILL_MISS, NO_BOOKING, DOCK_EVENT, GATE_IN, AT_RISK_OVER_30]
+  propose_improvement_if_saving_over: 1500   # cost units (rules.yaml costs); below this, working bookings are left alone
