@@ -226,10 +226,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 55850.0,
         "nodes": 4795,
-        "bnb_ms": 146,
+        "bnb_ms": 98,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 55850.0,
-        "cpsat_ms": 202.0,
+        "cpsat_ms": 198.0,
         "match": true
       },
       {
@@ -242,7 +242,7 @@
         "bnb_ms": 1,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 54575.0,
-        "cpsat_ms": 9.1,
+        "cpsat_ms": 11.8,
         "match": true
       },
       {
@@ -252,10 +252,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 56825.0,
         "nodes": 4725,
-        "bnb_ms": 92,
+        "bnb_ms": 83,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 56825.0,
-        "cpsat_ms": 317.5,
+        "cpsat_ms": 278.7,
         "match": true
       },
       {
@@ -268,7 +268,7 @@
         "bnb_ms": 1,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 54575.0,
-        "cpsat_ms": 10.2,
+        "cpsat_ms": 8.4,
         "match": true
       },
       {
@@ -278,10 +278,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 59925.0,
         "nodes": 12091,
-        "bnb_ms": 232,
+        "bnb_ms": 253,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 59925.0,
-        "cpsat_ms": 560.1,
+        "cpsat_ms": 530.5,
         "match": true
       },
       {
@@ -294,7 +294,7 @@
         "bnb_ms": 1,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 54575.0,
-        "cpsat_ms": 9.6,
+        "cpsat_ms": 13.2,
         "match": true
       },
       {
@@ -304,10 +304,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 73950.0,
         "nodes": 56554,
-        "bnb_ms": 919,
+        "bnb_ms": 1040,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 73950.0,
-        "cpsat_ms": 3276.6,
+        "cpsat_ms": 3036.5,
         "match": true
       }
     ],

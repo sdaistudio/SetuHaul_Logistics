@@ -21,6 +21,8 @@ REPO = "https://github.com/sdaistudio/SetuHaul_Logistics"
 
 DOCS = [  # (output, source markdown, title, one line)
     ("design.html", "docs/00_solution_design.md", "Solution design", "Options, architecture on AWS, deterministic core, solver, guardrails, evals, results and open decisions."),
+    ("system-design.html", "docs/07_system_design_L1_L2.md", "L1 / L2 system design", "Who decides what (model, tool, database, person); model.py / tool.py / database.py contracts; data fetched per situation; facility scheduling tool."),
+    ("walkthrough.html", "docs/08_situation_walkthrough.md", "Situation walkthrough", "Every ladder level run through the workflow: model step, tool calls, tables read and written, reply."),
     ("problem.html", "docs/01_problem_definition.md", "Problem definition sheet", "Facts, estimates, assumptions and unknowns; the 20 data issues."),
     ("decisions.html", "docs/02_decision_register.md", "Decision register", "D1–D13: every decision the brief asks for, with reason and evidence."),
     ("solver.html", "docs/03_solver_design.md", "Solver design", "Branch and bound, look-ahead, CP-SAT proof, location on demand."),
@@ -40,7 +42,7 @@ CSS = """
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
 .top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
 .top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
-.wrap{max-width:1040px;margin:auto;padding:28px 22px 70px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
 .doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
 .doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
 .doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
@@ -63,7 +65,7 @@ FONTS = '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500
 
 
 def topbar() -> str:
-    links = [("index.html", "Home"), ("design.html", "Design"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"),
+    links = [("index.html", "Home"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"),
              ("analysis.html", "Analysis"), ("er.html", "ER & data"), ("decisions.html", "Decisions"),
              ("solver.html", "Solver"), ("readout.html", "Readout"), (REPO, "GitHub")]
     return '<nav class="top"><b>SetuHaul</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
@@ -101,6 +103,7 @@ def main():
     SITE.mkdir()
     shutil.copy(ROOT / "docs" / "architecture.png", SITE / "architecture.png")
     shutil.copy(ROOT / "docs" / "architecture.svg", SITE / "architecture.svg")
+    shutil.copytree(ROOT / "docs" / "design", SITE / "design")
     (SITE / ".nojekyll").write_text("")
     md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists"])
     for out, src, title, _ in DOCS:
@@ -129,12 +132,13 @@ def main():
 <div class="kpis">{"".join(f'<div class="kpi"><div class="v">{html.escape(v)}</div><div class="l">{html.escape(l)}</div></div>' for v, l in kpis)}</div>
 <h2 class="sec">Start here</h2><div class="grid">
 {card("design.html", "Solution design", DOCS[0][3], True)}
+{card("system-design.html", "L1 / L2 system design", DOCS[1][3], True)}
 {"".join(card(o, t, l, True) for o, _, t, l in APPS[:1])}
 {card("demo2.html", "Demo 2 · Coordinator control tower (MVP 2)", "Truck GPS on a map, planned vs driver vs GPS ETA, green/amber/red per driver, one-click WhatsApp, and a dashboard of every driver conversation.", True)}
 {"".join(card(o, t, l, True) for o, _, t, l in APPS[1:])}
 </div>
 <h2 class="sec">Architecture</h2><div class="arch"><a href="architecture.svg"><img src="architecture.png" alt="SetuHaul architecture on AWS"></a></div>
-<h2 class="sec">Hand-in documents</h2><div class="grid">{"".join(card(o, t, l) for o, _, t, l in DOCS[1:])}
+<h2 class="sec">Hand-in documents</h2><div class="grid">{"".join(card(o, t, l) for o, _, t, l in DOCS[2:])}
 {card(REPO, "Source code on GitHub", "Workflow, NLU, solver, rules.yaml, tests, evals, AWS SAM template, analysis scripts.")}</div>"""
     (SITE / "index.html").write_text(page("Home", body), encoding="utf-8")
     print("site built:", sorted(p.name for p in SITE.iterdir()))

@@ -18,17 +18,22 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from . import config, templates as tpl
-from .capacity import CapacityError, commit_hold, place_hold
+from . import config
+from .capacity import CapacityError
 from .db import audit, write_txn
-from .escalation import escalate, summarise_tried
-from .eta import EtaEstimate, resolve_eta
-from .feasibility import Constraints, evaluate_all, rank_options, summarise_rejections
+from .escalation import summarise_tried
+from .eta import EtaEstimate
+from .feasibility import Constraints, rank_options, summarise_rejections
 from .guardrails import GuardrailViolation, check_action, check_input, check_option_choice, check_output
 from .llm_fallback import NullFallback
-from .nlu import ParseResult, normalise, parse_message
-from .solver import rank_for_driver
+from .nlu import ParseResult, normalise
 from .obs import Telemetry
+# Language goes through the model layer, capacity and data through the tool layer
+# (see model.py / tool.py / database.py). Same functions, now traced per turn.
+from .model import tpl, understand_text as parse_message
+from .tool import (check_slot_feasibility as evaluate_all, confirm_booking as commit_hold,
+                   escalate_to_human as escalate, get_eta as resolve_eta, hold_slot as place_hold,
+                   rank_options_lookahead as rank_for_driver, traced)
 from .timeutil import hhmm, iso, minutes, parse
 
 STATIC_TIMES = {"11:30", "12:30", "13:00", "21:00"}  # example times inside templates
@@ -242,6 +247,7 @@ class DriverAgent:
         if "PRIORITY_CLAIM" in p.flags:
             d["priority_claim"] = True
 
+    @traced("find_driver_shipments", "READ", summarise=lambda o: o[0] or (o[1][0] if o[1] else "none"))
     def _resolve_shipment(self, st, p: ParseResult, now):
         d, lang = st["data"], st["lang"]
         rows = self.conn.execute(
@@ -527,6 +533,7 @@ class DriverAgent:
         return bool(n_drv or n_veh)
 
     # ------------------------------------------------------------ status ---
+    @traced("get_booking_status", "READ", arg_names=("shipment",), summarise=lambda o: "status reply built")
     def _status(self, sh, lang, times: set) -> str:
         cur = self._current_appt(sh["shipment_id"])
         if not cur:
@@ -633,6 +640,7 @@ class DriverAgent:
                 (f"MSG-{uuid.uuid4().hex[:8].upper()}", thread_id, sender, driver_id if sender == "DRIVER" else "agent",
                  text, iso(now), external_id if not dup else None, int(dup), intent, iso(eta), int(review)))
 
+    @traced("record_eta", "WRITE", arg_names=("", "shipment", "eta"), summarise=lambda o: "eta_updates row written")
     def _record_eta(self, st, sh, eta: EtaEstimate, d, now):
         reason = d.get("eta_reason")
         with write_txn(self.conn):
@@ -660,6 +668,7 @@ class DriverAgent:
             with write_txn(self.conn):
                 self.conn.execute("UPDATE driver_exceptions SET exception_status=? WHERE exception_id=?", (status, eid))
 
+    @traced("notify_warehouse", "WRITE", arg_names=("shipment", "", "", "channel", "subject"), summarise=lambda o: "operational_messages row queued")
     def _notify(self, sh, res, now, channel, subject):
         with write_txn(self.conn):
             self.conn.execute(

@@ -58,7 +58,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-8476478F",
+      "appointment_id": "APT-6BBCFCF1",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-043",
       "dock": "D4",
@@ -449,7 +449,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-96FEE70A",
+      "appointment_id": "APT-77663812",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-019",
       "dock": "D2",
@@ -553,7 +553,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-38427EB6",
+      "appointment_id": "APT-6270F838",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-020",
       "dock": "D2",
@@ -590,7 +590,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-1E9BB4CA",
+      "appointment_id": "APT-AA38CEDD",
       "status": "CONFIRMED",
       "slot_id": "SLOT-JAI-047",
       "dock": "D4",
@@ -733,7 +733,7 @@
     ],
     "options": [],
     "committed": {
-      "appointment_id": "APT-D41F7983",
+      "appointment_id": "APT-AA0450C3",
       "status": "PENDING_CONFIRMATION",
       "slot_id": "SLOT-JAI-074",
       "dock": "D6",
@@ -1088,7 +1088,7 @@
     "clarification": false,
     "guard": [],
     "escalation": {
-      "escalation_id": "ESC-C1FE12C9",
+      "escalation_id": "ESC-0472AE69",
       "reason": "SAFETY",
       "why": "Driver safety: a person must take over immediately.",
       "raised_at": "2026-08-04T10:30:00+05:30",
@@ -1138,7 +1138,7 @@
     "clarification": false,
     "guard": [],
     "escalation": {
-      "escalation_id": "ESC-248B365C",
+      "escalation_id": "ESC-C0CCF1F8",
       "reason": "NO_FEASIBLE_SLOT",
       "why": "No compatible slot after declared ETA.",
       "raised_at": "2026-08-04T16:24:00+05:30",

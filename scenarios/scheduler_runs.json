@@ -93,7 +93,7 @@
           "schedule_changes": 6,
           "solver_cost": 57825,
           "solver_nodes": 4725,
-          "solver_ms": 90
+          "solver_ms": 101
         }
       }
     ],
@@ -338,7 +338,7 @@
           "schedule_changes": 9,
           "solver_cost": 57925,
           "solver_nodes": 98231,
-          "solver_ms": 2230
+          "solver_ms": 2392
         }
       }
     ],
