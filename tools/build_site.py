@@ -82,12 +82,12 @@ def topbar() -> str:
     links = [("index.html", "Home"), ("index.html#v2", "Hand-ins (v2)"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"), ("facility.html", "Facility flow"),
              ("analysis.html", "Analysis"), ("er.html", "ER & data"), ("decisions.html", "Decisions"),
              ("solver.html", "Solver"), ("v1/index.html", "v1 archive"), (REPO, "GitHub")]
-    return '<nav class="top"><b>SetuHaul</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
+    return '<nav class="top"><b>SetuHaul – Logistics Management</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
 
 
 def page(title: str, body: str) -> str:
     return (f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            f"<title>{html.escape(title)} — SetuHaul</title>{FONTS}<style>{CSS}</style></head><body>{topbar()}"
+            f"<title>{html.escape(title)} — SetuHaul – Logistics Management</title>{FONTS}<style>{CSS}</style></head><body>{topbar()}"
             f'<div class="wrap">{body}<footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="{REPO}">{REPO}</a></footer></div></body></html>')
 
 
@@ -180,7 +180,7 @@ def main():
     def v2card(stem, out, title, line):
         return (f'<div class="cardwrap"><b>{html.escape(title)}</b><span>{html.escape(line)}</span>'
                 f'<a href="{out}">Read online</a><a href="v2/{stem}.docx">Download .docx</a></div>')
-    body = f"""<div class="hero"><h1>SetuHaul Logistics — driver exception service</h1>
+    body = f"""<div class="hero"><h1>SetuHaul – Logistics Management</h1><p style="font-size:17px;color:var(--ink);margin:0 0 8px">Driver delay chat and dock scheduling for SetuHaul's warehouses</p>
 <p>When many drivers report delays at once, SetuHaul answers each one in English, Hindi or Hinglish with a dock slot the truck can really make, and never promises the same dock time twice. Rules read the message; an exact, proven-optimal search plans the docks; the database refuses any conflicting booking; a person decides when no safe answer exists.</p>
 <p>Built on the 4 August 2026 Jaipur snapshot for the FDE Academy challenge.</p></div>
 <div class="note"><b>Updated after the 18 November 2026 review.</b> The hand-ins below (v2) reconcile our earlier design with a second one: pick = book in one transaction, earmarks for priority loads, a lean pilot at about US$22–30 a month, and an exact scheduling engine with a plain reason for every truck. <a href="v2-changelog.html">What changed and why</a> · <a href="v2-readme.html">The engine decision</a> · <a href="v1/index.html">Previous version (archived)</a></div>
