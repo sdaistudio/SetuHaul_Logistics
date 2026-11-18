@@ -1,0 +1,1479 @@
+[
+ {
+  "id": "F01",
+  "cat": "Capacity",
+  "sev": "Critical",
+  "title": "Active bookings on docks rated below the load weight",
+  "refs": "A01, A07; B-D1, B-D2",
+  "sql": "SELECT a.appointment_id, a.appointment_status, s.shipment_id, s.load_weight_kg, d.dock_code, d.max_vehicle_weight_kg\nFROM appointments a JOIN shipments s USING(shipment_id)\nJOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON d.dock_id=sl.dock_id\nWHERE a.appointment_status IN ('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS') AND s.load_weight_kg > d.max_vehicle_weight_kg",
+  "why": "Two promises that cannot be kept: the truck would be refused at the dock.",
+  "fix": "Feasibility rule F2 (weight) on every option and again inside the commit transaction; re-plan both trucks.",
+  "cols": [
+   "appointment_id",
+   "appointment_status",
+   "shipment_id",
+   "load_weight_kg",
+   "dock_code",
+   "max_vehicle_weight_kg"
+  ],
+  "rows": [
+   [
+    "APT1014A",
+    "PENDING_CONFIRMATION",
+    "SHP1014",
+    21000,
+    "D1",
+    20000
+   ],
+   [
+    "APT1005",
+    "CONFIRMED",
+    "SHP1005",
+    20500,
+    "D3",
+    20000
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F02",
+  "cat": "Capacity",
+  "sev": "Critical",
+  "title": "Dock events are not reflected in slot status",
+  "refs": "A02; B-D5",
+  "sql": "SELECT e.dock_event_id, e.event_type, d.dock_code, e.event_start_ts, e.event_end_ts, sl.slot_id, sl.slot_start_ts, sl.slot_status\nFROM dock_status_events e JOIN appointment_slots sl ON sl.dock_id=e.dock_id\nJOIN docks d ON d.dock_id=e.dock_id\nWHERE sl.slot_status='OPEN' AND sl.slot_start_ts < COALESCE(e.event_end_ts,'9999') AND sl.slot_end_ts > e.event_start_ts\nORDER BY e.dock_event_id, sl.slot_start_ts",
+  "why": "A slot on a broken dock still looks OPEN, so a naive availability check would offer it.",
+  "fix": "Derive slot usability from dock_status_events at the as-of time; never trust slot_status alone.",
+  "cols": [
+   "dock_event_id",
+   "event_type",
+   "dock_code",
+   "event_start_ts",
+   "event_end_ts",
+   "slot_id",
+   "slot_start_ts",
+   "slot_status"
+  ],
+  "rows": [
+   [
+    "DEVT001",
+    "BREAKDOWN",
+    "D3",
+    "2026-08-04T09:15:00+05:30",
+    "2026-08-04T13:00:00+05:30",
+    "SLOT-JAI-030",
+    "2026-08-04T09:00:00+05:30",
+    "OPEN"
+   ],
+   [
+    "DEVT003",
+    "CAPACITY_REDUCTION",
+    "D2",
+    "2026-08-04T08:00:00+05:30",
+    "2026-08-04T09:20:00+05:30",
+    "SLOT-JAI-015",
+    "2026-08-04T08:00:00+05:30",
+    "OPEN"
+   ],
+   [
+    "DEVT003",
+    "CAPACITY_REDUCTION",
+    "D2",
+    "2026-08-04T08:00:00+05:30",
+    "2026-08-04T09:20:00+05:30",
+    "SLOT-JAI-016",
+    "2026-08-04T09:00:00+05:30",
+    "OPEN"
+   ]
+  ],
+  "row_count": 3
+ },
+ {
+  "id": "F03",
+  "cat": "Capacity",
+  "sev": "Medium",
+  "title": "docks.dock_status stays ACTIVE during a breakdown or maintenance",
+  "refs": "B-D6",
+  "sql": "SELECT d.dock_code, d.dock_status, e.event_type, e.event_start_ts, e.event_end_ts\nFROM docks d JOIN dock_status_events e USING(dock_id)\nWHERE e.event_type IN ('BREAKDOWN','MAINTENANCE') AND d.dock_status='ACTIVE'",
+  "why": "Any screen that reads dock_status shows a broken dock as working.",
+  "fix": "Treat dock_status as a static attribute; compute live status from events at as-of.",
+  "cols": [
+   "dock_code",
+   "dock_status",
+   "event_type",
+   "event_start_ts",
+   "event_end_ts"
+  ],
+  "rows": [
+   [
+    "D3",
+    "ACTIVE",
+    "BREAKDOWN",
+    "2026-08-04T09:15:00+05:30",
+    "2026-08-04T13:00:00+05:30"
+   ],
+   [
+    "D5",
+    "ACTIVE",
+    "MAINTENANCE",
+    "2026-08-04T18:00:00+05:30",
+    "2026-08-04T22:00:00+05:30"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F04",
+  "cat": "Capacity",
+  "sev": "High",
+  "title": "Planned unload is longer than the booked slot",
+  "refs": "A03; B-D3",
+  "sql": "SELECT a.appointment_id, s.shipment_id, d.dock_code, sl.slot_start_ts, sl.slot_end_ts,\n       CAST(ROUND((julianday(sl.slot_end_ts)-julianday(sl.slot_start_ts))*1440) AS INT) AS slot_min, s.expected_unload_min\nFROM appointments a JOIN shipments s USING(shipment_id)\nJOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON d.dock_id=sl.dock_id\nWHERE a.appointment_status NOT IN ('CANCELLED','REJECTED')\n  AND s.expected_unload_min > ROUND((julianday(sl.slot_end_ts)-julianday(sl.slot_start_ts))*1440)\nORDER BY sl.slot_start_ts",
+  "why": "Each of these spills into the next window on the same dock; delays cascade.",
+  "fix": "Model dock occupancy as time intervals (start + unload + changeover), not as one slot per truck.",
+  "cols": [
+   "appointment_id",
+   "shipment_id",
+   "dock_code",
+   "slot_start_ts",
+   "slot_end_ts",
+   "slot_min",
+   "expected_unload_min"
+  ],
+  "rows": [
+   [
+    "APT1002",
+    "SHP1002",
+    "D2",
+    "2026-08-04T08:00:00+05:30",
+    "2026-08-04T09:00:00+05:30",
+    60,
+    70
+   ],
+   [
+    "APT1005",
+    "SHP1005",
+    "D3",
+    "2026-08-04T09:00:00+05:30",
+    "2026-08-04T10:00:00+05:30",
+    60,
+    75
+   ],
+   [
+    "APT1009",
+    "SHP1009",
+    "D4",
+    "2026-08-04T11:00:00+05:30",
+    "2026-08-04T12:00:00+05:30",
+    60,
+    75
+   ],
+   [
+    "APT1014A",
+    "SHP1014",
+    "D1",
+    "2026-08-04T11:00:00+05:30",
+    "2026-08-04T12:00:00+05:30",
+    60,
+    75
+   ]
+  ],
+  "row_count": 4
+ },
+ {
+  "id": "F05",
+  "cat": "Capacity",
+  "sev": "High",
+  "title": "Booked work already collides on the same dock (cascade proof)",
+  "refs": "new",
+  "sql": "WITH b AS (\n  SELECT a.appointment_id, sl.dock_id, d.dock_code, sl.slot_start_ts AS st,\n         datetime(sl.slot_start_ts, '+'||s.expected_unload_min||' minutes') AS planned_end_utc\n  FROM appointments a JOIN shipments s USING(shipment_id)\n  JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON d.dock_id=sl.dock_id\n  WHERE a.appointment_status IN ('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS'))\nSELECT x.dock_code, x.appointment_id AS first_booking, x.st AS first_start,\n       y.appointment_id AS next_booking, y.st AS next_start,\n       CAST(ROUND((julianday(x.planned_end_utc)-julianday(y.st))*1440) AS INT) AS overlap_min\nFROM b x JOIN b y ON x.dock_id=y.dock_id AND y.st > x.st\nWHERE julianday(x.planned_end_utc) > julianday(y.st)\n  AND NOT EXISTS (SELECT 1 FROM b z WHERE z.dock_id=x.dock_id AND z.st > x.st AND z.st < y.st)",
+  "why": "The plan itself is infeasible before any driver is late: the next truck cannot start on time.",
+  "fix": "Interval check (no overlap per dock) in the feasibility layer and a DB trigger as the last guard.",
+  "cols": [
+   "dock_code",
+   "first_booking",
+   "first_start",
+   "next_booking",
+   "next_start",
+   "overlap_min"
+  ],
+  "rows": [
+   [
+    "D1",
+    "APT1014A",
+    "2026-08-04T11:00:00+05:30",
+    "APT1017",
+    "2026-08-04T12:00:00+05:30",
+    15
+   ],
+   [
+    "D2",
+    "APT1002",
+    "2026-08-04T08:00:00+05:30",
+    "APT1004",
+    "2026-08-04T09:00:00+05:30",
+    10
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F06",
+  "cat": "Capacity",
+  "sev": "High",
+  "title": "Current bookings that the latest ETA already misses (phantom capacity)",
+  "refs": "A04; B-D4",
+  "sql": "SELECT a.appointment_id, s.shipment_id, sl.slot_start_ts, sl.slot_end_ts, e.effective_eta_ts, e.eta_confidence\nFROM appointments a JOIN shipments s USING(shipment_id)\nJOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN v_latest_eta e USING(shipment_id)\nLEFT JOIN facility_checkins fc USING(shipment_id)\nWHERE a.appointment_status IN ('CONFIRMED','PENDING_CONFIRMATION') AND a.is_current=1 AND fc.gate_in_ts IS NULL\n  AND julianday(e.effective_eta_ts) > julianday(sl.slot_start_ts, '+30 minutes')",
+  "why": "These slots look taken but their trucks cannot check in within the 30-minute grace; capacity is locked for nothing.",
+  "fix": "Certain-miss rule: release the slot (with dispatcher notice) once even the optimistic ETA misses the grace window.",
+  "cols": [
+   "appointment_id",
+   "shipment_id",
+   "slot_start_ts",
+   "slot_end_ts",
+   "effective_eta_ts",
+   "eta_confidence"
+  ],
+  "rows": [
+   [
+    "APT1006",
+    "SHP1006",
+    "2026-08-04T10:00:00+05:30",
+    "2026-08-04T11:00:00+05:30",
+    "2026-08-04T11:20:00+05:30",
+    "HIGH"
+   ],
+   [
+    "APT1015A",
+    "SHP1015",
+    "2026-08-04T17:00:00+05:30",
+    "2026-08-04T18:00:00+05:30",
+    "2026-08-04T18:30:00+05:30",
+    "HIGH"
+   ],
+   [
+    "APT1017",
+    "SHP1017",
+    "2026-08-04T12:00:00+05:30",
+    "2026-08-04T13:00:00+05:30",
+    "2026-08-04T12:45:00+05:30",
+    "LOW"
+   ]
+  ],
+  "row_count": 3
+ },
+ {
+  "id": "F07",
+  "cat": "Capacity",
+  "sev": "Critical",
+  "title": "SHP1015's original booking was infeasible from the day maintenance was planned",
+  "refs": "new",
+  "sql": "SELECT a.appointment_id, a.booked_at, sl.slot_start_ts, sl.slot_end_ts, s.original_eta_ts, s.expected_unload_min,\n       strftime('%H:%M', s.original_eta_ts, '+'||(s.expected_unload_min+15+330)||' minutes') AS planned_unload_end_ist,\n       e.dock_event_id, e.event_start_ts AS maintenance_start, e.created_at AS maintenance_planned_at\nFROM appointments a JOIN shipments s USING(shipment_id)\nJOIN appointment_slots sl ON sl.slot_id=a.slot_id\nJOIN dock_status_events e ON e.dock_id=sl.dock_id AND e.event_type='MAINTENANCE'\nWHERE a.appointment_id='APT1015A'",
+  "why": "Booked 1 Aug 12:00; maintenance planned 1 Aug 14:00 from 18:00. A 17:30 arrival + 15 min + 60 min unload ends 18:45. Nobody re-checked the booking for 3 days, so the reefer exception on 4 Aug was predictable on 1 Aug.",
+  "fix": "Event-driven re-validation: every new dock event, rule change or ETA update re-checks all affected bookings and raises an at-risk flag.",
+  "cols": [
+   "appointment_id",
+   "booked_at",
+   "slot_start_ts",
+   "slot_end_ts",
+   "original_eta_ts",
+   "expected_unload_min",
+   "planned_unload_end_ist",
+   "dock_event_id",
+   "maintenance_start",
+   "maintenance_planned_at"
+  ],
+  "rows": [
+   [
+    "APT1015A",
+    "2026-08-01T12:00:00+05:30",
+    "2026-08-04T17:00:00+05:30",
+    "2026-08-04T18:00:00+05:30",
+    "2026-08-04T17:30:00+05:30",
+    60,
+    "18:45",
+    "DEVT002",
+    "2026-08-04T18:00:00+05:30",
+    "2026-08-01T14:00:00+05:30"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F08",
+  "cat": "Capacity",
+  "sev": "Critical",
+  "title": "A historic double booking: two CONFIRMED bookings on one slot for three days",
+  "refs": "new",
+  "sql": "SELECT a.slot_id, a.appointment_id, a.shipment_id, a.appointment_status, a.confirmed_at, a.cancelled_at, a.cancellation_reason\nFROM appointments a WHERE a.slot_id IN (SELECT slot_id FROM appointments GROUP BY slot_id HAVING COUNT(*)>1)\nORDER BY a.slot_id, a.confirmed_at",
+  "why": "APT1007 (confirmed 1 Aug 11:05) and APT1012A (confirmed 1 Aug 11:55) both held SLOT-JAI-003 until 4 Aug 09:40. The unique index cannot see the past because the table overwrites status instead of logging transitions.",
+  "fix": "Append-only appointment_events (every status change with timestamp and actor); audit queries run on history, not just current rows.",
+  "cols": [
+   "slot_id",
+   "appointment_id",
+   "shipment_id",
+   "appointment_status",
+   "confirmed_at",
+   "cancelled_at",
+   "cancellation_reason"
+  ],
+  "rows": [
+   [
+    "SLOT-JAI-003",
+    "APT1007",
+    "SHP1007",
+    "CONFIRMED",
+    "2026-08-01T11:05:00+05:30",
+    null,
+    null
+   ],
+   [
+    "SLOT-JAI-003",
+    "APT1012A",
+    "SHP1012",
+    "CANCELLED",
+    "2026-08-01T11:55:00+05:30",
+    "2026-08-04T09:40:00+05:30",
+    "Driver ETA moved beyond slot"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F09",
+  "cat": "Capacity",
+  "sev": "Critical",
+  "title": "The two supplied unique indexes leave seven bad bookings possible",
+  "refs": "A20; B-D17",
+  "sql": "-- proved by test inserts on a throw-away copy; see 'probe' rows",
+  "why": "The indexes stop only 'two active bookings on one slot' and 'two current bookings per shipment'.",
+  "fix": "Booking service + feasibility re-check inside BEGIN IMMEDIATE + new triggers (interval overlap, is_current) + hold index.",
+  "rows": [
+   [
+    "Book a BLOCKED slot (D3 10:00, leveller breakdown) for SHP1012",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Book a Gurugram slot for a Jaipur shipment (SHP1012)",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Book 31 t heavy SHP1016 on 20 t standard D1 13:00",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Book the CANCELLED shipment SHP1019",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Book a slot that ended before as-of (D4 08:00)",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Active booking with is_current=0 (escapes per-shipment index): SHP1009 second booking",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Overlap across slots: 75-min SHP1014 at D4 10:00 runs into SHP1009's D4 11:00",
+    "ACCEPTED (gap)"
+   ],
+   [
+    "Second active booking on an occupied slot (D1 10:00, APT1007)",
+    "REJECTED: UNIQUE constraint failed: appointments.slot_id"
+   ]
+  ],
+  "cols": [
+   "attempt",
+   "result"
+  ],
+  "row_count": 8
+ },
+ {
+  "id": "F10",
+  "cat": "Capacity",
+  "sev": "Medium",
+  "title": "v_slot_availability has no notion of time, weight, events or holds",
+  "refs": "A12; B-D7",
+  "sql": "SELECT slot_id, dock_code, slot_start_ts, availability_status FROM v_slot_availability\nWHERE facility_id='FAC-JAI-01' AND availability_status='AVAILABLE' AND slot_start_ts < '2026-08-04T09:45:00+05:30'\nORDER BY slot_start_ts LIMIT 8",
+  "why": "At 09:45 the view still offers slots that started hours earlier, and would offer D3 09:00 on a broken dock.",
+  "fix": "Replace with a feasibility function parameterised by shipment and as-of; keep the view for cross-checks only.",
+  "cols": [
+   "slot_id",
+   "dock_code",
+   "slot_start_ts",
+   "availability_status"
+  ],
+  "rows": [
+   [
+    "SLOT-JAI-001",
+    "D1",
+    "2026-08-04T08:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-029",
+    "D3",
+    "2026-08-04T08:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-043",
+    "D4",
+    "2026-08-04T08:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-057",
+    "D5",
+    "2026-08-04T08:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-071",
+    "D6",
+    "2026-08-04T08:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-044",
+    "D4",
+    "2026-08-04T09:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-058",
+    "D5",
+    "2026-08-04T09:00:00+05:30",
+    "AVAILABLE"
+   ],
+   [
+    "SLOT-JAI-072",
+    "D6",
+    "2026-08-04T09:30:00+05:30",
+    "AVAILABLE"
+   ]
+  ],
+  "row_count": 8
+ },
+ {
+  "id": "F11",
+  "cat": "Fleet",
+  "sev": "High",
+  "title": "One driver on two moving trucks",
+  "refs": "A05; B-D9",
+  "sql": "SELECT driver_id, COUNT(*) AS trips, GROUP_CONCAT(shipment_id||'/'||vehicle_id, ', ') AS trips_and_trucks\nFROM shipments WHERE current_status='IN_TRANSIT' GROUP BY driver_id HAVING COUNT(DISTINCT vehicle_id)>1",
+  "why": "DRV007 cannot drive VEH008 from Ajmer and VEH007 from Mumbai at the same time; one ETA is fiction.",
+  "fix": "Flag to the dispatcher; when DRV007 chats, ask which truck he is in before using either ETA.",
+  "cols": [
+   "driver_id",
+   "trips",
+   "trips_and_trucks"
+  ],
+  "rows": [
+   [
+    "DRV007",
+    2,
+    "SHP1007/VEH008, SHP1016/VEH007"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F12",
+  "cat": "Fleet",
+  "sev": "High",
+  "title": "One vehicle on several live shipments",
+  "refs": "A06; B-D10",
+  "sql": "SELECT vehicle_id, GROUP_CONCAT(shipment_id||' ('||current_status||', departs '||substr(planned_departure_ts,12,5)||')', '; ') AS shipments\nFROM shipments WHERE current_status NOT IN ('COMPLETED','CANCELLED')\nGROUP BY vehicle_id HAVING COUNT(*)>1",
+  "why": "The second trip of each truck depends on the first one finishing; the plan does not say so.",
+  "fix": "Store trip sequence (vehicle_trip_seq) and propagate delays to the next trip of the same truck.",
+  "cols": [
+   "vehicle_id",
+   "shipments"
+  ],
+  "rows": [
+   [
+    "VEH003",
+    "SHP1003 (WAITING, departs 05:00); SHP1018 (ASSIGNED, departs 08:00)"
+   ],
+   [
+    "VEH004",
+    "SHP1004 (WAITING, departs 03:30); SHP1020 (ASSIGNED, departs 13:30)"
+   ],
+   [
+    "VEH015",
+    "SHP1006 (IN_TRANSIT, departs 04:00); SHP1021 (ASSIGNED, departs 10:00)"
+   ]
+  ],
+  "row_count": 3
+ },
+ {
+  "id": "F13",
+  "cat": "Fleet",
+  "sev": "High",
+  "title": "A truck leaves Neemrana while it is still inside Jaipur DC",
+  "refs": "new",
+  "sql": "SELECT a.shipment_id AS first_trip, a.vehicle_id, fc.gate_out_ts AS left_jaipur_at,\n       b.shipment_id AS next_trip, b.origin_city, b.actual_departure_ts AS departed_origin_at\nFROM shipments a JOIN facility_checkins fc ON fc.shipment_id=a.shipment_id\nJOIN shipments b ON b.vehicle_id=a.vehicle_id AND b.shipment_id<>a.shipment_id\nWHERE b.actual_departure_ts IS NOT NULL AND fc.gate_out_ts IS NOT NULL\n  AND julianday(b.actual_departure_ts) < julianday(fc.gate_out_ts)",
+  "why": "VEH001/DRV001 gated out of Jaipur at 08:50 but 'departed' Neemrana (about 150 km away) at 08:15. Either the departure time or the vehicle on SHP1017 is wrong, so SHP1017's ETA cannot be trusted.",
+  "fix": "Physical-plausibility check on every ETA input (time-ordering of the same vehicle's events); a failed check downgrades ETA confidence to LOW.",
+  "cols": [
+   "first_trip",
+   "vehicle_id",
+   "left_jaipur_at",
+   "next_trip",
+   "origin_city",
+   "departed_origin_at"
+  ],
+  "rows": [
+   [
+    "SHP1001",
+    "VEH001",
+    "2026-08-04T08:50:00+05:30",
+    "SHP1017",
+    "Neemrana",
+    "2026-08-04T08:15:00+05:30"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F14",
+  "cat": "Fleet",
+  "sev": "High",
+  "title": "Downstream trips are infeasible, so a 'no-show' is really a planning error",
+  "refs": "A17 (partly); new root cause",
+  "sql": "SELECT nxt.shipment_id AS later_trip, nxt.vehicle_id, nxt.origin_city, nxt.planned_departure_ts,\n       cur.shipment_id AS truck_busy_with, cur.current_status AS busy_status,\n       COALESCE(fc.gate_in_ts, cur.latest_eta_ts) AS busy_at_jaipur_from, a.appointment_status AS later_trip_appt\nFROM shipments nxt JOIN shipments cur ON cur.vehicle_id=nxt.vehicle_id AND cur.shipment_id<>nxt.shipment_id\nLEFT JOIN facility_checkins fc ON fc.shipment_id=cur.shipment_id\nLEFT JOIN appointments a ON a.shipment_id=nxt.shipment_id\nWHERE nxt.current_status='ASSIGNED' AND cur.current_status IN ('IN_TRANSIT','WAITING')\n  AND julianday(COALESCE(fc.gate_in_ts, cur.latest_eta_ts)) > julianday(nxt.planned_departure_ts, '-6 hours')",
+  "why": "VEH003 is in Jaipur's yard from 08:20, so SHP1018 could never leave Bhiwadi at 08:00: its NO_SHOW is the plan's fault, not the driver's. VEH015 (SHP1021, Noida 10:00) and VEH004 (SHP1020, Kota 13:30) show the same pattern.",
+  "fix": "No-show classification must check whether the truck was physically able to come; proactive alert to dispatch for SHP1020/SHP1021 now.",
+  "cols": [
+   "later_trip",
+   "vehicle_id",
+   "origin_city",
+   "planned_departure_ts",
+   "truck_busy_with",
+   "busy_status",
+   "busy_at_jaipur_from",
+   "later_trip_appt"
+  ],
+  "rows": [
+   [
+    "SHP1018",
+    "VEH003",
+    "Bhiwadi",
+    "2026-08-04T08:00:00+05:30",
+    "SHP1003",
+    "WAITING",
+    "2026-08-04T08:20:00+05:30",
+    "NO_SHOW"
+   ],
+   [
+    "SHP1020",
+    "VEH004",
+    "Kota",
+    "2026-08-04T13:30:00+05:30",
+    "SHP1004",
+    "WAITING",
+    "2026-08-04T09:25:00+05:30",
+    "CONFIRMED"
+   ],
+   [
+    "SHP1021",
+    "VEH015",
+    "Noida",
+    "2026-08-04T10:00:00+05:30",
+    "SHP1006",
+    "IN_TRANSIT",
+    "2026-08-04T11:20:00+05:30",
+    null
+   ]
+  ],
+  "row_count": 3
+ },
+ {
+  "id": "F15",
+  "cat": "Time",
+  "sev": "High",
+  "title": "No single snapshot time: rows run from 07:10 to 16:30",
+  "refs": "A08; B-D16",
+  "sql": "SELECT 'eta_updates' t, MIN(created_at) mn, MAX(created_at) mx FROM eta_updates\nUNION ALL SELECT 'chat_messages', MIN(message_ts), MAX(message_ts) FROM chat_messages\nUNION ALL SELECT 'appointments', MIN(updated_at), MAX(updated_at) FROM appointments\nUNION ALL SELECT 'facility_checkins', MIN(updated_at), MAX(updated_at) FROM facility_checkins\nUNION ALL SELECT 'shipments', MIN(updated_at), MAX(updated_at) FROM shipments",
+  "why": "There is no 'now'. A query run 'as of 09:45' still sees a 16:25 ETA update and a 12:35 no-show.",
+  "fix": "Every read takes an explicit as_of and ignores rows created after it (event-time filter).",
+  "cols": [
+   "t",
+   "mn",
+   "mx"
+  ],
+  "rows": [
+   [
+    "eta_updates",
+    "2026-08-04T07:10:00+05:30",
+    "2026-08-04T16:25:00+05:30"
+   ],
+   [
+    "chat_messages",
+    "2026-08-04T08:22:00+05:30",
+    "2026-08-04T16:24:08+05:30"
+   ],
+   [
+    "appointments",
+    "2026-08-04T08:10:00+05:30",
+    "2026-08-04T16:30:00+05:30"
+   ],
+   [
+    "facility_checkins",
+    "2026-08-04T08:25:00+05:30",
+    "2026-08-04T09:30:00+05:30"
+   ],
+   [
+    "shipments",
+    "2026-08-04T08:10:00+05:30",
+    "2026-08-04T16:30:00+05:30"
+   ]
+  ],
+  "row_count": 5
+ },
+ {
+  "id": "F16",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "latest_eta_ts differs from the plan with no ETA record behind it",
+  "refs": "A10; B-D11",
+  "sql": "SELECT s.shipment_id, s.original_eta_ts, s.latest_eta_ts FROM shipments s\nWHERE s.latest_eta_ts <> s.original_eta_ts AND NOT EXISTS (SELECT 1 FROM eta_updates e WHERE e.shipment_id=s.shipment_id)",
+  "why": "Nobody knows who changed these ETAs or how sure they are.",
+  "fix": "Treat an unexplained ETA as MEDIUM confidence and log a lineage gap; every ETA change must write eta_updates.",
+  "cols": [
+   "shipment_id",
+   "original_eta_ts",
+   "latest_eta_ts"
+  ],
+  "rows": [
+   [
+    "SHP1002",
+    "2026-08-04T07:55:00+05:30",
+    "2026-08-04T07:58:00+05:30"
+   ],
+   [
+    "SHP1009",
+    "2026-08-04T10:45:00+05:30",
+    "2026-08-04T10:50:00+05:30"
+   ],
+   [
+    "SHP1010",
+    "2026-08-04T10:50:00+05:30",
+    "2026-08-04T10:55:00+05:30"
+   ],
+   [
+    "SHP1011",
+    "2026-08-04T10:40:00+05:30",
+    "2026-08-04T10:45:00+05:30"
+   ]
+  ],
+  "row_count": 4
+ },
+ {
+  "id": "F17",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "The ETA view labels the original plan as HIGH confidence",
+  "refs": "A11",
+  "sql": "SELECT shipment_id, effective_eta_ts, eta_source, eta_confidence FROM v_latest_eta\nWHERE eta_source='ORIGINAL_PLAN' AND eta_confidence='HIGH'",
+  "why": "A plan made three days earlier is reported as if the driver had just confirmed it.",
+  "fix": "Confidence of an unconfirmed plan = MEDIUM, decaying to LOW as the slot approaches without a driver ping.",
+  "cols": [
+   "shipment_id",
+   "effective_eta_ts",
+   "eta_source",
+   "eta_confidence"
+  ],
+  "rows": [
+   [
+    "SHP1002",
+    "2026-08-04T07:58:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1007",
+    "2026-08-04T09:50:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1008",
+    "2026-08-04T09:45:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1009",
+    "2026-08-04T10:50:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1010",
+    "2026-08-04T10:55:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1011",
+    "2026-08-04T10:45:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1018",
+    "2026-08-04T11:50:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1019",
+    "2026-08-04T16:00:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1020",
+    "2026-08-04T18:00:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ],
+   [
+    "SHP1021",
+    "2026-08-04T14:00:00+05:30",
+    "ORIGINAL_PLAN",
+    "HIGH"
+   ]
+  ],
+  "row_count": 10
+ },
+ {
+  "id": "F18",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "An ETA range cannot be stored; it is squeezed into one point",
+  "refs": "new",
+  "sql": "SELECT eta_update_id, shipment_id, declared_eta_ts, confidence_code, note FROM eta_updates WHERE note LIKE '%between%'",
+  "why": "'Between 12:30 and 13:00' became 12:45. The planner loses the late edge it should plan against.",
+  "fix": "Add eta_earliest_ts / eta_latest_ts; plan against the late edge for LOW confidence.",
+  "cols": [
+   "eta_update_id",
+   "shipment_id",
+   "declared_eta_ts",
+   "confidence_code",
+   "note"
+  ],
+  "rows": [
+   [
+    "ETA012",
+    "SHP1017",
+    "2026-08-04T12:45:00+05:30",
+    "LOW",
+    "Driver expects arrival between 12:30 and 13:00."
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F19",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "Trucks inside the grace period are labelled LATE",
+  "refs": "new",
+  "sql": "SELECT fc.shipment_id, fc.gate_in_ts, sl.slot_start_ts, fc.arrival_state,\n       CAST(ROUND((julianday(fc.gate_in_ts)-julianday(sl.slot_start_ts))*1440) AS INT) AS minutes_after_start,\n       (SELECT rule_value FROM facility_rules r WHERE r.facility_id=fc.facility_id AND r.rule_type='NO_SHOW_GRACE_MIN') AS grace_min\nFROM facility_checkins fc JOIN appointments a ON a.shipment_id=fc.shipment_id AND a.is_current=1\nJOIN appointment_slots sl ON sl.slot_id=a.slot_id\nWHERE fc.arrival_state='LATE'",
+  "why": "SHP1005 (5 min) and SHP1004 (25 min) arrived inside the 30-minute grace, so their appointments are still valid. A system that reads LATE as 'missed' would wrongly push them back.",
+  "fix": "Define states precisely: ON_TIME_WITHIN_GRACE vs LATE_BEYOND_GRACE; only the second loses the appointment.",
+  "cols": [
+   "shipment_id",
+   "gate_in_ts",
+   "slot_start_ts",
+   "arrival_state",
+   "minutes_after_start",
+   "grace_min"
+  ],
+  "rows": [
+   [
+    "SHP1004",
+    "2026-08-04T09:25:00+05:30",
+    "2026-08-04T09:00:00+05:30",
+    "LATE",
+    25,
+    "30"
+   ],
+   [
+    "SHP1005",
+    "2026-08-04T09:05:00+05:30",
+    "2026-08-04T09:00:00+05:30",
+    "LATE",
+    5,
+    "30"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F20",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "The 21:00 last-start rule conflicts with slots that start at 21:00",
+  "refs": "A15",
+  "sql": "SELECT sl.slot_id, d.dock_code, substr(sl.slot_start_ts,12,5) AS starts, substr(sl.slot_end_ts,12,5) AS ends, sl.slot_status\nFROM appointment_slots sl JOIN docks d USING(dock_id)\nWHERE sl.facility_id='FAC-JAI-01' AND substr(sl.slot_start_ts,12,5) >= '21:00' ORDER BY sl.slot_start_ts",
+  "why": "Five slots are published that the rule says need manual approval. Is 21:00 itself allowed?",
+  "fix": "Treat a 21:00 start as needing approval (strict reading) until the client confirms; label these slots 'approval needed'.",
+  "cols": [
+   "slot_id",
+   "dock_code",
+   "starts",
+   "ends",
+   "slot_status"
+  ],
+  "rows": [
+   [
+    "SLOT-JAI-014",
+    "D1",
+    "21:00",
+    "22:00",
+    "OPEN"
+   ],
+   [
+    "SLOT-JAI-028",
+    "D2",
+    "21:00",
+    "22:00",
+    "OPEN"
+   ],
+   [
+    "SLOT-JAI-042",
+    "D3",
+    "21:00",
+    "22:00",
+    "OPEN"
+   ],
+   [
+    "SLOT-JAI-056",
+    "D4",
+    "21:00",
+    "22:00",
+    "OPEN"
+   ],
+   [
+    "SLOT-JAI-070",
+    "D5",
+    "21:00",
+    "22:00",
+    "BLOCKED"
+   ]
+  ],
+  "row_count": 5
+ },
+ {
+  "id": "F21",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "Rules are duplicated, missing or wider than the slot grid",
+  "refs": "new",
+  "sql": "SELECT f.facility_id, f.open_time, f.close_time, f.checkin_grace_min AS grace_in_facilities,\n  (SELECT rule_value FROM facility_rules r WHERE r.facility_id=f.facility_id AND r.rule_type='NO_SHOW_GRACE_MIN') AS grace_in_rules,\n  (SELECT COUNT(*) FROM facility_rules r WHERE r.facility_id=f.facility_id) AS rule_count,\n  (SELECT MIN(substr(slot_start_ts,12,5)) FROM appointment_slots s WHERE s.facility_id=f.facility_id) AS first_slot,\n  (SELECT MAX(substr(slot_end_ts,12,5)) FROM appointment_slots s WHERE s.facility_id=f.facility_id) AS last_slot_end\nFROM facilities f",
+  "why": "Grace lives in two places (they agree today, but nothing keeps them in sync). Gurugram has no last-start, early-check-in or heavy rule. Jaipur opens at 06:00 but its first slot is 08:00.",
+  "fix": "One rule store with typed values and effective dates; the facility table keeps only identity.",
+  "cols": [
+   "facility_id",
+   "open_time",
+   "close_time",
+   "grace_in_facilities",
+   "grace_in_rules",
+   "rule_count",
+   "first_slot",
+   "last_slot_end"
+  ],
+  "rows": [
+   [
+    "FAC-JAI-01",
+    "06:00",
+    "22:00",
+    30,
+    "30",
+    5,
+    "08:00",
+    "22:00"
+   ],
+   [
+    "FAC-GGN-01",
+    "07:00",
+    "21:00",
+    20,
+    "20",
+    1,
+    "09:00",
+    "18:00"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F22",
+  "cat": "Time",
+  "sev": "Low",
+  "title": "The reefer rule names dock D5 in free text; rule values are untyped text",
+  "refs": "A16; new",
+  "sql": "SELECT rule_id, facility_id, rule_type, rule_value, typeof(rule_value) AS stored_as, description FROM facility_rules ORDER BY rule_id",
+  "why": "If a second reefer dock is added, the rule text is wrong; '60', 'TRUE' and '21:00' are all stored as text.",
+  "fix": "Rules reference dock capabilities (supports_refrigerated) rather than dock codes; add value_type.",
+  "cols": [
+   "rule_id",
+   "facility_id",
+   "rule_type",
+   "rule_value",
+   "stored_as",
+   "description"
+  ],
+  "rows": [
+   [
+    "RULE001",
+    "FAC-JAI-01",
+    "CHECKIN_EARLY_LIMIT_MIN",
+    "60",
+    "text",
+    "Trucks may check in up to 60 minutes before the booked slot."
+   ],
+   [
+    "RULE002",
+    "FAC-JAI-01",
+    "NO_SHOW_GRACE_MIN",
+    "30",
+    "text",
+    "A truck may be marked no-show 30 minutes after the slot starts if it has not checked in."
+   ],
+   [
+    "RULE003",
+    "FAC-JAI-01",
+    "REEFER_DOCK_REQUIRED",
+    "TRUE",
+    "text",
+    "Temperature-controlled loads must use dock D5."
+   ],
+   [
+    "RULE004",
+    "FAC-JAI-01",
+    "HEAVY_DOCK_REQUIRED_KG",
+    "25000",
+    "text",
+    "Loads above 25,000 kg must use the heavy dock."
+   ],
+   [
+    "RULE005",
+    "FAC-JAI-01",
+    "LAST_NEW_START_TIME",
+    "21:00",
+    "text",
+    "No new unloading operation should start after 21:00 without manual approval."
+   ],
+   [
+    "RULE006",
+    "FAC-GGN-01",
+    "NO_SHOW_GRACE_MIN",
+    "20",
+    "text",
+    "A truck may be marked no-show 20 minutes after the slot starts."
+   ]
+  ],
+  "row_count": 6
+ },
+ {
+  "id": "F23",
+  "cat": "Time",
+  "sev": "Medium",
+  "title": "Slots exist only for 4 August: no next-day capacity",
+  "refs": "new",
+  "sql": "SELECT facility_id, MIN(substr(slot_start_ts,1,10)) AS first_day, MAX(substr(slot_end_ts,1,10)) AS last_day, COUNT(*) AS slots\nFROM appointment_slots GROUP BY facility_id",
+  "why": "'First slot tomorrow morning' cannot be computed or offered for the reefer truck.",
+  "fix": "Generate a rolling 48-hour slot horizon from facility calendars; until then, escalation states the gap.",
+  "cols": [
+   "facility_id",
+   "first_day",
+   "last_day",
+   "slots"
+  ],
+  "rows": [
+   [
+    "FAC-GGN-01",
+    "2026-08-04",
+    "2026-08-04",
+    27
+   ],
+   [
+    "FAC-JAI-01",
+    "2026-08-04",
+    "2026-08-04",
+    79
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F24",
+  "cat": "Time",
+  "sev": "Low",
+  "title": "Slots have no updated_at: a 4 Aug breakdown appears on rows 'created' 1 Aug",
+  "refs": "new",
+  "sql": "SELECT slot_id, slot_status, block_reason, created_at FROM appointment_slots WHERE slot_status='BLOCKED' ORDER BY slot_id",
+  "why": "The data cannot say when a block was applied, so nobody can audit whether drivers were told in time.",
+  "fix": "Add updated_at and a slot_events history table.",
+  "cols": [
+   "slot_id",
+   "slot_status",
+   "block_reason",
+   "created_at"
+  ],
+  "rows": [
+   [
+    "SLOT-JAI-031",
+    "BLOCKED",
+    "Hydraulic leveller breakdown",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-032",
+    "BLOCKED",
+    "Hydraulic leveller breakdown",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-033",
+    "BLOCKED",
+    "Hydraulic leveller breakdown",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-067",
+    "BLOCKED",
+    "Refrigeration power maintenance",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-068",
+    "BLOCKED",
+    "Refrigeration power maintenance",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-069",
+    "BLOCKED",
+    "Refrigeration power maintenance",
+    "2026-08-01T12:00:00+05:30"
+   ],
+   [
+    "SLOT-JAI-070",
+    "BLOCKED",
+    "Refrigeration power maintenance",
+    "2026-08-01T12:00:00+05:30"
+   ]
+  ],
+  "row_count": 7
+ },
+ {
+  "id": "F25",
+  "cat": "Messaging",
+  "sev": "High",
+  "title": "A messaging retry is stored as a new message, exception and thread",
+  "refs": "A09; B-D12",
+  "sql": "SELECT m.chat_message_id, m.thread_id, m.external_message_id, m.message_ts, m.is_duplicate, e.exception_id, e.dedupe_key, e.exception_status\nFROM chat_messages m LEFT JOIN driver_exceptions e ON e.thread_id=m.thread_id\nWHERE m.sender_type='DRIVER' AND m.message_text IN (SELECT message_text FROM chat_messages WHERE sender_type='DRIVER' GROUP BY message_text HAVING COUNT(*)>1)",
+  "why": "Without a unique key the retry could book twice; here only a manual is_duplicate flag caught it.",
+  "fix": "Inbound dedupe on (driver, normalised text, 10-min window) + idempotency key on every write.",
+  "cols": [
+   "chat_message_id",
+   "thread_id",
+   "external_message_id",
+   "message_ts",
+   "is_duplicate",
+   "exception_id",
+   "dedupe_key",
+   "exception_status"
+  ],
+  "rows": [
+   [
+    "MSG001",
+    "THR001",
+    "wa-9001",
+    "2026-08-04T09:34:00+05:30",
+    0,
+    "EXC001",
+    "DRV006-SHP1006-20260804-0934",
+    "NEEDS_INFORMATION"
+   ],
+   [
+    "MSG015",
+    "THR009",
+    "wa-9009",
+    "2026-08-04T09:35:02+05:30",
+    1,
+    "EXC009",
+    "DRV006-SHP1006-20260804-0934",
+    "DUPLICATE"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F26",
+  "cat": "Messaging",
+  "sev": "Medium",
+  "title": "One driver, several threads: context is split",
+  "refs": "new",
+  "sql": "SELECT driver_id, COUNT(*) AS threads, GROUP_CONCAT(thread_id||' '||substr(opened_at,12,5)||' '||thread_intent, ' | ') AS detail\nFROM chat_threads GROUP BY driver_id HAVING COUNT(*)>1",
+  "why": "DRV004 says 'I reached late and am in the yard' (THR008, 09:27), then '45 minutes late' (THR010, 09:31). In one thread the second message is easy to place: his morning load is already at the gate, so he must mean the evening one.",
+  "fix": "One open conversation per driver; threads are per exception, linked to one driver session.",
+  "cols": [
+   "driver_id",
+   "threads",
+   "detail"
+  ],
+  "rows": [
+   [
+    "DRV004",
+    2,
+    "THR008 09:27 CHECK_STATUS | THR010 09:31 UNKNOWN"
+   ],
+   [
+    "DRV006",
+    2,
+    "THR001 09:34 REPORT_DELAY | THR009 09:35 REPORT_DELAY"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F27",
+  "cat": "Messaging",
+  "sev": "High",
+  "title": "Three driver messages never got a reply",
+  "refs": "new",
+  "sql": "SELECT t.thread_id, t.driver_id, t.thread_status, m.message_ts, m.message_text\nFROM chat_threads t JOIN chat_messages m ON m.thread_id=t.thread_id AND m.sender_type='DRIVER' AND m.is_duplicate=0\nWHERE NOT EXISTS (SELECT 1 FROM chat_messages r WHERE r.thread_id=t.thread_id AND r.sender_type<>'DRIVER')",
+  "why": "The heavy-trailer driver (09:39), the late truck in the yard (09:27) and an ask-only driver (10:02) are left waiting.",
+  "fix": "Reply SLA monitor: any driver message unanswered after 60 seconds raises an alarm; auto-acknowledge at once.",
+  "cols": [
+   "thread_id",
+   "driver_id",
+   "thread_status",
+   "message_ts",
+   "message_text"
+  ],
+  "rows": [
+   [
+    "THR006",
+    "DRV007",
+    "OPEN",
+    "2026-08-04T09:39:00+05:30",
+    "Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?"
+   ],
+   [
+    "THR008",
+    "DRV004",
+    "WAITING_FOR_WAREHOUSE",
+    "2026-08-04T09:27:00+05:30",
+    "I reached late and am in the yard. Has a new dock been assigned?"
+   ],
+   [
+    "THR011",
+    "DRV001",
+    "OPEN",
+    "2026-08-04T10:02:00+05:30",
+    "What slots are possible after 1 PM if I reach around 12:45?"
+   ]
+  ],
+  "row_count": 3
+ },
+ {
+  "id": "F28",
+  "cat": "Messaging",
+  "sev": "High",
+  "title": "Pending confirmation requests that never reached the warehouse",
+  "refs": "B-D13",
+  "sql": "SELECT om.operational_message_id, om.appointment_id, om.delivery_status, om.sent_at, a.appointment_status, a.booked_at\nFROM operational_messages om JOIN appointments a USING(appointment_id)\nWHERE a.appointment_status='PENDING_CONFIRMATION'",
+  "why": "APT1013A has waited since 09:32 on an email still QUEUED; APT1014A's email was SENT but never delivered or answered. Both slots are locked.",
+  "fix": "Pending has a decision deadline tied to slot start; delivery is tracked; no reply by the deadline triggers a phone call or release.",
+  "cols": [
+   "operational_message_id",
+   "appointment_id",
+   "delivery_status",
+   "sent_at",
+   "appointment_status",
+   "booked_at"
+  ],
+  "rows": [
+   [
+    "OM001",
+    "APT1014A",
+    "SENT",
+    "2026-08-04T09:52:00+05:30",
+    "PENDING_CONFIRMATION",
+    "2026-08-04T09:52:00+05:30"
+   ],
+   [
+    "OM002",
+    "APT1013A",
+    "QUEUED",
+    "2026-08-04T09:32:00+05:30",
+    "PENDING_CONFIRMATION",
+    "2026-08-04T09:32:00+05:30"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F29",
+  "cat": "Messaging",
+  "sev": "High",
+  "title": "The escalation channel itself is broken",
+  "refs": "A13, A14; B-D14, B-D15",
+  "sql": "SELECT 'message' AS kind, om.operational_message_id AS id, om.recipient_address AS target, om.delivery_status AS status,\n  CASE WHEN EXISTS (SELECT 1 FROM facility_contacts c WHERE c.email=om.recipient_address) THEN 'known contact' ELSE 'not in contacts' END AS note\nFROM operational_messages om WHERE om.delivery_status='FAILED'\nUNION ALL\nSELECT 'contact', contact_id, contact_role||' / '||contact_name, COALESCE(email,'NO EMAIL'), 'phone '||COALESCE(phone,'-')\nFROM facility_contacts WHERE email IS NULL OR contact_name LIKE 'Vacant%'",
+  "why": "The reefer escalation (OM004) went to an address nobody owns and failed; the Gurugram night role is vacant with no email.",
+  "fix": "Route by role and channel health; a FAILED hand-off is not a hand-off; fall back to phone and to the shift manager.",
+  "cols": [
+   "kind",
+   "id",
+   "target",
+   "status",
+   "note"
+  ],
+  "rows": [
+   [
+    "message",
+    "OM004",
+    "night.shift@setuhaul.example",
+    "FAILED",
+    "not in contacts"
+   ],
+   [
+    "contact",
+    "CON005",
+    "NIGHT_SHIFT_COORDINATOR / Vacant Position",
+    "NO EMAIL",
+    "phone +91-124-5001209"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "id": "F30",
+  "cat": "Messaging",
+  "sev": "High",
+  "title": "The existing chat booking path made an incompatible booking",
+  "refs": "A07",
+  "sql": "SELECT a.appointment_id, a.booking_source, s.shipment_id, s.load_weight_kg, d.dock_code, d.max_vehicle_weight_kg\nFROM appointments a JOIN shipments s USING(shipment_id) JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON d.dock_id=sl.dock_id\nWHERE a.booking_source='DRIVER_CHAT' AND s.load_weight_kg > d.max_vehicle_weight_kg",
+  "why": "Proof that today's chat flow books without a compatibility check.",
+  "fix": "Only the booking service writes appointments, and it re-runs every feasibility rule.",
+  "cols": [
+   "appointment_id",
+   "booking_source",
+   "shipment_id",
+   "load_weight_kg",
+   "dock_code",
+   "max_vehicle_weight_kg"
+  ],
+  "rows": [
+   [
+    "APT1014A",
+    "DRIVER_CHAT",
+    "SHP1014",
+    21000,
+    "D1",
+    20000
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F31",
+  "cat": "Messaging",
+  "sev": "Medium",
+  "title": "Driver time limits are stored without saying what they limit",
+  "refs": "new",
+  "sql": "SELECT e.exception_id, e.latest_acceptable_ts, m.message_text AS agent_question\nFROM driver_exceptions e JOIN chat_messages m ON m.thread_id=e.thread_id AND m.sender_type='AGENT'\nWHERE e.latest_acceptable_ts IS NOT NULL",
+  "why": "13:30 is stored as latest_acceptable_ts, but the agent itself asked whether it is gate-out or unload start. The two readings differ by unload time plus exit time (about 60 minutes here).",
+  "fix": "Store the constraint type explicitly: LATEST_GATE_OUT, LATEST_UNLOAD_END or LATEST_START.",
+  "cols": [
+   "exception_id",
+   "latest_acceptable_ts",
+   "agent_question"
+  ],
+  "rows": [
+   [
+    "EXC002",
+    "2026-08-04T13:30:00+05:30",
+    "Understood. Should 1:30 PM be treated as the latest gate-out time or the latest unloading start time?"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F32",
+  "cat": "Semantics",
+  "sev": "High",
+  "title": "'max_vehicle_weight_kg' is compared with cargo weight",
+  "refs": "new",
+  "sql": "SELECT v.vehicle_type_code, vt.description, MAX(s.load_weight_kg) AS max_payload_kg,\n       (SELECT MIN(max_vehicle_weight_kg) FROM docks WHERE dock_type='STANDARD') AS smallest_standard_dock_kg\nFROM shipments s JOIN vehicles v USING(vehicle_id) JOIN vehicle_types vt USING(vehicle_type_code)\nGROUP BY v.vehicle_type_code ORDER BY max_payload_kg DESC",
+  "why": "The column says vehicle weight, the rule (RULE004) and both designs compare it with payload. A loaded 32-ft multi-axle truck weighs far more than its payload, so under the literal meaning every standard dock would be too weak. The data only makes sense if the limit is a payload limit.",
+  "fix": "Grey-area question for the client; until answered, treat the limit as a payload limit and say so.",
+  "cols": [
+   "vehicle_type_code",
+   "description",
+   "max_payload_kg",
+   "smallest_standard_dock_kg"
+  ],
+  "rows": [
+   [
+    "HEAVY_40",
+    "40-foot heavy-duty trailer",
+    31000,
+    20000
+   ],
+   [
+    "32FT_MXL",
+    "32-foot multi-axle truck",
+    21000,
+    20000
+   ],
+   [
+    "REEFER_32",
+    "32-foot refrigerated truck",
+    16000,
+    20000
+   ],
+   [
+    "32FT_SXL",
+    "32-foot single-axle truck",
+    14000,
+    20000
+   ],
+   [
+    "20FT",
+    "20-foot closed-body truck",
+    8000,
+    20000
+   ]
+  ],
+  "row_count": 5
+ },
+ {
+  "id": "F33",
+  "cat": "Semantics",
+  "sev": "Low",
+  "title": "Only one check-in per shipment is allowed",
+  "refs": "new",
+  "sql": "SELECT name, sql FROM sqlite_master WHERE name='facility_checkins'",
+  "why": "A truck that is turned away and comes back (re-delivery, rejected load) cannot be recorded.",
+  "fix": "Allow multiple visits per shipment (visit_seq).",
+  "cols": [
+   "name",
+   "sql"
+  ],
+  "rows": [
+   [
+    "facility_checkins",
+    "CREATE TABLE facility_checkins (\n    checkin_id TEXT PRIMARY KEY,\n    shipment_id TEXT NOT NULL UNIQUE,\n    facility_id TEXT NOT NULL,\n    gate_in_ts TEXT,\n    yard_queue_enter_ts TEXT,\n    dock_in_ts TEXT,\n    unload_start_ts TEXT,\n    unload_end_ts TEXT,\n    gate_out_ts TEXT,\n    arrival_state TEXT\n        CHECK (arrival_state IS NULL OR arrival_state IN ('EARLY','ON_TIME','LATE','NO_SHOW')),\n    queue_state TEXT\n        CHECK (queue_state IS NULL OR queue_state IN ('NOT_QUEUED','WAITING_EARLY','WAITING_LATE','WAITING_DOCK_UNAVAILABLE','CALLED_TO_DOCK','IN_DOCK','COMPLETED')),\n    queue_position INTEGER CHECK (queue_position IS NULL OR queue_position > 0),\n    actual_dock_id TEXT,\n    notes TEXT,\n    updated_at TEXT NOT NULL,\n    FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_id),\n    FOREIGN KEY (facility_id) REFERENCES facilities(facility_id),\n    FOREIGN KEY (actual_dock_id) REFERENCES docks(dock_id)\n)"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F34",
+  "cat": "Semantics",
+  "sev": "Medium",
+  "title": "An unload overrun is recorded as a 'capacity reduction' and in free-text notes",
+  "refs": "A19",
+  "sql": "SELECT fc.shipment_id, d.dock_code, fc.unload_start_ts, s.expected_unload_min, fc.unload_end_ts, fc.notes,\n       e.event_type, e.event_start_ts, e.event_end_ts\nFROM facility_checkins fc JOIN shipments s USING(shipment_id) JOIN docks d ON d.dock_id=fc.actual_dock_id\nLEFT JOIN dock_status_events e ON e.dock_id=fc.actual_dock_id\nWHERE fc.queue_state='IN_DOCK'",
+  "why": "The scheduler has to guess when D2 frees up.",
+  "fix": "Compute expected_free_at = unload_start + expected_unload (+ overrun buffer once exceeded) and treat it as a fixed block.",
+  "cols": [
+   "shipment_id",
+   "dock_code",
+   "unload_start_ts",
+   "expected_unload_min",
+   "unload_end_ts",
+   "notes",
+   "event_type",
+   "event_start_ts",
+   "event_end_ts"
+  ],
+  "rows": [
+   [
+    "SHP1002",
+    "D2",
+    "2026-08-04T08:08:00+05:30",
+    70,
+    null,
+    "Unload running longer than planned.",
+    "CAPACITY_REDUCTION",
+    "2026-08-04T08:00:00+05:30",
+    "2026-08-04T09:20:00+05:30"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F35",
+  "cat": "Semantics",
+  "sev": "Medium",
+  "title": "No-show booking is closed but its shipment is still ASSIGNED",
+  "refs": "A17",
+  "sql": "SELECT a.appointment_id, a.appointment_status, a.is_current, s.shipment_id, s.current_status, s.vehicle_id\nFROM appointments a JOIN shipments s USING(shipment_id) WHERE a.appointment_status='NO_SHOW'",
+  "why": "The shipment has no live appointment and no next step.",
+  "fix": "A no-show opens an exception for dispatch automatically.",
+  "cols": [
+   "appointment_id",
+   "appointment_status",
+   "is_current",
+   "shipment_id",
+   "current_status",
+   "vehicle_id"
+  ],
+  "rows": [
+   [
+    "APT1018",
+    "NO_SHOW",
+    0,
+    "SHP1018",
+    "ASSIGNED",
+    "VEH003"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "id": "F36",
+  "cat": "Semantics",
+  "sev": "High",
+  "title": "Moving shipments with no current appointment",
+  "refs": "A18",
+  "sql": "SELECT s.shipment_id, s.priority_code, s.required_dock_type, s.current_status, e.effective_eta_ts\nFROM shipments s JOIN v_latest_eta e USING(shipment_id)\nWHERE s.current_status IN ('IN_TRANSIT','WAITING','AT_GATE')\n  AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.shipment_id=s.shipment_id AND a.is_current=1 AND a.appointment_status IN ('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS'))",
+  "why": "SHP1012 and SHP1016 are on the road with nothing booked; they must be in every re-plan.",
+  "fix": "The facility planner's job list = every inbound shipment, booked or not.",
+  "cols": [
+   "shipment_id",
+   "priority_code",
+   "required_dock_type",
+   "current_status",
+   "effective_eta_ts"
+  ],
+  "rows": [
+   [
+    "SHP1012",
+    "NORMAL",
+    "STANDARD",
+    "IN_TRANSIT",
+    "2026-08-04T11:10:00+05:30"
+   ],
+   [
+    "SHP1016",
+    "HIGH",
+    "HEAVY",
+    "IN_TRANSIT",
+    "2026-08-04T12:00:00+05:30"
+   ]
+  ],
+  "row_count": 2
+ }
+]

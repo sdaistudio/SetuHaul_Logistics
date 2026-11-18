@@ -5,7 +5,9 @@
 * HELD    the driver picked an option. A row in slot_holds with a 5-minute TTL.
           ux_live_hold_per_slot makes a second hold on the slot impossible.
 * PENDING_CONFIRMATION  appointment written, slot occupied (DB unique index),
-          waiting for a coordinator because an approval trigger fired. 20-min TTL.
+          waiting for a coordinator because an approval trigger fired. Expires at
+          pending_deadline(): min(booked + 15 min, slot start - 30 min), never sooner
+          than 5 min after booking (review change 11).
 * CONFIRMED  appointment written and committed in the system of record.
 
 Every write runs inside BEGIN IMMEDIATE (single writer per database; in AWS the
@@ -24,7 +26,7 @@ from . import config
 from .db import audit, write_txn
 from .eta import EtaEstimate, resolve_eta
 from .feasibility import Constraints, FacilityState, evaluate_slot
-from .timeutil import iso, minutes
+from .timeutil import iso, minutes, parse
 
 
 class CapacityError(Exception):
@@ -37,15 +39,28 @@ def _new_id(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:8].upper()}"
 
 
+def _dt(v: str) -> datetime:
+    return parse(v)
+
+
+def pending_deadline(booked_at: datetime, planned_start: datetime | None) -> datetime:
+    """When an unanswered approval lapses: min(booked + 15, start - 30), floor booked + 5."""
+    d = booked_at + minutes(config.PENDING_CONFIRMATION_TTL_MIN)
+    if planned_start is not None:
+        d = min(d, planned_start - minutes(config.PENDING_LEAD_BEFORE_START_MIN))
+    return max(d, booked_at + minutes(config.PENDING_MIN_DECISION_MIN))
+
+
 def expire_stale(conn, now: datetime) -> dict:
     """Called inside a write txn and by the 1-minute sweeper."""
     n_h = conn.execute(
         "UPDATE slot_holds SET hold_status='EXPIRED', closed_at=? WHERE hold_status='HELD' AND expires_at<=?",
         (iso(now), iso(now))).rowcount
-    cutoff = iso(now - minutes(config.PENDING_CONFIRMATION_TTL_MIN))
-    rows = conn.execute(
-        "SELECT appointment_id FROM appointments WHERE appointment_status='PENDING_CONFIRMATION' "
-        "AND booking_source='DRIVER_CHAT' AND booked_at<=?", (cutoff,)).fetchall()
+    rows = [r for r in conn.execute(
+        "SELECT a.appointment_id, a.booked_at, p.planned_start_ts FROM appointments a "
+        "LEFT JOIN appointment_plan p ON p.appointment_id=a.appointment_id "
+        "WHERE a.appointment_status='PENDING_CONFIRMATION' AND a.booking_source='DRIVER_CHAT'").fetchall()
+        if pending_deadline(_dt(r["booked_at"]), _dt(r["planned_start_ts"]) if r["planned_start_ts"] else None) <= now]
     for r in rows:
         conn.execute("UPDATE appointments SET appointment_status='REJECTED', is_current=0, "
                      "cancellation_reason='Warehouse confirmation timed out', cancelled_at=?, updated_at=? "

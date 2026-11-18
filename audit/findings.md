@@ -39,26 +39,23 @@ Rows returned: **3**
 
 ## A03. Unload longer than the slot
 
-75-min unloads booked into 60-min slots spill into the next booking on the same dock.
+70- and 75-min unloads booked into 60-min slots spill into the next booking on the same dock. Minutes are rounded, not truncated: v1 used CAST(... AS INT) on julianday differences, which turned some 60-min slots into 59 and reported 7 rows; only 4 are real (review item A3).
 
 ```sql
 SELECT a.appointment_id, a.shipment_id, s.expected_unload_min,
-       CAST((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AS INT) AS slot_min, a.appointment_status
+       CAST(ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AS INT) AS slot_min, a.appointment_status
 FROM appointments a JOIN shipments s USING(shipment_id) JOIN appointment_slots sl USING(slot_id)
-WHERE s.expected_unload_min > (julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AND a.appointment_status <> 'CANCELLED';
+WHERE s.expected_unload_min > ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AND a.appointment_status <> 'CANCELLED';
 ```
 
-Rows returned: **7**
+Rows returned: **4**
 
 | appointment_id | shipment_id | expected_unload_min | slot_min | appointment_status |
 |---|---|---|---|---|
 | APT1002 | SHP1002 | 70 | 60 | IN_PROGRESS |
-| APT1004 | SHP1004 | 60 | 59 | CONFIRMED |
-| APT1005 | SHP1005 | 75 | 59 | CONFIRMED |
-| APT1007 | SHP1007 | 60 | 59 | CONFIRMED |
+| APT1005 | SHP1005 | 75 | 60 | CONFIRMED |
 | APT1009 | SHP1009 | 75 | 60 | CONFIRMED |
 | APT1014A | SHP1014 | 75 | 60 | PENDING_CONFIRMATION |
-| APT1020 | SHP1020 | 60 | 59 | CONFIRMED |
 
 ## A04. Booked slot already missed by declared ETA
 

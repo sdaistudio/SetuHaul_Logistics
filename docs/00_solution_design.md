@@ -2,6 +2,15 @@
 
 FDE Academy challenge: driver exception service · 12 Nov 2026 (updated 17 Nov 2026)
 
+> **Update after the 18 November review (v2).** A colleague reviewed this design (Doc A) against a second design and reconciled the two. The hand-ins of record are now in [`v2/` (the v2 hand-ins)](index.html#v2) (seven Word documents and a working prototype). This page stays as the add-on and scale path, updated to agree with the review:
+> - **Pick = book.** A driver's or coordinator's pick books the slot in one checked transaction. There is no "Reply YES" round trip; a hold exists only while a warehouse coordinator decides.
+> - **Approval deadline.** A booking waiting for approval lapses at min(booked + 15 min, slot start − 30 min), not after a fixed 20 minutes.
+> - **Deployment.** The pilot runs as one container plus managed Postgres, which the review estimates at about US$22–30 a month. The AWS design in section 3 (about US$170 a month floor) is the scale path for more facilities.
+> - **Engine.** An exact branch and bound stays the scheduling engine, with a priority list plus repair as the first, explainable answer and a one-line reason per truck. In v2 it proves the 09:45 plan optimal after 5,425 of 40,320 truck orders.
+> - **Corrections.** The data audit counted 7 long unloads; 4 are real (A03, fixed). Evaluation rates now carry 95% intervals.
+>
+> Full mapping of every review item: [`v2/CHANGELOG.md`](https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/v2/CHANGELOG.md).
+
 ## 1. The problem in one line
 
 When 20–35 drivers message in the same half hour, SetuHaul must answer each one in their language with a dock slot the truck can actually make, and must never promise the same capacity twice. Scale to design for: 280–360 loads/day, 6 facilities, 32 docks, 5 coordinators per shift, no GPS. The 4 August 2026 Jaipur snapshot is the test bed.
@@ -24,6 +33,8 @@ When 20–35 drivers message in the same half hour, SetuHaul must answer each on
 ![SetuHaul architecture on AWS](architecture.png)
 
 **Flow.** WhatsApp → API Gateway → WebhookFn (verifies the Meta signature) → SQS FIFO (ordered per driver, deduped by message id) → WorkerFn runs the deterministic workflow → the decision core (ETA, solver, capacity, escalation) reads and commits against the system of record → reply goes back through AWS End User Messaging Social. SchedulerFn re-plans the facility on ETA updates, gate check-ins, dock events and every 15 minutes, and only *proposes*. SweeperFn expires holds and pending confirmations every minute. Coordinators work through a Cognito-protected ops API and receive SNS email/pages.
+
+**Pilot first (after the review).** One container (the workflow, the scheduler and the coordinator console) plus a managed Postgres with the EXCLUDE constraint, at about US$22–30 a month, is enough for one facility. The serverless design below is the scale path once more facilities join.
 
 **Two deployment profiles.** Demo: SQLite on EFS with a single writer (WorkerFn reserved concurrency 1), enough for the brief's peak with large headroom. Production: Aurora PostgreSQL Serverless v2 behind RDS Proxy, an advisory lock per facility, the two supplied unique indexes plus an EXCLUDE constraint so no two service intervals can overlap on a dock. Region ap-south-1 (Mumbai) for data residency.
 

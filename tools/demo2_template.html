@@ -115,7 +115,7 @@ h2.sec{font-size:15px;margin:4px 0 10px}
 <section id="rules" style="display:none"><div class="card" style="max-width:900px">
  <h2 class="sec">Rules, evaluated top to bottom; first match wins</h2><table><thead><tr><th>#</th><th>Colour</th><th>Condition</th></tr></thead><tbody id="rtab"></tbody></table>
  <p class="why" style="margin-top:12px">Dock-ready time = GPS-predicted arrival + gate-to-dock time. If GPS is silent, the driver's declared ETA plus a confidence buffer is used instead, and the FASTag toll watchdog checks whether the truck crossed the next plaza when expected. Thresholds (tolerance, yard wait, slip, GPS-silent minutes) are variables in <code>rules/rules.yaml → control_tower</code>. The GPS is polled on demand only (see the location ladder in the solution design), so the colour updates on each fix, ETA message or booking change.</p>
- <p class="why"><b>Possible slots.</b> For a truck that is late (dock-ready more than 15 min into its window), early (dock-ready 30 min or more before its window), waiting in the yard past its window, or without a booking, the column next to Act lists slots it can really take now: the same feasibility rules as the driver chat (dock type, reefer, weight, breakdowns, slots already taken, 21:00 rule), using the GPS-predicted arrival when GPS is live. The first is the look-ahead recommendation (best for every truck at the facility); slots that would leave another truck with no dock are never suggested. The coordinator can pick another, or Modify to any feasible slot and any start inside its window; the WhatsApp message follows the choice. Nothing is booked until the driver replies YES, and the booking is re-checked then.</p>
+ <p class="why"><b>Possible slots.</b> For a truck that is late (dock-ready more than 15 min into its window), early (dock-ready 30 min or more before its window), waiting in the yard past its window, or without a booking, the column next to Act lists slots it can really take now: the same feasibility rules as the driver chat (dock type, reefer, weight, breakdowns, slots already taken, 21:00 rule), using the GPS-predicted arrival when GPS is live. The first is the look-ahead recommendation (best for every truck at the facility); slots that would leave another truck with no dock are never suggested. The coordinator can pick another, or Modify to any feasible slot and any start inside its window; the WhatsApp message follows the choice. Pick = book (review change 1): sending books the slot in one checked transaction (re-checked first; if it has gone, fresh options appear) and releases the old one. The driver is told; no "Reply YES" round trip. A slot that needs warehouse approval is only held while the warehouse decides, for at most min(15 min, slot start − 30 min).</p>
  <p class="why">WhatsApp buttons open <code>wa.me</code> with a pre-written message the coordinator can edit before sending. In production the same templates go through the WhatsApp Business API as approved message templates, and every send is logged on the shipment.</p>
 </div></section>
 </div>
@@ -208,7 +208,7 @@ function render(){
    <td class="strip">${act?strip(r,axis):''}</td>
    <td class="mono">${r.booking?esc(r.booking)+`<div class="why">${(r.booking_status||'').replace('_',' ').toLowerCase()}</div>`:'<span class="why">none</span>'}${r.next_best&&!r.slots?`<div class="why">best now: ${esc(r.next_best)}</div>`:''}</td>
    <td class="slotcol">${slotCell(r)}</td>
-   <td>${act?`<button class="btn wa" data-wa="${r.sid}">${r.timing&&pick(r)?'Propose on WhatsApp':'WhatsApp'}</button><div style="height:5px"></div><a class="btn" href="tel:${r.phone.replace(/[^+\d]/g,'')}">Call</a>`:''}</td></tr>`}).join('');
+   <td>${act?`<button class="btn wa" data-wa="${r.sid}">${r.timing&&pick(r)?'Book &amp; send on WhatsApp':'WhatsApp'}</button><div style="height:5px"></div><a class="btn" href="tel:${r.phone.replace(/[^+\d]/g,'')}">Call</a>`:''}</td></tr>`}).join('');
  wireSlots(all);
  document.querySelectorAll('tr.row').forEach(tr=>tr.onclick=e=>{if(e.target.closest('.btn,.slotcol'))return;focus=focus===tr.dataset.sid?null:tr.dataset.sid;render()});
  document.querySelectorAll('[data-wa]').forEach(b=>b.onclick=e=>{e.stopPropagation();openWA(all.find(r=>r.sid===b.dataset.wa))});
@@ -242,7 +242,7 @@ function slotCell(r){
   <div style="margin-top:6px">Start time</div><input type="time" step="300" data-etime="${r.sid}" value="${p&&p.slot_id===cur0.slot_id?p.start:cur0.start}" min="${cur0.start}" max="${cur0.latest}">
   <div class="why">Allowed ${cur0.start}–${cur0.latest}: not before the truck can reach the dock or the dock is free, and inside the slot window.</div>
   <div class="err" id="err-${r.sid}"></div><button class="btn" style="margin-top:6px" data-apply="${r.sid}">Use this slot</button></div>`}
- if(p&&p.sent) h+=`<div class="sent">✓ Proposed ${p.dock} ${p.start} at ${p.sent} · waiting for the driver's YES</div>`;
+ if(p&&p.sent) h+=`<div class="sent">✓ Booked ${p.dock} ${p.start} at ${p.sent} · driver told on WhatsApp</div>`;
  return h }
 function wireSlots(all){
  const find=sid=>all.find(r=>r.sid===sid);
@@ -274,8 +274,8 @@ function fill(r){ const p=r.timing&&pick(r), first=r.driver.split(' ')[0];
  $('#mtpl').textContent='template: '+k+(lang==='hi'?' · Hindi':' · English');
  return t.replace('{name}',first).replace('{sid}',r.sid).replace(/\{booking\}/g,r.booking||(lang==='en'?'your slot':'आपका स्लॉट')).replace('{slip}',Math.max(0,r.slip_min)).replace('{mins}',r.gps_silent_min).replace('{next}',nxt) }
 function upd(){ $('#msend').href='https://wa.me/'+cur.phone.replace(/\D/g,'')+'?text='+encodeURIComponent($('#mtext').value) }
-function openWA(r){ cur=r; const p=r.timing&&pick(r); $('#mt').textContent=(p?'Propose a slot to ':'WhatsApp ')+r.driver;
- $('#ms').innerHTML=`${r.phone} · ${r.sid} · <span class="chip ${r.status}">${LABEL[r.status]}</span> ${esc(r.reasons[0]||'')}`+(p?`<div style="margin-top:6px"><b>Proposal:</b> dock ${p.dock} at ${p.start} (slot ${p.window})${p.approval?' · <span class="apr">needs warehouse approval</span>':''}. Nothing is booked yet: when the driver replies YES the slot is booked through the capacity layer, re-checked first (it may have gone).</div>`:'');
+function openWA(r){ cur=r; const p=r.timing&&pick(r); $('#mt').textContent=(p?'Book a slot for ':'WhatsApp ')+r.driver;
+ $('#ms').innerHTML=`${r.phone} · ${r.sid} · <span class="chip ${r.status}">${LABEL[r.status]}</span> ${esc(r.reasons[0]||'')}`+(p?`<div style="margin-top:6px"><b>Booking:</b> dock ${p.dock} at ${p.start} (slot ${p.window})${p.approval?' · <span class="apr">needs warehouse approval: held while the warehouse decides, at most min(15 min, start − 30 min)</span>':''}. Sending books it in one checked transaction through the capacity layer (re-checked first; if it has gone you get fresh options) and releases the old slot. No reply is needed from the driver.</div>`:'');
  $('#mtext').value=fill(r); upd(); $('#mb').classList.add('on') }
 $('#mtext').oninput=upd;
 $('#lang').onclick=e=>{if(!e.target.dataset.l)return;lang=e.target.dataset.l;document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b===e.target));$('#mtext').value=fill(cur);upd()};

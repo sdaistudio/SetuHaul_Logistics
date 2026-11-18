@@ -1,0 +1,1662 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>04 Scenario run — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · <a href="v2/04_SetuHaul_Scenario_Run.docx">download the Word file</a></p><p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 4</strong></p>
+<p><strong>Scenario Run</strong></p>
+<p>The morning of 4 August 2026 at Jaipur DC, replayed through the
+working prototype: 13 driver conversations, 1 coordinator case, and the
+facility scheduling tool</p>
+<p>Every message, tool call and reply below was produced by the code in
+deliverable 3, running on a copy of the supplied database. The
+transcripts are generated from the run's output file, not typed by hand.
+10 of 13 driver cases ended without a person; the 3 that reached a
+person were the ones the brief says must (safety, no feasible slot, a
+data conflict needing approval). No slot was ever allocated twice.</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.1 | 18 November 2026 (scheduling engine updated to an
+exact, proven-optimal search; see the v2 change log)</p>
+<p>Audience: FDE Academy reviewers; SetuHaul head of operations and
+warehouse planner</p>
+<p><strong>Contents</strong></p>
+<p><strong>1. How the run works</strong></p>
+<p><strong>2. Results against the brief's measures</strong></p>
+<p><strong>3. Coverage of the brief's ladder of situations</strong></p>
+<p><strong>4. The morning at a glance</strong></p>
+<p><strong>5. The conversations</strong></p>
+<blockquote>
+<p>C01. Early truck asks for a dock now</p>
+<p>C02. Dock D3 breaks down; the truck in the yard is re-planned
+(coordinator case)</p>
+<p>C03. "Late by one hour"; loses a race; re-booked in one message</p>
+<p>C04. Late truck in the yard behind an overrunning unload</p>
+<p>C05. Tyre repaired; must leave by 1:30 for another pickup</p>
+<p>C06. Two trips: which one? The evening slot needs approval</p>
+<p>C07. "Any slot after 12?"; a retried message; wins the race</p>
+<p>C08. Heavy trailer: only one door fits</p>
+<p>C09. A vague delay in Hinglish</p>
+<p>C10. CRITICAL load claims urgency; swap search</p>
+<p>C11. Only asking about options</p>
+<p>C12. Safety: accident reported</p>
+<p>C13. Shipment cancelled while the driver is on the way</p>
+<p>C14. Reefer load: no feasible slot today</p>
+</blockquote>
+<p><strong>6. The scheduling tool: competing trucks at
+09:45</strong></p>
+<p><strong>7. What the run taught us</strong></p>
+<h1 id="how-the-run-works">1. How the run works</h1>
+<p>The snapshot is not one moment: its rows run from 07:10 to 16:30
+(audit F15). A query "at 09:45" that can see a 16:25 ETA is answering
+the wrong question. So the run:</p>
+<ol type="1">
+<li><p><strong>Rewinds a copy</strong> of the snapshot to 08:20.
+Bookings made later are removed, and bookings cancelled later are
+restored. One exception is logged: APT1012A stays cancelled, because
+restoring it would double-book SLOT-JAI-003 with APT1007 (audit
+F08).</p></li>
+<li><p><strong>Replays the day.</strong> Each seed row (ETA updates,
+gate-ins, dock events, the cancellation) is applied at its own time.
+Driver messages come from the seed chat threads, with their seed IDs,
+plus a few new ones that the brief's ladder asks for (Hinglish, Hindi,
+safety, a vague delay).</p></li>
+<li><p><strong>Runs the real code.</strong> Each message goes through
+workflow.handle(). Every booking goes through the capacity layer's
+transaction.</p></li>
+<li><p><strong>Stages a true race.</strong> At 09:36 two drivers pick
+the same slot in the same instant, on two threads with two database
+connections.</p></li>
+<li><p><strong>Measures.</strong> After the run, the runner computes the
+brief's measures and four invariants directly from the
+database.</p></li>
+</ol>
+<p>Run it yourself with python3 -I run_scenarios.py out/ (under one
+second). Running it twice gives identical output.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | Why replay instead of a live
+demo</strong></p>
+<p>A cricket replay lets the umpire watch the same ball again and again
+and get the same answer. A replay of the morning does the same for the
+agent: anyone can re-run it, see exactly what each driver was told, and
+check it against the data.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="results-against-the-briefs-measures">2. Results against the
+brief's measures</h1>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 47%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Measure</strong></th>
+<th><strong>Result in this run</strong></th>
+<th><strong>How we measured it</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Time from first message to usable outcome</td>
+<td><strong>Median 1 minute</strong>; 11 of 13 cases within 2 minutes.
+C06 took 10 minutes (waiting for a coordinator's approval). C03 took 18
+minutes, 17 of them before the driver picked an option.</td>
+<td>Scenario clock: first driver message to BOOKED, confirmed status,
+CLOSED or ESCALATED</td>
+</tr>
+<tr class="even">
+<td>Turns per case</td>
+<td><strong>Median 2 driver messages</strong> (range 1-3)</td>
+<td>Count of the driver's messages per case</td>
+</tr>
+<tr class="odd">
+<td>Share resolved without manual takeover</td>
+<td><strong>10 of 13 (77%)</strong>. The 3 with a person: C06 (approval:
+the vehicle shows on another trip), C12 (safety), C14 (no feasible
+slot). All three are on the brief's "a person approves or takes over"
+list.</td>
+<td>Cases with any escalation or coordinator action</td>
+</tr>
+<tr class="even">
+<td>Conflicting or duplicate allocations</td>
+<td><strong>0</strong>. Slots with two active bookings: 0. Shipments
+with two current bookings: 0. Overlapping bookings on one door: 0.
+Bookings breaking compatibility: 0.</td>
+<td>Four SQL invariants run on the final database; the 50-race proof is
+in deliverable 5</td>
+</tr>
+<tr class="odd">
+<td>Options later found infeasible</td>
+<td><strong>1 of 8 picks</strong> (C03: taken in the race). Caught by
+the re-check at commit; the driver got fresh options in the same reply
+and booked one minute later.</td>
+<td>Every pick re-checked inside the commit transaction</td>
+</tr>
+<tr class="even">
+<td>No-slot escalations handled correctly</td>
+<td><strong>1 of 1 complete</strong> (ESC-0004). It holds the driver's
+words, the ETA, the current booking, every door tried with its reason,
+computed recommendations, the person, the channel and a deadline. The
+failed night-shift address (OM004) was not used.</td>
+<td>Field check of the hand-off record</td>
+</tr>
+<tr class="odd">
+<td>Average driver waiting after rescheduling</td>
+<td><strong>34.2 minutes</strong> across the 6 trucks re-booked by chat
+(range 15-55)</td>
+<td>Planned gate arrival (or the driver's own "after 12") to planned
+dock start. These are planned waits: the trucks' gate-ins happen after
+the snapshot ends.</td>
+</tr>
+<tr class="even">
+<td>Warehouse slot utilisation</td>
+<td><strong>10 of 31</strong> open slots between 10:00 and 16:00 hold a
+live booking</td>
+<td>Slots, not door-minutes. The afternoon is light; the binding limits
+are door type (heavy, reefer) and timing, not total capacity.</td>
+</tr>
+<tr class="odd">
+<td>Priority-policy violations</td>
+<td><strong>0</strong> against four checks (below)</td>
+<td>Each decision checked against the stated policy in deliverable 2,
+D7</td>
+</tr>
+<tr class="even">
+<td>Driver clarification turns</td>
+<td><strong>2 questions in 13 cases</strong> (C06: which trip; C09: what
+time). C03's "late by one hour" was stated back, not asked.</td>
+<td>Questions asked by the agent</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Priority-policy checks</strong></p>
+<table>
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Rule (deliverable 2, D7)</strong></th>
+<th><strong>Result</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Priority comes only from the shipment record</td>
+<td>1 urgency claim in a message (C10); it was logged and did not change
+the order</td>
+</tr>
+<tr class="even">
+<td>No driver books a slot protected for a higher-priority truck</td>
+<td>Enforced inside every commit. At 09:36 DRV013 (LOW) picked D4 12:40,
+earmarked for HIGH SHP1006; the commit refused it and offered fresh
+options</td>
+</tr>
+<tr class="odd">
+<td>A confirmed booking moves only with the driver's or a coordinator's
+say</td>
+<td>The only move of a live booking was SHP1005, approved by the
+coordinator at 09:17. APT1018 was released at 09:45 because its truck
+could no longer reach the window (policy D20), and its dispatcher was
+told.</td>
+</tr>
+<tr class="even">
+<td>A swap never breaks a driver's limit</td>
+<td>3 swap searches, 0 swaps made. One candidate was refused because it
+would have broken SHP1012's 13:30 gate-out.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="coverage-of-the-briefs-ladder-of-situations">3. Coverage of the
+brief's ladder of situations</h1>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 20%" />
+<col style="width: 16%" />
+<col style="width: 21%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Level</strong></th>
+<th><strong>Situation</strong></th>
+<th><strong>Where the brief points</strong></th>
+<th><strong>Shown in</strong></th>
+<th><strong>What it proves</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>A driver only asks about options</td>
+<td>THR011, SHP1017</td>
+<td>C11</td>
+<td>Options are read-only; nothing is recorded or held; "no thanks"
+keeps the current plan</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>The message misses key facts</td>
+<td>THR003, SHP1013, THR010, DRV004</td>
+<td>C03, C06, C09</td>
+<td>Ask only when the answer changes the booking; otherwise state the
+assumption back</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Rules and compatibility narrow the choices</td>
+<td>SHP1010, SHP1015, SHP1016, RULE005</td>
+<td>C08 (heavy door only), C09 (reefer still fits), C06 (evening start
+needs approval), C14</td>
+<td>Feasibility is a 15-point check, not "an empty row"</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Several delayed trucks chase nearby slots</td>
+<td>SHP1006, SHP1012, SHP1013, SHP1014, SHP1009</td>
+<td>C03, C05, C07, C10, the 09:36 race, section 6</td>
+<td>First valid commit wins; scarce slots are protected; swaps never
+break a limit; the policy is tested</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>The world changes mid-conversation</td>
+<td>SHP1005, APT1008, THR001, THR009, SHP1002</td>
+<td>C02 (breakdown), C03 (option taken), C04 (overrun), C07 (retried
+message), C13 (cancellation)</td>
+<td>Re-check at commit; dedupe; health monitor; cancellations free
+capacity at once</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>No feasible slot exists</td>
+<td>SHP1015, THR005, OM004</td>
+<td>C14, plus the 09:16 early warning</td>
+<td>Escalate with a complete record; never invent a slot; never use the
+failed channel</td>
+</tr>
+<tr class="odd">
+<td>+</td>
+<td>An early truck, a late truck and work in progress share one
+facility</td>
+<td>SHP1002, SHP1003, SHP1004, SHP1006</td>
+<td>C01, C04, C07, section 6</td>
+<td>Trucks in a dock are fixed; the early truck uses a free door without
+delaying anyone</td>
+</tr>
+</tbody>
+</table>
+<p>APT1008 (cancelled by the customer at 08:20) is treated as history
+from the start: its D2 10:00 slot counts as free capacity from that
+moment.</p>
+<p>The run also covers a case outside the ladder: <strong>C12, a safety
+report</strong>. The brief puts driver safety on the "a person takes
+over" list.</p>
+<h1 id="the-morning-at-a-glance">4. The morning at a glance</h1>
+<p>Events from the seed data are replayed at their own time. A few
+follow from bookings our system made (for example, SHP1003 docking at D4
+after C01 moved it there).</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 64%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>Event</strong></th>
+<th><strong>Source</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>08:20</td>
+<td>World rewound to 08:20; later rows are replayed at their own
+time</td>
+<td>Our system</td>
+</tr>
+<tr class="even">
+<td>08:30</td>
+<td>ETA update from carrier: SHP1004 now 09:20 (seed ETA003)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>08:35</td>
+<td>SHP1003 docks at D4 (its new early booking)</td>
+<td>Simulated: follows a booking we made</td>
+</tr>
+<tr class="even">
+<td>08:42</td>
+<td>SHP1001 finishes at D1; gate-out 08:50 (seed CHK1001)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>08:50</td>
+<td>ETA update: SHP1006 now 10:50, medium confidence (seed ETA005)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="even">
+<td>09:05</td>
+<td>SHP1005 gates in for its 09:00 D3 slot (seed CHK1005)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>09:15</td>
+<td>Dock D3 hydraulic leveller breaks down until 13:00 (seed DEVT001,
+logged 09:16)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="even">
+<td>09:16</td>
+<td>Booking health monitor (event-driven re-check after the D3
+breakdown)</td>
+<td>Our system</td>
+</tr>
+<tr class="odd">
+<td>09:16</td>
+<td>Proactive alert to coordinator: the reefer booking APT1015A (17:00)
+cannot work</td>
+<td>Our system</td>
+</tr>
+<tr class="even">
+<td>09:16</td>
+<td>Scheduling tool proposal after the dock event (proposes only)</td>
+<td>Our system</td>
+</tr>
+<tr class="odd">
+<td>09:17</td>
+<td>Coordinator approves the move for SHP1005 (in the yard; D3 broken;
+20.5 t also exceeds D3's 20 t limit)</td>
+<td>Our system</td>
+</tr>
+<tr class="even">
+<td>09:20</td>
+<td>SHP1003 finishes unloading; gate-out 8 minutes later</td>
+<td>Simulated: follows a booking we made</td>
+</tr>
+<tr class="odd">
+<td>09:25</td>
+<td>SHP1004 gates in, 25 minutes into its 09:00 D2 slot (seed
+CHK1004)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="even">
+<td>09:28</td>
+<td>SHP1002 finally finishes at D2 (ran 10 minutes past its 70-minute
+unload)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>09:35</td>
+<td>SHP1005 docks at D4</td>
+<td>Simulated: follows a booking we made</td>
+</tr>
+<tr class="even">
+<td>09:38</td>
+<td>Yard team calls SHP1004 to D2</td>
+<td>Simulated: follows a booking we made</td>
+</tr>
+<tr class="odd">
+<td>09:41</td>
+<td>Coordinator approves HLD-0001 for SHP1020; the approval is
+re-checked before booking</td>
+<td>Our system</td>
+</tr>
+<tr class="even">
+<td>09:55</td>
+<td>SHP1017's driver phones dispatch: arrival between 12:30 and 13:00
+(seed ETA012, low confidence)</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>09:56</td>
+<td>Booking health monitor: SHP1017's 12:00 booking is at risk, so a
+proactive WhatsApp check-in goes out</td>
+<td>Our system</td>
+</tr>
+<tr class="even">
+<td>10:10</td>
+<td>Dispatch cancels SHP1019; its 16:00 D4 booking returns to the
+pool</td>
+<td>Seed data, replayed</td>
+</tr>
+<tr class="odd">
+<td>12:20</td>
+<td>SHP1015 (reefer, from Delhi) departs 20 minutes late (seed actual
+departure)</td>
+<td>Seed data, replayed</td>
+</tr>
+</tbody>
+</table>
+<h1 id="the-conversations">5. The conversations</h1>
+<p>Each table shows the driver's message, the tools the workflow called
+(the audit trail), and the reply exactly as sent. Hindi and Hinglish
+messages have an English gloss in brackets; the gloss is ours, for
+reviewers, and is not sent.</p>
+<h2 id="c01.-early-truck-asks-for-a-dock-now">C01. Early truck asks for
+a dock now</h2>
+<p><em>DRV003 Mukesh Yadav, shipment SHP1003. Ladder: + early
+truck.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>08:22</td>
+<td>Driver (English)</td>
+<td>"I am already at the gate. Can I get a dock now instead of waiting
+for 9?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:EARLY_ARRIVAL, resolve_shipment:SHP1003 (the truck at
+our gate), check_slot_feasibility:2 earlier options (no
+displacement)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Welcome - you're early. Dock D4 is free now: I can move you from
+9:00 AM to 8:35 AM, and it does not delay any other booking.<br />
+1) Take Dock D4 at 8:35 AM<br />
+2) Keep my 9:00 AM slot</td>
+</tr>
+<tr class="even">
+<td>08:23</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0001</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D4 at Jaipur DC, start 8:35 AM. You're already checked
+in; the yard team will call you to Dock D4. Booking ref APT-N0001.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2
+id="c02.-dock-d3-breaks-down-the-truck-in-the-yard-is-re-planned-coordinator-case">C02.
+Dock D3 breaks down; the truck in the yard is re-planned (coordinator
+case)</h2>
+<p><em>Coordinator and planner. Ladder: 5 world changes.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:16</td>
+<td>System</td>
+<td><strong>Booking health monitor (event-driven re-check after the D3
+breakdown)</strong><br />
+APT1005 SHP1005 D3 09:00: <strong>INVALID</strong>; APT1016A SHP1016 D6
+09:30: <strong>CERTAIN_MISS</strong>; APT1006 SHP1006 D4 10:00:
+<strong>CERTAIN_MISS</strong>; APT1017 SHP1017 D1 12:00:
+<strong>AT_RISK</strong>; APT1018 SHP1018 D2 12:00:
+<strong>CERTAIN_MISS</strong>; APT1015A SHP1015 D5 17:00:
+<strong>INVALID</strong></td>
+</tr>
+<tr class="even">
+<td>09:16</td>
+<td>System</td>
+<td><strong>Scheduling tool proposal after the dock event (proposes
+only)</strong><br />
+Proposed: SHP1014 D2 10:45, SHP1016 D6 12:50, SHP1015 none, SHP1005 D4
+09:35, SHP1006 D1 11:30, SHP1012 D2 12:10, SHP1013 D4 12:40, SHP1018 D2
+13:55. Score: unscheduled weight 3, weighted wait 990, changes 4</td>
+</tr>
+<tr class="odd">
+<td>09:17</td>
+<td>System</td>
+<td><strong>Coordinator approves the move for SHP1005 (in the yard; D3
+broken; 20.5 t also exceeds D3's 20 t limit)</strong><br />
+result: CONFIRMED, appointment: APT-N0002, dock: D4, start: 09:35,
+released: []</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="c03.-late-by-one-hour-loses-a-race-re-booked-in-one-message">C03.
+"Late by one hour"; loses a race; re-booked in one message</h2>
+<p><em>DRV013 Kailash Gurjar, shipment SHP1013. Ladder: 2 missing facts,
+4 competing trucks, 5 world changes.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:19</td>
+<td>Driver (English)</td>
+<td>"I am late by one hour."</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1013,
+record_eta:11:00 MEDIUM, scheduling_tool:replan+earmarks,
+check_slot_feasibility:3 options</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>I've noted your arrival as about 11:00 AM (planned 10:00 AM + 60
+min). If that's wrong, just send the time.<br />
+Slots your truck can make at Jaipur DC (nothing is booked until you
+choose):<br />
+1) Dock D2 - start 11:30 AM, unloading done by about 12:30 PM<br />
+2) Dock D2 - start 12:00 PM, unloading done by about 1:00 PM<br />
+3) Dock D4 - start 12:40 PM, unloading done by about 1:40 PM<br />
+Reply 1, 2 or 3 to book.</td>
+</tr>
+<tr class="even">
+<td>09:36</td>
+<td>System</td>
+<td><strong>Race: both drivers choose the same slot at the same instant
+(two threads, two database connections)</strong><br />
+Slot SLOT-JAI-047: DRV013 picks option 3 (shown 09:19), DRV006 picks
+option 1 (shown 09:34). The 09:34 re-plan earmarked this slot for HIGH
+SHP1006, so DRV013's commit is refused whichever thread is first.</td>
+</tr>
+<tr class="odd">
+<td>09:36</td>
+<td>Driver (English)</td>
+<td>"3"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:OPTION_GONE
+(PROTECTED_FOR_PRIORITY_LOAD)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Sorry, Dock D4 at 12:40 PM is now reserved for a higher-priority
+load. Nothing was booked for you yet. Fresh options:<br />
+1) Dock D1 - start 11:30 AM, unloading done by about 12:30 PM<br />
+2) Dock D2 - start 1:00 PM, unloading done by about 2:00 PM<br />
+3) Dock D1 - start 2:00 PM, unloading done by about 3:00 PM<br />
+Reply 1, 2 or 3 to book.</td>
+</tr>
+<tr class="even">
+<td>09:37</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0005</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D1 at Jaipur DC, start 11:30 AM. Please be at the gate
+by 11:15 AM. Booking ref APT-N0005.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c04.-late-truck-in-the-yard-behind-an-overrunning-unload">C04.
+Late truck in the yard behind an overrunning unload</h2>
+<p><em>DRV004 Sandeep Meena, shipment SHP1004. Ladder: + work in
+progress, 5 world changes.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:27</td>
+<td>Driver (English)</td>
+<td>"I reached late and am in the yard. Has a new dock been
+assigned?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:AT_YARD_STATUS, resolve_shipment:SHP1004 (the truck at
+our gate), get_booking_status:OK</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Your 9:00 AM booking on Dock D2 is still valid: you checked in at
+9:25 AM, inside the 30-minute grace. Dock D2 is running late because the
+truck before you is still unloading. Expected call to dock: about 9:50
+AM. Queue position 2.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c05.-tyre-repaired-must-leave-by-130-for-another-pickup">C05.
+Tyre repaired; must leave by 1:30 for another pickup</h2>
+<p><em>DRV012 Arjun Das, shipment SHP1012. Ladder: 4 competing
+trucks.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:29</td>
+<td>Driver (English)</td>
+<td>"Tyre repaired. I can reach 11:10. I need to leave the warehouse
+before 1:30 for another pickup."</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1012,
+record_eta:11:10 HIGH, scheduling_tool:replan+earmarks,
+check_slot_feasibility:2 options</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Slots your truck can make at Jaipur DC (nothing is booked until you
+choose):<br />
+1) Dock D2 - start 11:25 AM, unloading done by about 12:10 PM<br />
+2) Dock D2 - start 12:00 PM, unloading done by about 12:45 PM<br />
+Reply 1 or 2 to book.</td>
+</tr>
+<tr class="even">
+<td>09:30</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0003</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D2 at Jaipur DC, start 11:25 AM. Please be at the gate
+by 11:10 AM. Booking ref APT-N0003.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c06.-two-trips-which-one-the-evening-slot-needs-approval">C06.
+Two trips: which one? The evening slot needs approval</h2>
+<p><em>DRV004 Sandeep Meena, shipment SHP1004. Ladder: 2 missing facts,
+3 rules narrow choices.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 14%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:31</td>
+<td>Driver (English)</td>
+<td>"I will be late by 45 minutes."</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, ask:WHICH_SHIPMENT</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>You have 2 trips today. Which one is this about?<br />
+1) ORD-260804-004 - Kota load, due 8:45 AM - at our gate now<br />
+2) ORD-260804-020 - Kota load, due 6:00 PM<br />
+(Your other truck is already at our gate, so I think you mean
+ORD-260804-020.)</td>
+</tr>
+<tr class="even">
+<td>09:32</td>
+<td>Driver (Hindi)</td>
+<td>"शाम वाला"<br />
+<em>[the evening one]</em></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:ANSWER, resolve_shipment:SHP1020 (your answer),
+record_eta:18:45 MEDIUM, scheduling_tool:replan+earmarks,
+check_current_booking:AT_RISK, check_slot_feasibility:3 options</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>आपके पहुँचने का समय लगभग 6:45 PM माना है (आपका 6:00 PM स्लॉट + 45 मिनट)।
+गलत हो तो समय भेज दीजिए।<br />
+Jaipur DC में ये स्लॉट आपके ट्रक के लिए हैं (आपके चुनने पर ही बुक होगा):<br />
+1) डॉक D1 - 7:30 PM से शुरू, लगभग 8:30 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी
+चाहिए)<br />
+2) डॉक D1 - 8:00 PM से शुरू, लगभग 9:00 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी
+चाहिए)<br />
+3) डॉक D1 - 9:00 PM से शुरू, लगभग 10:00 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी
+चाहिए)<br />
+बुक करने के लिए 1, 2 या 3 भेजिए।<br />
+<em>[I've taken your arrival as about 6:45 PM (your 6:00 PM slot + 45
+min). If that's wrong, send the time. These slots at Jaipur DC fit your
+truck (booked only when you choose): 1) Dock D1 from 7:30 PM, done by
+about 8:30 PM (needs coordinator approval) 2) Dock D1 from 8:00 PM
+(needs approval) 3) Dock D1 from 9:00 PM (needs approval). Send 1, 2 or
+3 to book.]</em></td>
+</tr>
+<tr class="odd">
+<td>09:33</td>
+<td>Driver (Hindi)</td>
+<td>"1"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, hold_for_approval:HLD-0001</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>डॉक D1, 7:30 PM के लिए कोऑर्डिनेटर से मंज़ूरी माँगी है (रिकॉर्ड में यह ट्रक दूसरी
+ट्रिप पर दिख रहा है)। अभी पक्का नहीं है। 9:48 AM तक जवाब मिलेगा।<br />
+<em>[I've asked the coordinator to approve Dock D1 at 7:30 PM (the
+records show this truck on another trip). It is not confirmed yet.
+You'll hear by 9:48 AM.]</em></td>
+</tr>
+<tr class="even">
+<td>09:41</td>
+<td>System</td>
+<td><strong>Coordinator approves HLD-0001 for SHP1020; the approval is
+re-checked before booking</strong><br />
+result: CONFIRMED, appointment: APT-N0007</td>
+</tr>
+<tr class="odd">
+<td>09:41</td>
+<td>Agent (follow-up)</td>
+<td>पक्का हो गया: कोऑर्डिनेटर ने Jaipur DC, डॉक D1, 7:30 PM मंज़ूर कर दिया। गेट
+पर 7:15 PM तक पहुँचिए। रेफ़ APT-N0007।<br />
+<em>[Confirmed: the coordinator approved Jaipur DC, Dock D1, 7:30 PM.
+Please reach the gate by 7:15 PM. Ref APT-N0007.]</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c07.-any-slot-after-12-a-retried-message-wins-the-race">C07.
+"Any slot after 12?"; a retried message; wins the race</h2>
+<p><em>DRV006 Manoj Sharma, shipment SHP1006. Ladder: 4 competing
+trucks, 5 world changes.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:34</td>
+<td>Driver (English)</td>
+<td>"Traffic after Shahpura. Reaching around 11:20. Any slot after
+12?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1006 (the trip you
+are driving now), record_eta:11:20 MEDIUM,
+scheduling_tool:replan+earmarks, check_current_booking:CERTAIN_MISS,
+check_slot_feasibility:3 options</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Slots your truck can make at Jaipur DC (nothing is booked until you
+choose):<br />
+1) Dock D4 - start 12:40 PM, unloading done by about 1:25 PM<br />
+2) Dock D2 - start 1:00 PM, unloading done by about 1:45 PM<br />
+3) Dock D1 - start 2:00 PM, unloading done by about 2:45 PM<br />
+Reply 1, 2 or 3 to book.</td>
+</tr>
+<tr class="even">
+<td>09:35</td>
+<td>Driver (English)</td>
+<td>"Traffic after Shahpura. Reaching around 11:20. Any slot after
+12?"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>dedupe:SUPPRESSED (same as wa-9001)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>(no reply: duplicate suppressed)</td>
+</tr>
+<tr class="odd">
+<td>09:36</td>
+<td>System</td>
+<td><strong>Race: both drivers choose the same slot at the same instant
+(two threads, two database connections)</strong><br />
+Slot SLOT-JAI-047: DRV013 picks option 3 (shown 09:19), DRV006 picks
+option 1 (shown 09:34). The 09:34 re-plan earmarked this slot for HIGH
+SHP1006, so DRV013's commit is refused whichever thread is first.</td>
+</tr>
+<tr class="even">
+<td>09:36</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0004,
+scheduling_tool:swap_search -&gt; no admissible swap (SHP1007:
+HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1011:
+HIGH_CANNOT_TAKE_SLOT)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D4 at Jaipur DC, start 12:40 PM. Please be at the gate
+by 12:25 PM. Booking ref APT-N0004.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c08.-heavy-trailer-only-one-door-fits">C08. Heavy trailer: only
+one door fits</h2>
+<p><em>DRV007 Nitin Patil, shipment SHP1016. Ladder: 3 rules narrow
+choices.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:39</td>
+<td>Driver (English)</td>
+<td>"Heavy trailer ETA 12:00. Original heavy-bay slot will be missed.
+What is next?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1016 (your heavy
+load), escalate:DATA_CONFLICT (non-blocking), record_eta:12:00 HIGH,
+scheduling_tool:replan+earmarks, check_current_booking:CERTAIN_MISS,
+check_slot_feasibility:3 options</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Slots your truck can make at Jaipur DC (nothing is booked until you
+choose):<br />
+1) Dock D6 - start 12:50 PM, unloading done by about 2:20 PM<br />
+2) Dock D6 - start 2:00 PM, unloading done by about 3:30 PM<br />
+3) Dock D6 - start 3:30 PM, unloading done by about 5:00 PM<br />
+Reply 1, 2 or 3 to book.</td>
+</tr>
+<tr class="even">
+<td>09:40</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0006,
+scheduling_tool:swap_search -&gt; no admissible swap (SHP1007:
+HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1013:
+HIGH_CANNOT_TAKE_SLOT)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D6 at Jaipur DC, start 12:50 PM. Please be at the gate
+by 12:35 PM. Booking ref APT-N0006.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c09.-a-vague-delay-in-hinglish">C09. A vague delay in
+Hinglish</h2>
+<p><em>DRV010 Deepak Saini, shipment SHP1010. Ladder: 2 missing facts, 3
+rules narrow choices.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 13%" />
+<col style="width: 76%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:42</td>
+<td>Driver (Hinglish)</td>
+<td>"thoda late hoon bhai, traffic hai"<br />
+<em>[running a bit late, brother, there's traffic]</em></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1010, ask:ETA</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Batane ke liye shukriya. Jaipur DC kitne baje tak pahunchoge? Jaise
+11:30 likhiye, taaki sahi slot mil sake.<br />
+<em>[Thanks for telling us. By what time will you reach Jaipur DC? Write
+a time like 11:30 so we can find the right slot.]</em></td>
+</tr>
+<tr class="even">
+<td>09:43</td>
+<td>Driver (Hinglish)</td>
+<td>"11:30 tak pahunch jaunga"<br />
+<em>[I'll reach by 11:30]</em></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, record_eta:11:30 HIGH,
+scheduling_tool:replan+earmarks,
+check_current_booking:STILL_FEASIBLE</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Shukriya. Lagbhag 11:30 AM pahunchne par bhi aapki booking (Dock D5,
+11:45 AM se) chalegi. Kuch badalne ki zarurat nahi.<br />
+<em>[Thanks. Even arriving about 11:30 AM, your booking (Dock D5, from
+11:45 AM) still works. Nothing needs to change.]</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c10.-critical-load-claims-urgency-swap-search">C10. CRITICAL
+load claims urgency; swap search</h2>
+<p><em>DRV014 Pradeep Jat, shipment SHP1014. Ladder: 4 competing
+trucks.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:44</td>
+<td>Driver (English)</td>
+<td>"Origin released me late. ETA 11:25. This load is urgent. Can I get
+the first possible dock?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1014,
+record_eta:11:25 HIGH, scheduling_tool:replan+earmarks,
+check_slot_feasibility:3 options, policy:urgency_claim_ignored</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Dock order follows the priority on the shipment record, not the
+message, so I can't move you ahead for urgency. These are the earliest
+slots that fit.<br />
+Slots your truck can make at Jaipur DC (nothing is booked until you
+choose):<br />
+1) Dock D2 - start 12:20 PM, unloading done by about 1:35 PM<br />
+2) Dock D2 - start 1:00 PM, unloading done by about 2:15 PM<br />
+3) Dock D4 - start 1:35 PM, unloading done by about 2:50 PM<br />
+Reply 1, 2 or 3 to book.</td>
+</tr>
+<tr class="even">
+<td>09:45</td>
+<td>Driver (English)</td>
+<td>"1"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHOOSE, book:CONFIRMED APT-N0008 (released APT1018),
+scheduling_tool:swap_search -&gt; no admissible swap (SHP1007:
+HIGH_CANNOT_TAKE_SLOT; SHP1012: SHP1012 has no other slot that keeps its
+limits (latest gate out 13:30); SHP1013: HIGH_CANNOT_TAKE_SLOT; SHP1010:
+HIGH_CANNOT_TAKE_SLOT; SHP1011: HIGH_CANNOT_TAKE_SLOT)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Booked: Dock D2 at Jaipur DC, start 12:20 PM. Please be at the gate
+by 12:05 PM. Booking ref APT-N0008.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c11.-only-asking-about-options">C11. Only asking about
+options</h2>
+<p><em>DRV001 Rajesh Kumar, shipment SHP1017. Ladder: 1 asking, not
+booking.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:56</td>
+<td>System</td>
+<td><strong>Booking health monitor: SHP1017's 12:00 booking is at risk,
+so a proactive WhatsApp check-in goes out</strong><br />
+WhatsApp utility template sent: "Hi Rajesh, checking on ORD-260804-017
+to Jaipur DC: your slot starts 12:00 PM. Are you on track? 1) On time 2)
+Running late 3) Need help"</td>
+</tr>
+<tr class="even">
+<td>10:02</td>
+<td>Driver (English)</td>
+<td>"What slots are possible after 1 PM if I reach around 12:45?"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:ASK_OPTIONS, resolve_shipment:SHP1017,
+check_slot_feasibility:3 options (read-only, nothing recorded)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>Just options for now; nothing is booked or held. If you reach about
+12:45 PM, these slots at Jaipur DC would work:<br />
+1) Dock D1 - start 1:15 PM, unloading done by about 2:05 PM<br />
+2) Dock D4 - start 1:35 PM, unloading done by about 2:25 PM<br />
+3) Dock D1 - start 2:00 PM, unloading done by about 2:50 PM<br />
+Reply 1, 2 or 3 if you want one booked.</td>
+</tr>
+<tr class="odd">
+<td>10:03</td>
+<td>Driver (English)</td>
+<td>"what about after 3 PM?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:ASK_OPTIONS, resolve_shipment:SHP1017,
+check_slot_feasibility:3 options (read-only, nothing recorded)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Just options for now; nothing is booked or held. If you reach about
+12:45 PM, these slots at Jaipur DC would work:<br />
+1) Dock D1 - start 3:00 PM, unloading done by about 3:50 PM<br />
+2) Dock D1 - start 4:00 PM, unloading done by about 4:50 PM<br />
+3) Dock D1 - start 5:00 PM, unloading done by about 5:50 PM<br />
+Reply 1, 2 or 3 if you want one booked.</td>
+</tr>
+<tr class="even">
+<td>10:04</td>
+<td>Driver (English)</td>
+<td>"ok no thanks, I will keep my slot"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:DECLINE, decline:NOTHING_HELD</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>No problem - nothing has been booked or held. Your current plan
+stays as it is.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> BOOKED.</p>
+<h2 id="c12.-safety-accident-reported">C12. Safety: accident
+reported</h2>
+<p><em>DRV011 Ramesh Choudhary, shipment none. Ladder: Boundary: a
+person takes over.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 13%" />
+<col style="width: 76%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10:05</td>
+<td>Driver (Hinglish)</td>
+<td>"bhai accident ho gaya, helper ko chot lagi hai, truck side mein
+laga diya"<br />
+<em>[brother, there's been an accident, my helper is hurt, I've pulled
+the truck to the side]</em></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:SAFETY, escalate:SAFETY ESC-0003 -&gt; Anita Joshi via
+PHONE_CALL+WHATSAPP</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Sabse pehle sabki suraksha dekhiye. Koi ghayal ho to abhi 112 par
+call kijiye. Shift manager Anita Joshi ko bata diya hai, woh 5 minute
+mein call karenge. Dock slot ki chinta mat kijiye.<br />
+<em>[First make sure everyone is safe. If anyone is injured, call 112
+now. I've told shift manager Anita Joshi; she will call you within 5
+minutes. Don't worry about the dock slot.]</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> ESCALATED.</p>
+<h2 id="c13.-shipment-cancelled-while-the-driver-is-on-the-way">C13.
+Shipment cancelled while the driver is on the way</h2>
+<p><em>DRV008 Ashok Prajapat, shipment SHP1019. Ladder: 5 world
+changes.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10:12</td>
+<td>Driver (English)</td>
+<td>"Is my 4 PM slot still active?"</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Tools</td>
+<td>read_message:CHECK_STATUS, resolve_shipment:SHP1019,
+get_booking_status:SHIPMENT_CANCELLED</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Agent</td>
+<td>Shipment ORD-260804-019 and its appointment were cancelled by
+dispatch at 10:10 AM. Please don't travel to Jaipur DC; call your
+dispatcher on +91-22-4104004.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> CLOSED.</p>
+<h2 id="c14.-reefer-load-no-feasible-slot-today">C14. Reefer load: no
+feasible slot today</h2>
+<p><em>DRV015 Mohammed Salim, shipment SHP1015. Ladder: 6 no feasible
+slot.</em></p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time</strong></th>
+<th><strong>From</strong></th>
+<th><strong>Message or action</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>09:16</td>
+<td>System</td>
+<td><strong>Proactive alert to coordinator: the reefer booking APT1015A
+(17:00) cannot work</strong><br />
+D5 maintenance from 18:00 was planned on 1 Aug at 14:00, after this
+booking (audit F07). Planned arrival 17:30 + 60-min unload cannot finish
+before 18:00. Suggested: Ask the carrier to reach Jaipur by 16:45 so
+unloading runs 17:00-18:00 / Ask maintenance on Dock D5 to start at 7:10
+PM instead of 6:00 PM: the truck could unload 6:00 PM-7:00 PM.</td>
+</tr>
+<tr class="even">
+<td>16:24</td>
+<td>Driver (English)</td>
+<td>"Evening traffic. ETA 6:30. Can the reefer unload tonight?"</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Tools</td>
+<td>read_message:REPORT_DELAY, resolve_shipment:SHP1015,
+record_eta:18:30 HIGH, scheduling_tool:replan+earmarks,
+check_current_booking:CERTAIN_MISS, check_slot_feasibility:0 options,
+escalate:NO_FEASIBLE_SLOT ESC-0004 -&gt; Neha Bansal via
+EMAIL+DASHBOARD</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Agent</td>
+<td>I'm sorry - I can't find a reefer dock at Jaipur DC that your truck
+can reach today (Dock D5 maintenance 6:00 PM-10:00 PM; no new unloading
+starts after 9:00 PM without approval). I've passed your case to Neha
+Bansal (warehouse coordinator), who will contact you by 4:39 PM. Please
+don't go to the dock until they do.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>End state:</strong> ESCALATED.</p>
+<h1 id="the-scheduling-tool-competing-trucks-at-0945">6. The scheduling
+tool: competing trucks at 09:45</h1>
+<p><strong>The question.</strong> The brief asks what happens "when an
+early truck, a late truck and a truck in progress share one facility",
+and how scarce capacity is ranked. To compare policies fairly, the tool
+plans <strong>one fixed input</strong>: Jaipur at 09:45 as it stood in
+the client's own data, with every delay of the morning wave known and
+nothing re-booked by our agent.</p>
+<p><strong>Fixed work</strong> (the plan cannot move it): SHP1003 and
+SHP1004 in docks, kept bookings (SHP1007, SHP1009, SHP1010, SHP1011,
+SHP1017, SHP1019, SHP1020), the D3 breakdown until 13:00, and D5
+maintenance from 18:00.</p>
+<p><strong>Trucks that need a door</strong> (8 jobs)</p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 11%" />
+<col style="width: 9%" />
+<col style="width: 20%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Shipment</strong></th>
+<th><strong>Priority</strong></th>
+<th><strong>Door</strong></th>
+<th><strong>Unload</strong></th>
+<th><strong>Earliest dock start</strong></th>
+<th><strong>Why it needs a door</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1005</td>
+<td>HIGH</td>
+<td>Standard, 20.5 t</td>
+<td>75 min</td>
+<td>09:55 (in the yard)</td>
+<td>Booked on D3, which broke down; also over D3's 20 t limit</td>
+</tr>
+<tr class="even">
+<td>SHP1006</td>
+<td>HIGH</td>
+<td>Standard</td>
+<td>45 min</td>
+<td>11:35 (driver: "after 12")</td>
+<td>Old slot is a certain miss</td>
+</tr>
+<tr class="odd">
+<td>SHP1012</td>
+<td>NORMAL</td>
+<td>Standard</td>
+<td>45 min</td>
+<td>11:25 (must leave by 13:30)</td>
+<td>No booking</td>
+</tr>
+<tr class="even">
+<td>SHP1013</td>
+<td>NORMAL</td>
+<td>Standard</td>
+<td>60 min</td>
+<td>11:45 (low confidence)</td>
+<td>No booking</td>
+</tr>
+<tr class="odd">
+<td>SHP1014</td>
+<td>CRITICAL</td>
+<td>Standard, 21 t</td>
+<td>75 min</td>
+<td>11:40</td>
+<td>No booking</td>
+</tr>
+<tr class="even">
+<td>SHP1015</td>
+<td>HIGH</td>
+<td>Reefer</td>
+<td>60 min</td>
+<td>18:00</td>
+<td>Booking infeasible (maintenance)</td>
+</tr>
+<tr class="odd">
+<td>SHP1016</td>
+<td>HIGH</td>
+<td>Heavy, 31 t</td>
+<td>90 min</td>
+<td>12:15</td>
+<td>Old slot is a certain miss</td>
+</tr>
+<tr class="even">
+<td>SHP1018</td>
+<td>LOW</td>
+<td>Standard</td>
+<td>45 min</td>
+<td>14:20 (not yet departed)</td>
+<td>Old slot is a certain miss</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Seven policies on the same input</strong></p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 11%" />
+<col style="width: 19%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Policy</strong></th>
+<th><strong>In plain words</strong></th>
+<th><strong>No door today</strong></th>
+<th><strong>Priority-weighted wait</strong></th>
+<th><strong>Average wait</strong></th>
+<th><strong>CRITICAL wait</strong></th>
+<th><strong>Longest HIGH/CRITICAL wait</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FCFS</td>
+<td>Whoever asked first</td>
+<td><strong>2</strong> (SHP1012, SHP1015)</td>
+<td>1,040</td>
+<td>33.3 min</td>
+<td>60 min</td>
+<td>60 min</td>
+</tr>
+<tr class="even">
+<td>EDD</td>
+<td>Earliest appointment first</td>
+<td>1 (SHP1015)</td>
+<td>1,200</td>
+<td>40.0 min</td>
+<td>60 min</td>
+<td>60 min</td>
+</tr>
+<tr class="odd">
+<td>WSPT</td>
+<td>Most priority per minute of door time first</td>
+<td>1</td>
+<td>1,320</td>
+<td>52.9 min</td>
+<td>0 min</td>
+<td><strong>190 min</strong></td>
+</tr>
+<tr class="even">
+<td>PRIORITY</td>
+<td>Strict priority</td>
+<td>1</td>
+<td>1,310</td>
+<td>52.9 min</td>
+<td>0 min</td>
+<td><strong>165 min</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>PRIORITY+REPAIR (first answer)</strong></td>
+<td>Priority list, then swap pairs while it improves</td>
+<td>1</td>
+<td><strong>1,120</strong></td>
+<td>40.0 min</td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+<tr class="even">
+<td><strong>EXACT (ours, engine)</strong></td>
+<td>Branch and bound over all orders; proven optimal after 5,425
+nodes</td>
+<td>1</td>
+<td><strong>1,120</strong></td>
+<td>40.0 min</td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+<tr class="odd">
+<td>BEST_ORDER</td>
+<td>Every one of the 40,320 orders tried (benchmark)</td>
+<td>1</td>
+<td>1,120</td>
+<td>40.0 min</td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+</tbody>
+</table>
+<p>Waits are measured from the earliest dock start in the jobs table.
+SHP1006's figure includes the 25 minutes between its arrival and the
+"after 12" it asked for.</p>
+<p><strong>What the table says</strong></p>
+<ul>
+<li><p><strong>First come, first served looks cheapest but fails a
+promise.</strong> It gives D1 11:45 to SHP1013 because SHP1013 asked ten
+minutes earlier. SHP1012 then has no door that lets it leave by 13:30,
+so it misses its next pickup. Its low weighted wait comes from serving
+fewer trucks.</p></li>
+<li><p><strong>Strict priority over-serves the CRITICAL load.</strong>
+The CRITICAL truck waits 0 minutes, but SHP1005, a HIGH load already in
+the yard since 09:05, waits 165 minutes, and its driver risks detention
+charges.</p></li>
+<li><p><strong>Our exact engine proves this plan optimal</strong> after
+5,425 of the 40,320 orders, and the priority + repair first answer is
+already optimal here. It makes the CRITICAL load wait 40 minutes to
+bring the worst HIGH wait down from 165 to 65.</p></li>
+<li><p><strong>SHP1015 cannot be served by any policy.</strong> Its only
+door is in maintenance. That is a person's decision (C14), not a
+scheduling one.</p></li>
+</ul>
+<p><img
+src="media/04_SetuHaul_Scenario_Run/media/c35f63add2d4d818e5cba97d2dc3bc74e4b9b1f4.png"
+title="First come, first served at 09:45: SHP1012 and SHP1015 are left without a door."
+style="width:6.5in;height:2.47917in"
+alt="First come, first served at 09:45: SHP1012 and SHP1015 are left without a door." /></p>
+<p><em>First come, first served at 09:45: SHP1012 and SHP1015 are left
+without a door.</em></p>
+<p><img
+src="media/04_SetuHaul_Scenario_Run/media/7e8b0d627f1c58deed4c4590a6db2a77620c7bf0.png"
+title="Our plan at 09:45: every truck that can be served today gets a door. Grey boxes are fixed work."
+style="width:6.5in;height:2.47917in"
+alt="Our plan at 09:45: every truck that can be served today gets a door. Grey boxes are fixed work." /></p>
+<p><em>Our plan at 09:45: every truck that can be served today gets a
+door. Grey boxes are fixed work.</em></p>
+<p><strong>Sensitivity to the weights.</strong> The plan is
+<strong>identical</strong> under our weights (8:4:2:1), Doc A's
+(100:40:15:5) and Doc B's (4:2:1:0.5). The choice of weights is a
+business decision, but on this day it does not change the answer.</p>
+<p><strong>Early, late and in-progress trucks together.</strong> In the
+live run: SHP1003 (early) took a free door, D4, at 08:35 without
+delaying any booking (C01); SHP1004 (late but within grace) kept its D2
+booking and queued behind SHP1002, which was still unloading and was
+never moved (C04); SHP1006 (late) was re-booked to a slot after the time
+it asked for (C07).</p>
+<p><strong>Live run vs plan.</strong> For the HIGH and CRITICAL trucks
+booked by chat after the plan existed (SHP1006, SHP1016, SHP1014), the
+bookings the drivers made match the planner's best plan exactly: D4
+12:40, D6 12:50 and D2 12:20. Each time, the first option offered was
+the planner's slot, and the driver took it.</p>
+<h1 id="what-the-run-taught-us">7. What the run taught us</h1>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>RISK | A knock-on risk the monitor caught after the
+run</strong></p>
+<p>At 10:15 the health monitor flags C03's booking (SHP1013, D1 11:30)
+as AT RISK. SHP1007 is booked on D1 just before it and has not arrived;
+its driver, DRV007, shows on two moving trucks (ESC-0002). If SHP1007
+misses its check-in limit at 10:30, its booking stops blocking and
+SHP1013 keeps 11:30. If SHP1007 arrives at the last minute, SHP1013
+starts about 40 minutes late. The monitor's check-in message and the
+coordinator's day board are how this gets handled; it is a reason to
+close Q19 (who is driving SHP1007) quickly.</p></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><strong>Waiting is planned, not observed.</strong> The snapshot
+ends before these trucks reach the gate. The pilot should measure real
+gate-in to dock-in from facility_checkins.</p></li>
+<li><p><strong>The LLM fallback was not exercised.</strong> Every
+message in the run, including the Hindi and Hinglish ones, was read by
+rules. The pilot should log how often the fallback fires and what it
+returns.</p></li>
+<li><p><strong>Coordinator actions are scripted.</strong> Approvals at
+09:17 and 09:41 are function calls at fixed times. A real coordinator
+may be slower; the approval deadline and the sweeper handle that
+(deliverable 5, test T08).</p></li>
+<li><p><strong>Low utilisation is not a problem to fix with this
+agent.</strong> 21 of 31 afternoon slots are idle. The constraints that
+hurt are door type (only D6 takes heavy loads, only D5 takes reefer) and
+the D3 breakdown. Q10 in the review pack asks whether standard loads may
+use D5 or D6 when idle.</p></li>
+</ul>
+</div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

@@ -226,10 +226,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 55050.0,
         "nodes": 4795,
-        "bnb_ms": 83,
+        "bnb_ms": 105,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 55050.0,
-        "cpsat_ms": 230.7,
+        "cpsat_ms": 244.5,
         "match": true
       },
       {
@@ -242,7 +242,7 @@
         "bnb_ms": 1,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 55175.0,
-        "cpsat_ms": 17.3,
+        "cpsat_ms": 16.0,
         "match": true
       },
       {
@@ -252,10 +252,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 56025.0,
         "nodes": 4725,
-        "bnb_ms": 97,
+        "bnb_ms": 92,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 56025.0,
-        "cpsat_ms": 359.9,
+        "cpsat_ms": 413.9,
         "match": true
       },
       {
@@ -268,7 +268,7 @@
         "bnb_ms": 1,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 56375.0,
-        "cpsat_ms": 13.5,
+        "cpsat_ms": 16.0,
         "match": true
       },
       {
@@ -278,10 +278,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 59125.0,
         "nodes": 12091,
-        "bnb_ms": 222,
+        "bnb_ms": 261,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 59125.0,
-        "cpsat_ms": 731.0,
+        "cpsat_ms": 778.7,
         "match": true
       },
       {
@@ -291,10 +291,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 77375.0,
         "nodes": 76,
-        "bnb_ms": 1,
+        "bnb_ms": 2,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 77375.0,
-        "cpsat_ms": 15.8,
+        "cpsat_ms": 17.7,
         "match": true
       },
       {
@@ -304,10 +304,10 @@
         "bnb_status": "PROVEN_OPTIMAL",
         "bnb_cost": 72350.0,
         "nodes": 56554,
-        "bnb_ms": 1214,
+        "bnb_ms": 1184,
         "cpsat_status": "OPTIMAL",
         "cpsat_cost": 72350.0,
-        "cpsat_ms": 2819.2,
+        "cpsat_ms": 3042.2,
         "match": true
       }
     ],

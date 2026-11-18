@@ -1,0 +1,116 @@
+test_01_ten_drivers_one_slot (test_integrity.Integrity.test_01_ten_drivers_one_slot) ... ok
+test_02_negative_control_without_guards_double_books (test_integrity.Integrity.test_02_negative_control_without_guards_double_books) ... ok
+test_03_index_alone_blocks_but_leaks_raw_errors (test_integrity.Integrity.test_03_index_alone_blocks_but_leaks_raw_errors) ... ok
+test_04_random_stress_keeps_invariants (test_integrity.Integrity.test_04_random_stress_keeps_invariants) ... ok
+test_05_retry_is_idempotent (test_integrity.Integrity.test_05_retry_is_idempotent) ... ok
+test_06_duplicate_message_is_suppressed (test_integrity.Integrity.test_06_duplicate_message_is_suppressed) ... ok
+test_07_stale_option_is_rechecked_at_commit (test_integrity.Integrity.test_07_stale_option_is_rechecked_at_commit) ... ok
+test_08_hold_expires_and_slot_returns (test_integrity.Integrity.test_08_hold_expires_and_slot_returns) ... ok
+test_09_coordinator_approval_is_rechecked (test_integrity.Integrity.test_09_coordinator_approval_is_rechecked) ... ok
+test_10_database_guards_reject_the_audit_gaps (test_integrity.Integrity.test_10_database_guards_reject_the_audit_gaps) ... ok
+test_11_overlap_trigger_catches_a_feasibility_bug (test_integrity.Integrity.test_11_overlap_trigger_catches_a_feasibility_bug)
+Simulate a bug: the feasibility code forgets busy intervals. The DB trigger must still refuse. ... ok
+test_12_swap_is_all_or_nothing (test_integrity.Integrity.test_12_swap_is_all_or_nothing) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.478s
+
+OK
+
+{
+ "race_repeats": {
+  "repeats": 50,
+  "racers_per_run": 10,
+  "slot": "SLOT-JAI-052",
+  "seconds": 12.6,
+  "runs_with_exactly_one_winner": 50,
+  "total_double_bookings": 0,
+  "total_leaked_errors": 0,
+  "total_clean_refusals": 450,
+  "distinct_winners": [
+   "SHP1002",
+   "SHP1003",
+   "SHP1004",
+   "SHP1005",
+   "SHP1006",
+   "SHP1007",
+   "SHP1009",
+   "SHP1012",
+   "SHP1013",
+   "SHP1014"
+  ],
+  "invariant_violations": 0
+ },
+ "negative_controls": [
+  {
+   "unique_index": false,
+   "booked": 10,
+   "raw_errors": 0
+  },
+  {
+   "unique_index": false,
+   "booked": 10,
+   "raw_errors": 0
+  },
+  {
+   "unique_index": false,
+   "booked": 10,
+   "raw_errors": 0
+  },
+  {
+   "unique_index": false,
+   "booked": 10,
+   "raw_errors": 0
+  },
+  {
+   "unique_index": false,
+   "booked": 10,
+   "raw_errors": 0
+  },
+  {
+   "unique_index": true,
+   "booked": 1,
+   "raw_errors": 9
+  },
+  {
+   "unique_index": true,
+   "booked": 1,
+   "raw_errors": 9
+  },
+  {
+   "unique_index": true,
+   "booked": 1,
+   "raw_errors": 9
+  },
+  {
+   "unique_index": true,
+   "booked": 1,
+   "raw_errors": 9
+  },
+  {
+   "unique_index": true,
+   "booked": 1,
+   "raw_errors": 9
+  }
+ ],
+ "stress": {
+  "CONFIRMED": 45,
+  "OPTION_GONE": 143,
+  "NEEDS_APPROVAL": 12,
+  "errors": 0,
+  "invariants": {
+   "slots_with_two_active": 0,
+   "shipments_with_two_current": 0,
+   "overlapping_service_intervals": 0,
+   "incompatible_service_bookings": 0
+  }
+ },
+ "guard_messages": {
+  "blocked slot": "SLOT_NOT_OPEN",
+  "wrong facility": "WRONG_FACILITY",
+  "heavy load on standard dock": "DOCK_WEIGHT_EXCEEDED",
+  "cancelled shipment": "SHIPMENT_NOT_BOOKABLE",
+  "active booking with is_current=0": "ACTIVE_APPOINTMENT_MUST_BE_CURRENT"
+ }
+}
+UNIT TESTS: 12 ran, 0 failures, 0 errors

@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Client readout — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Client readout (hand-in #6)</h1>
+<p><em>For: Head of Operations and the Jaipur warehouse planner. Plain language, one page.</em></p>
+<h2>What we built</h2>
+<p>A WhatsApp assistant for drivers who are running late or early. It understands English, Hindi and Hinglish, asks at most one or two short questions, and offers dock slots that the truck can really make. When the driver picks one, the system checks it again and books it in the dock schedule. If no safe answer exists, it hands the case to your coordinator with everything they need.</p>
+<h2>Policy it follows</h2>
+<ol>
+<li><strong>A solver decides, not AI.</strong> For every request it tries every way the waiting trucks could be docked, scores each with rules your planner can read and change (one YAML file), and picks the proven best. Same situation, same answer, every time. We checked it against Google's OR-Tools solver: identical results on every test.</li>
+<li><strong>The computer decides capacity, not the chat.</strong> Every slot offered passes the same rules your planner uses: right dock type, weight limit, dock not broken, truck can arrive in time, nothing else on the dock.</li>
+<li><strong>Seeing a slot is not owning it.</strong> Two drivers can see the same slot. The first one who chooses gets it; the other is told straight away and shown the next options.</li>
+<li><strong>Priority comes from the shipment record</strong>, never from what the driver says. "Urgent" in a message changes nothing.</li>
+<li><strong>Promises are kept.</strong> A truck that can still make its booking keeps it. Moving a confirmed truck to make room for a critical one is proposed to your coordinator, never done automatically.</li>
+<li><strong>A person decides</strong> when: someone may be hurt, no slot fits, the driver asks for a person, unloading would start after 21:00, the ETA is too vague, or the records contradict each other.</li>
+</ol>
+<h2>What we measured on the 4 August Jaipur replay</h2>
+<ul>
+<li>12 driver conversations, median <strong>2 minutes and 2 messages</strong> to a usable outcome.</li>
+<li><strong>0 double bookings</strong>, also under a test of 10 drivers grabbing one slot at the same instant.</li>
+<li>1 of 24 offered slots were gone by the time the driver chose; the driver was told and re-offered. When a dock freed up earlier than shown, the driver was told the new start time.</li>
+<li>Looking ahead across all trucks avoided one escalation: a driver with a 13:30 deadline kept the only slot that worked for him, because the solver steered an earlier driver to a different dock.</li>
+<li>The one remaining "no slot" case (reefer dock in maintenance) reached a coordinator with a complete record.</li>
+<li>2 clarification questions across 12 conversations; where the system assumed something ("late by one hour" = 11:00, "heavy trailer" = trip 016) it said so, so the driver can correct it.</li>
+<li>Language understanding: 100% on our test set, <strong>80% on unseen messages</strong> — the remaining 20% get a clarifying question or go to a person, never a wrong booking.</li>
+</ul>
+<h2>Location without paying for constant GPS</h2>
+<p>We ask for a truck's position only when it would change the plan (6 trucks with uncertain arrival at 09:50; 1 position worth buying). GPS first, FASTag toll data second (works in dead zones and when GPS is switched off). If a truck's next toll crossing is overdue and its GPS is silent, a coordinator gets a review alert.</p>
+<h2>What we found in your data (fix these first)</h2>
+<ul>
+<li>Two trucks are booked on docks rated below their load (SHP1005 on D3, SHP1014 on D1).</li>
+<li>Dock D3's breakdown starts at 09:15, but its 09:00 slot still shows as open with a truck booked.</li>
+<li>Many unloads (75 min) are longer than their slots (60 min), so delays roll into the next truck.</li>
+<li>One driver appears on two moving trucks; the Gurugram night-shift contact is vacant with no email.</li>
+</ul>
+<h2>Limits and open risks</h2>
+<ul>
+<li>No GPS: we rely on what drivers say. We plan for the late end of their estimate.</li>
+<li>The demo runs one facility at a time on a single database writer. Production should move to the managed PostgreSQL design (included) before go-live across 6 facilities.</li>
+<li>Hindi and Hinglish phrasing varies widely; we will keep adding real messages to the test set every week.</li>
+<li>Unload times are estimates; overruns still ripple. The planning tool proposes resequencing but a person approves it.</li>
+</ul>
+<h2>Decisions we need from you</h2>
+<ol>
+<li>Gate-to-dock time per facility (we assumed 15 minutes).</li>
+<li>Can standard loads ever use the heavy or reefer bay when idle?</li>
+<li>Who approves starts after 21:00, and within how many minutes?</li>
+<li>Should a critical shipment be allowed to bump a normal one, and who tells the bumped driver?</li>
+</ol></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

@@ -1,14 +1,16 @@
 # SetuHaul evaluation report
 
-| Gate | Value | Threshold | Result |
-|---|---:|---:|---|
-| nlu_case_accuracy | 1.000 | 0.90 | PASS |
-| nlu_holdout_accuracy | 0.800 | 0.70 | PASS |
-| nlu_min_language_accuracy | 1.000 | 0.85 | PASS |
-| feasibility | 1.000 | 1.00 | PASS |
-| guardrails | 1.000 | 1.00 | PASS |
-| integrity_tests | 1.000 | 1.00 | PASS |
-| solver_optimality | 1.000 | 1.00 | PASS |
+Each rate is shown with its sample size and a 95% Wilson interval: on small samples the range matters more than the point (for example 16 of 20 is 80%, but the interval is about 58% to 92%).
+
+| Gate | Value | n | 95% interval | Threshold | Result |
+|---|---:|---:|---|---:|---|
+| nlu_case_accuracy | 1.000 | 52 | 93% – 100% | 0.90 | PASS |
+| nlu_holdout_accuracy | 0.800 | 20 | 58% – 92% | 0.70 | PASS |
+| nlu_min_language_accuracy | 1.000 | - | - | 0.85 | PASS |
+| feasibility | 1.000 | 11 | 74% – 100% | 1.00 | PASS |
+| guardrails | 1.000 | 15 | 80% – 100% | 1.00 | PASS |
+| integrity_tests | 1.000 | 21 | 85% – 100% | 1.00 | PASS |
+| solver_optimality | 1.000 | 8 | 68% – 100% | 1.00 | PASS |
 
 ## Language understanding (52 cases)
 
@@ -63,13 +65,13 @@ Held-out failures (left unfixed on purpose):
 | At | Mode | Trucks | B&B | B&B cost | Nodes | B&B ms | CP-SAT | CP-SAT cost | CP-SAT ms | Match |
 |---|---|---:|---|---:|---:|---:|---|---:|---:|---|
 | 08:30 | chat | 5 | PROVEN_OPTIMAL | 54575 | 39 | 1 | OPTIMAL | 54575 | 18.4 | True |
-| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55050 | 4795 | 83 | OPTIMAL | 55050 | 230.7 | True |
-| 09:30 | chat | 5 | PROVEN_OPTIMAL | 55175 | 39 | 1 | OPTIMAL | 55175 | 17.3 | True |
-| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56025 | 4725 | 97 | OPTIMAL | 56025 | 359.9 | True |
-| 09:45 | chat | 5 | PROVEN_OPTIMAL | 56375 | 53 | 1 | OPTIMAL | 56375 | 13.5 | True |
-| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59125 | 12091 | 222 | OPTIMAL | 59125 | 731.0 | True |
-| 10:30 | chat | 5 | PROVEN_OPTIMAL | 77375 | 76 | 1 | OPTIMAL | 77375 | 15.8 | True |
-| 10:30 | plan | 16 | PROVEN_OPTIMAL | 72350 | 56554 | 1214 | OPTIMAL | 72350 | 2819.2 | True |
+| 08:30 | plan | 16 | PROVEN_OPTIMAL | 55050 | 4795 | 105 | OPTIMAL | 55050 | 244.5 | True |
+| 09:30 | chat | 5 | PROVEN_OPTIMAL | 55175 | 39 | 1 | OPTIMAL | 55175 | 16.0 | True |
+| 09:30 | plan | 16 | PROVEN_OPTIMAL | 56025 | 4725 | 92 | OPTIMAL | 56025 | 413.9 | True |
+| 09:45 | chat | 5 | PROVEN_OPTIMAL | 56375 | 53 | 1 | OPTIMAL | 56375 | 16.0 | True |
+| 09:45 | plan | 16 | PROVEN_OPTIMAL | 59125 | 12091 | 261 | OPTIMAL | 59125 | 778.7 | True |
+| 10:30 | chat | 5 | PROVEN_OPTIMAL | 77375 | 76 | 2 | OPTIMAL | 77375 | 17.7 | True |
+| 10:30 | plan | 16 | PROVEN_OPTIMAL | 72350 | 56554 | 1184 | OPTIMAL | 72350 | 3042.2 | True |
 
 ## Scenario-run measures (brief, page 9)
 

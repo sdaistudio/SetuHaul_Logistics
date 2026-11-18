@@ -11,11 +11,11 @@ SELECT e.dock_event_id, e.event_type, e.event_start_ts, e.event_end_ts, sl.slot_
 FROM dock_status_events e JOIN appointment_slots sl ON sl.dock_id = e.dock_id
 WHERE sl.slot_start_ts < COALESCE(e.event_end_ts, '9999') AND sl.slot_end_ts > e.event_start_ts AND sl.slot_status = 'OPEN';
 
--- @A03 | Unload longer than the slot | 75-min unloads booked into 60-min slots spill into the next booking on the same dock.
+-- @A03 | Unload longer than the slot | 70- and 75-min unloads booked into 60-min slots spill into the next booking on the same dock. Minutes are rounded, not truncated: v1 used CAST(... AS INT) on julianday differences, which turned some 60-min slots into 59 and reported 7 rows; only 4 are real (review item A3).
 SELECT a.appointment_id, a.shipment_id, s.expected_unload_min,
-       CAST((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AS INT) AS slot_min, a.appointment_status
+       CAST(ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AS INT) AS slot_min, a.appointment_status
 FROM appointments a JOIN shipments s USING(shipment_id) JOIN appointment_slots sl USING(slot_id)
-WHERE s.expected_unload_min > (julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AND a.appointment_status <> 'CANCELLED';
+WHERE s.expected_unload_min > ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AND a.appointment_status <> 'CANCELLED';
 
 -- @A04 | Booked slot already missed by declared ETA | Confirmed appointments whose truck's latest ETA is after the window ends; capacity is held but will not be used.
 SELECT a.appointment_id, a.shipment_id, sl.slot_start_ts, sl.slot_end_ts, le.effective_eta_ts, le.eta_confidence

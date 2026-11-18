@@ -21,7 +21,9 @@
 .kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
 .arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
 footer{color:var(--mu);font-size:12.5px;margin-top:30px}
-</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Data audit — evidence for the Problem Definition Sheet</h1>
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Data audit — evidence for the Problem Definition Sheet</h1>
 <p>Each finding is proved by the query under it, run read-only on the supplied snapshot.</p>
 <h2>A01. Active booking violates dock weight limit</h2>
 <p>SHP1005 (20.5 t) is CONFIRMED on D3 (max 20 t) and SHP1014 (21 t) is PENDING on D1 (max 20 t). The system of record already holds infeasible bookings.</p>
@@ -114,13 +116,13 @@ WHERE sl.slot_start_ts &lt; COALESCE(e.event_end_ts, '9999') AND sl.slot_end_ts 
 </tbody>
 </table>
 <h2>A03. Unload longer than the slot</h2>
-<p>75-min unloads booked into 60-min slots spill into the next booking on the same dock.</p>
+<p>70- and 75-min unloads booked into 60-min slots spill into the next booking on the same dock. Minutes are rounded, not truncated: v1 used CAST(... AS INT) on julianday differences, which turned some 60-min slots into 59 and reported 7 rows; only 4 are real (review item A3).</p>
 <pre><code class="language-sql">SELECT a.appointment_id, a.shipment_id, s.expected_unload_min,
-       CAST((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AS INT) AS slot_min, a.appointment_status
+       CAST(ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AS INT) AS slot_min, a.appointment_status
 FROM appointments a JOIN shipments s USING(shipment_id) JOIN appointment_slots sl USING(slot_id)
-WHERE s.expected_unload_min &gt; (julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440 AND a.appointment_status &lt;&gt; 'CANCELLED';
+WHERE s.expected_unload_min &gt; ROUND((julianday(sl.slot_end_ts) - julianday(sl.slot_start_ts)) * 1440) AND a.appointment_status &lt;&gt; 'CANCELLED';
 </code></pre>
-<p>Rows returned: <strong>7</strong></p>
+<p>Rows returned: <strong>4</strong></p>
 <table>
 <thead>
 <tr>
@@ -140,24 +142,10 @@ WHERE s.expected_unload_min &gt; (julianday(sl.slot_end_ts) - julianday(sl.slot_
 <td>IN_PROGRESS</td>
 </tr>
 <tr>
-<td>APT1004</td>
-<td>SHP1004</td>
-<td>60</td>
-<td>59</td>
-<td>CONFIRMED</td>
-</tr>
-<tr>
 <td>APT1005</td>
 <td>SHP1005</td>
 <td>75</td>
-<td>59</td>
-<td>CONFIRMED</td>
-</tr>
-<tr>
-<td>APT1007</td>
-<td>SHP1007</td>
 <td>60</td>
-<td>59</td>
 <td>CONFIRMED</td>
 </tr>
 <tr>
@@ -173,13 +161,6 @@ WHERE s.expected_unload_min &gt; (julianday(sl.slot_end_ts) - julianday(sl.slot_
 <td>75</td>
 <td>60</td>
 <td>PENDING_CONFIRMATION</td>
-</tr>
-<tr>
-<td>APT1020</td>
-<td>SHP1020</td>
-<td>60</td>
-<td>59</td>
-<td>CONFIRMED</td>
 </tr>
 </tbody>
 </table>

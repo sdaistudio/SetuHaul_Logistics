@@ -1,0 +1,286 @@
+{
+ "cases": [
+  {
+   "case": "C01",
+   "driver": "DRV003",
+   "shipment": "SHP1003",
+   "driver_messages": 2,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "08:22",
+   "outcome_at": "08:23",
+   "minutes_to_outcome": 1,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C03",
+   "driver": "DRV013",
+   "shipment": "SHP1013",
+   "driver_messages": 3,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "09:19",
+   "outcome_at": "09:37",
+   "minutes_to_outcome": 18,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 1,
+   "bookings": 1
+  },
+  {
+   "case": "C04",
+   "driver": "DRV004",
+   "shipment": "SHP1004",
+   "driver_messages": 1,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "09:27",
+   "outcome_at": "09:27",
+   "minutes_to_outcome": 0,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 0
+  },
+  {
+   "case": "C05",
+   "driver": "DRV012",
+   "shipment": "SHP1012",
+   "driver_messages": 2,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "09:29",
+   "outcome_at": "09:30",
+   "minutes_to_outcome": 1,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C06",
+   "driver": "DRV004",
+   "shipment": "SHP1020",
+   "driver_messages": 3,
+   "duplicates_suppressed": 0,
+   "clarifications": 1,
+   "first_msg": "09:31",
+   "outcome_at": "09:41",
+   "minutes_to_outcome": 10,
+   "outcome": "BOOKED",
+   "human_involved": true,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C07",
+   "driver": "DRV006",
+   "shipment": "SHP1006",
+   "driver_messages": 3,
+   "duplicates_suppressed": 1,
+   "clarifications": 0,
+   "first_msg": "09:34",
+   "outcome_at": "09:36",
+   "minutes_to_outcome": 2,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C08",
+   "driver": "DRV007",
+   "shipment": "SHP1016",
+   "driver_messages": 2,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "09:39",
+   "outcome_at": "09:40",
+   "minutes_to_outcome": 1,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C09",
+   "driver": "DRV010",
+   "shipment": "SHP1010",
+   "driver_messages": 2,
+   "duplicates_suppressed": 0,
+   "clarifications": 1,
+   "first_msg": "09:42",
+   "outcome_at": "09:43",
+   "minutes_to_outcome": 1,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 0
+  },
+  {
+   "case": "C10",
+   "driver": "DRV014",
+   "shipment": "SHP1014",
+   "driver_messages": 2,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "09:44",
+   "outcome_at": "09:45",
+   "minutes_to_outcome": 1,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 1
+  },
+  {
+   "case": "C11",
+   "driver": "DRV001",
+   "shipment": "SHP1017",
+   "driver_messages": 3,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "10:02",
+   "outcome_at": "10:04",
+   "minutes_to_outcome": 2,
+   "outcome": "BOOKED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 0
+  },
+  {
+   "case": "C12",
+   "driver": "DRV011",
+   "shipment": null,
+   "driver_messages": 1,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "10:05",
+   "outcome_at": "10:05",
+   "minutes_to_outcome": 0,
+   "outcome": "ESCALATED",
+   "human_involved": true,
+   "option_gone": 0,
+   "bookings": 0
+  },
+  {
+   "case": "C13",
+   "driver": "DRV008",
+   "shipment": "SHP1019",
+   "driver_messages": 1,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "10:12",
+   "outcome_at": "10:12",
+   "minutes_to_outcome": 0,
+   "outcome": "CLOSED",
+   "human_involved": false,
+   "option_gone": 0,
+   "bookings": 0
+  },
+  {
+   "case": "C14",
+   "driver": "DRV015",
+   "shipment": "SHP1015",
+   "driver_messages": 1,
+   "duplicates_suppressed": 0,
+   "clarifications": 0,
+   "first_msg": "16:24",
+   "outcome_at": "16:24",
+   "minutes_to_outcome": 0,
+   "outcome": "ESCALATED",
+   "human_involved": true,
+   "option_gone": 0,
+   "bookings": 0
+  }
+ ],
+ "summary": {
+  "driver_cases": 13,
+  "median_minutes_to_outcome": 1,
+  "resolved_without_manual_takeover": 10,
+  "conflicting_or_duplicate_allocations": 0,
+  "options_gone_at_commit": "1 of 8 picks",
+  "no_slot_escalations_complete": "1 of 1",
+  "avg_wait_after_reschedule_min": 34.2,
+  "slot_utilisation_10_16": "10 of 31 open slots",
+  "clarification_questions": 2,
+  "median_driver_messages": 2,
+  "duplicates_suppressed": 1
+ },
+ "invariants": {
+  "slots_with_two_active_bookings": 0,
+  "shipments_with_two_current_bookings": 0,
+  "overlapping_service_bookings": 0,
+  "service_bookings_breaking_compatibility": 0
+ },
+ "waits": [
+  {
+   "shipment": "SHP1003",
+   "arrival": "08:20",
+   "dock_start": "08:35",
+   "wait_min": 15
+  },
+  {
+   "shipment": "SHP1012",
+   "arrival": "11:10",
+   "dock_start": "11:25",
+   "wait_min": 15
+  },
+  {
+   "shipment": "SHP1006",
+   "arrival": "12:00",
+   "dock_start": "12:40",
+   "wait_min": 40
+  },
+  {
+   "shipment": "SHP1013",
+   "arrival": "11:00",
+   "dock_start": "11:30",
+   "wait_min": 30
+  },
+  {
+   "shipment": "SHP1016",
+   "arrival": "12:00",
+   "dock_start": "12:50",
+   "wait_min": 50
+  },
+  {
+   "shipment": "SHP1014",
+   "arrival": "11:25",
+   "dock_start": "12:20",
+   "wait_min": 55
+  }
+ ],
+ "escalations": [
+  {
+   "escalation_id": "ESC-0001",
+   "reason_code": "APPROVAL_NEEDED",
+   "urgency": "HIGH",
+   "routed_to": "Neha Bansal",
+   "channel": "EMAIL+DASHBOARD"
+  },
+  {
+   "escalation_id": "ESC-0002",
+   "reason_code": "DATA_CONFLICT",
+   "urgency": "LOW",
+   "routed_to": "Neha Bansal",
+   "channel": "EMAIL+DASHBOARD"
+  },
+  {
+   "escalation_id": "ESC-0003",
+   "reason_code": "SAFETY",
+   "urgency": "CRITICAL",
+   "routed_to": "Anita Joshi",
+   "channel": "PHONE_CALL+WHATSAPP"
+  },
+  {
+   "escalation_id": "ESC-0004",
+   "reason_code": "NO_FEASIBLE_SLOT",
+   "urgency": "HIGH",
+   "routed_to": "Neha Bansal",
+   "channel": "EMAIL+DASHBOARD"
+  }
+ ]
+}

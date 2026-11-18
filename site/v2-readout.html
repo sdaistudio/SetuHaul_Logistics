@@ -1,0 +1,400 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>06 Client readout — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · <a href="v2/06_SetuHaul_Client_Readout.docx">download the Word file</a></p><p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 6</strong></p>
+<p><strong>Client Readout</strong></p>
+<p>Driver delays at Jaipur DC: what we found in your data, what we
+built, what it showed on 4 August, and what we need you to decide</p>
+<p>A plain-language summary for SetuHaul's head of operations and
+warehouse planner. No technical background is needed. Every number comes
+from your own snapshot of 4 August 2026, replayed through the working
+system.</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.0 | 18 November 2026</p>
+<p>Audience: SetuHaul head of operations; warehouse planner, Jaipur
+DC</p>
+<h1 id="where-you-are-today">1. Where you are today</h1>
+<p>On 4 August, Jaipur DC expected 20 trucks at its 6 dock doors. Ten
+drivers opened twelve WhatsApp threads about delays, early arrivals or
+questions. One door broke down at 09:15. A coordinator was handling all
+of this by phone, e-mail and chat, while trying to keep a plan that
+changed every few minutes.</p>
+<p>That is a normal day, and the people on it did a lot right. But the
+data shows where the current way of working lets you down.</p>
+<h1 id="what-we-found-in-your-data">2. What we found in your data</h1>
+<ul>
+<li><p><strong>A booking that could never work, found too late.</strong>
+The reefer load of dairy for FreshBasket (ORD-260804-015) was booked on
+1 August for 17:00 on Door D5. Two hours later, maintenance was planned
+on D5 from 18:00. Nobody saw the clash for three days. On the 4th, the
+warning e-mail went to a night-shift address that bounces, at
+16:25.</p></li>
+<li><p><strong>A promise made twice.</strong> Two confirmed bookings sat
+on the same slot for three days. Your system now shows only one of them,
+because it overwrites history.</p></li>
+<li><p><strong>A driver on two moving trucks.</strong> DRV007 is
+recorded as driving two trucks at once. One of those ETAs cannot be
+true, and the plan relies on both.</p></li>
+<li><p><strong>Bookings that break your own rules.</strong> Some loads
+are booked on doors that cannot take their weight, and slots on a broken
+door still show as open.</p></li>
+<li><p><strong>Drivers left without an answer.</strong> Three drivers
+got no reply at all, and one request sat unsent.</p></li>
+</ul>
+<p>The data audit (deliverable 1) lists 36 findings like these, each
+with the query that proves it.</p>
+<h1 id="why-this-matters">3. Why this matters</h1>
+<ul>
+<li><p><strong>Detention and missed pickups.</strong> A driver who waits
+at your gate is not earning, and carriers charge for it. One driver that
+morning had to leave by 13:30 for his next pickup; a simple
+first-come-first-served plan would have left him no door that let him
+make it.</p></li>
+<li><p><strong>Cold chain.</strong> A reefer truck that cannot unload
+must park with its fridge running, and its dairy load and e-way bill
+both have a clock on them.</p></li>
+<li><p><strong>Customer promises.</strong> A CRITICAL load (CareSupply
+Rajasthan) was competing for the same doors as everything else.</p></li>
+<li><p><strong>Your coordinator's time.</strong> Most of the morning's
+messages needed the same lookups: where is the truck, which door fits,
+what is free. That is work a system can do, so people can spend their
+time on the decisions that really need them.</p></li>
+</ul>
+<h1 id="what-we-built">4. What we built</h1>
+<p>A <strong>WhatsApp assistant for drivers</strong> that works in
+English, Hinglish and Hindi, backed by a booking engine that cannot
+double-book.</p>
+<ul>
+<li><p><strong>It reads the message and looks up the rest.</strong> It
+asks the driver only for what it cannot know, usually nothing and at
+most one question.</p></li>
+<li><p><strong>It offers only slots that really work</strong> for that
+truck: the right door type and weight, time for the unload, the driver's
+own deadline, and no clash with trucks already at the doors.</p></li>
+<li><p><strong>Nothing is booked until the driver chooses,</strong> and
+the choice is checked again at that moment. If someone else took the
+slot a second earlier, the driver is told why and gets fresh options in
+the same reply.</p></li>
+<li><p><strong>Your priorities come from your records,</strong> not from
+who shouts loudest. HIGH and CRITICAL loads get first claim on scarce
+slots; a confirmed booking is only moved by a coordinator, and never in
+a way that breaks another driver's deadline.</p></li>
+<li><p><strong>It hands over the hard cases</strong> (accidents, no
+workable slot, data that does not add up) to the right person, by a
+channel that works, with everything they need on one screen.</p></li>
+<li><p><strong>It warns early.</strong> Every time something changes (an
+ETA, a breakdown, a cancellation), it re-checks every booking and tells
+people before the truck arrives at a closed door.</p></li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | One way to picture it</strong></p>
+<p>It is like a good railway reservation clerk who knows every train,
+never sells the same berth twice, speaks the passenger's language, and
+calls the station master the moment something is beyond the counter's
+authority.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="what-it-did-on-4-august">5. What it did on 4 August</h1>
+<p>We replayed your morning, message by message, through the working
+system.</p>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>What we measured</strong></th>
+<th><strong>Result</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Driver cases handled</td>
+<td>13, plus one coordinator case (the D3 breakdown)</td>
+</tr>
+<tr class="even">
+<td>Settled without a person stepping in</td>
+<td>10 of 13. The other 3 went to a person by design: an accident, a
+reefer load with no workable door, and a booking that needed approval
+because the records showed the truck on another trip.</td>
+</tr>
+<tr class="odd">
+<td>Time from a driver's first message to a usable answer</td>
+<td>1 minute (median)</td>
+</tr>
+<tr class="even">
+<td>Messages from the driver per case</td>
+<td>2 (median)</td>
+</tr>
+<tr class="odd">
+<td>Questions we had to ask drivers</td>
+<td>2 in 13 cases</td>
+</tr>
+<tr class="even">
+<td>Slots promised twice</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>The reefer problem</td>
+<td>Flagged at 09:16, seven hours before the driver wrote, with two
+concrete fixes for a coordinator to choose from</td>
+</tr>
+<tr class="even">
+<td>Average planned wait after re-booking</td>
+<td>34 minutes from arrival to dock start, across the 6 re-booked
+trucks</td>
+</tr>
+</tbody>
+</table>
+<p>We also tried to break it on purpose: ten drivers grabbing the same
+slot at the same instant, fifty times in a row. Each time exactly one
+got it, and the other nine got a polite "just taken" with fresh options.
+When we switched our protections off, all ten "got" the slot. That is
+the proof that the protections, not luck, are doing the work
+(deliverable 5).</p>
+<h1 id="the-policies-we-applied-which-need-your-sign-off">6. The
+policies we applied, which need your sign-off</h1>
+<p>These are business choices, not technical ones. We made a sensible
+choice for each so the system could run; you may change any of them, and
+the system follows.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 60%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Policy</strong></th>
+<th><strong>What we assumed</strong></th>
+<th><strong>Who should decide</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>What a slot means</td>
+<td>A start window: the truck can start any time inside it and must
+reach the gate within 30 minutes of its start. Unloads may run past the
+slot's end if the door is free.</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="even">
+<td>Time from gate to door, and between trucks</td>
+<td>15 minutes gate to door; 10 minutes changeover</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="odd">
+<td>How sure we must be of an ETA</td>
+<td>We plan on the late side: no buffer for a clock time, 15 minutes for
+"around", 30 for vague reports</td>
+<td>Head of operations</td>
+</tr>
+<tr class="even">
+<td>Who gets scarce slots</td>
+<td>Priority from the shipment record; slots for HIGH and CRITICAL
+loads, and for trucks with a tight deadline, protected for 20 minutes;
+otherwise the first valid choice wins</td>
+<td>Head of operations</td>
+</tr>
+<tr class="odd">
+<td>Moving a confirmed booking</td>
+<td>Only by a coordinator, only if the gain is real (30 minutes or
+more), never breaking anyone's deadline</td>
+<td>Head of operations</td>
+</tr>
+<tr class="even">
+<td>Evening unloads</td>
+<td>Any start at 21:00 or later needs a coordinator's approval</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="odd">
+<td>Standard loads on the heavy or reefer door</td>
+<td>Not allowed unless a coordinator overrides</td>
+<td>Warehouse planner</td>
+</tr>
+</tbody>
+</table>
+<h1 id="what-it-will-not-do">7. What it will not do</h1>
+<ul>
+<li><p>It will not decide anything about <strong>driver safety</strong>,
+penalties, compensation, disputes, hazardous or regulated loads. These
+always go to a person.</p></li>
+<li><p>It will not <strong>invent a slot</strong> when none exists. It
+says so and hands over.</p></li>
+<li><p>It will not let a message's word "urgent" <strong>jump the
+queue.</strong> Priority comes from your records.</p></li>
+<li><p>It will not trust its own reading of a message over <strong>your
+data.</strong> If an ETA does not add up (a truck that is still in your
+yard cannot be on the road), it asks a coordinator.</p></li>
+</ul>
+<h1 id="risks-and-how-we-handle-them">8. Risks, and how we handle
+them</h1>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Risk</strong></th>
+<th><strong>How we handle it</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Drivers do not reply, or reply in ways we did not expect</td>
+<td>One clarifying question at most; after two unanswered questions a
+person takes over</td>
+</tr>
+<tr class="even">
+<td>A wrong reading of a message</td>
+<td>Every booking is checked against your data before it is made; the
+reply states what we understood so the driver can correct it</td>
+</tr>
+<tr class="odd">
+<td>Your data is wrong (like the driver on two trucks)</td>
+<td>We lower our confidence, flag it to the coordinator, and do not
+build on it</td>
+</tr>
+<tr class="even">
+<td>Coordinators get too many hand-offs</td>
+<td>We measure it from day one; the pilot only goes live if hand-offs
+stay manageable</td>
+</tr>
+<tr class="odd">
+<td>WhatsApp or a mailbox is down</td>
+<td>Hand-offs skip broken channels (the bouncing night-shift address is
+never used) and fall back to phone</td>
+</tr>
+</tbody>
+</table>
+<h1 id="cost">9. Cost</h1>
+<table>
+<colgroup>
+<col style="width: 48%" />
+<col style="width: 51%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Item</strong></th>
+<th><strong>Pilot (2 sites)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hosting: one small server plus a managed database</td>
+<td>About US$22-30 a month</td>
+</tr>
+<tr class="even">
+<td>WhatsApp messages</td>
+<td>A few hundred rupees a month at pilot volume</td>
+</tr>
+<tr class="odd">
+<td>AI model to read unusual messages</td>
+<td>Cents a month; most messages are read by rules</td>
+</tr>
+</tbody>
+</table>
+<p>The earlier cloud design put the fixed cost near US$170 a month
+before a single message. We keep that design for later, when there are
+many more sites.</p>
+<h1 id="the-pilot-we-propose">10. The pilot we propose</h1>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 46%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Phase</strong></th>
+<th><strong>Length</strong></th>
+<th><strong>What happens</strong></th>
+<th><strong>Go-ahead test</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0. Set-up</td>
+<td>1 week</td>
+<td>Your sign-off on section 6; fix the data issues that block bookings
+(the bouncing mailbox, the driver on two trucks, missing tomorrow
+slots); connect WhatsApp</td>
+<td>Policies signed; channels tested</td>
+</tr>
+<tr class="even">
+<td>1. Shadow</td>
+<td>2 weeks</td>
+<td>The assistant drafts every reply; a coordinator approves before it
+is sent</td>
+<td>9 in 10 drafts sent unchanged; zero double bookings</td>
+</tr>
+<tr class="odd">
+<td>2. Live, daytime</td>
+<td>2 weeks</td>
+<td>Jaipur DC, opening time to 21:00; coordinators see every booking on
+one board</td>
+<td>Median answer under 5 minutes; 7 in 10 cases without a person; every
+hand-off complete</td>
+</tr>
+<tr class="even">
+<td>3. Review</td>
+<td>1 day</td>
+<td>Real gate-to-door waiting compared with the month before</td>
+<td>Decide on Gurugram and night hours</td>
+</tr>
+</tbody>
+</table>
+<h1 id="what-we-need-from-you">11. What we need from you</h1>
+<ol type="1">
+<li><p><strong>Sign off the seven policies</strong> in section 6, or
+tell us what to change.</p></li>
+<li><p><strong>Confirm what a slot means</strong> at Jaipur: a start
+window, or a fixed start with 30 minutes' grace. This one decision
+changes who counts as a no-show.</p></li>
+<li><p><strong>Fix the night-shift mailbox</strong> and tell us who is
+the coordinator after 18:00.</p></li>
+<li><p><strong>Tell us who is driving the second truck</strong> recorded
+against DRV007.</p></li>
+<li><p><strong>Publish tomorrow's slots,</strong> so a truck that cannot
+unload tonight can be offered a firm slot for the morning.</p></li>
+<li><p><strong>Name one coordinator</strong> to work with us during the
+shadow weeks.</p></li>
+</ol>
+<p>The full list of open questions, with our proposed answer to each, is
+in the review pack (section 7).</p>
+</div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

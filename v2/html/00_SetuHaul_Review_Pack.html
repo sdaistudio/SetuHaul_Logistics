@@ -1,0 +1,1758 @@
+<p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 00 (companion to the six hand-ins)</strong></p>
+<p><strong>Architect's Review Pack</strong></p>
+<p>Design review of both existing designs, grey-area questions for the
+client, a logistics primer, and the reconciled design the six
+deliverables follow</p>
+<p>Read this first. It explains what we kept from each design, what we
+changed and why, what we still need the client to answer, and the
+logistics knowledge behind every rule in the system.</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.1 | 18 November 2026 (scheduling engine updated to an
+exact, proven-optimal search; see the v2 change log)</p>
+<p>Audience: our FDE team (five members) and the FDE Academy
+reviewers</p>
+<p><strong>Contents</strong></p>
+<p><strong>1. Executive summary</strong></p>
+<blockquote>
+<p>1.1 The twelve changes that matter most</p>
+<p>1.2 Results we can now show (from the prototype, not from claims)</p>
+</blockquote>
+<p><strong>2. How we approached it</strong></p>
+<p><strong>3. Logistics primer: the domain knowledge behind the
+rules</strong></p>
+<blockquote>
+<p>3.1 A truck's visit, step by step</p>
+<p>3.2 Is a dock one-way (unload only) or two-way (load and unload)?</p>
+<p>3.3 The three dock types in the data</p>
+<p>3.4 The trucks in the data</p>
+<p>3.5 The words of appointment scheduling</p>
+<p>3.6 Where the minutes go, and why a 60-minute slot is not 60 minutes
+of capacity</p>
+<p>3.7 ETAs in India without GPS</p>
+<p>3.8 Money and law that affect the design</p>
+<p>3.9 Who is who in this case</p>
+</blockquote>
+<p><strong>4. Review of Doc A: the GitHub L1/L2 design</strong></p>
+<blockquote>
+<p>4.1 What Doc A gets right (keep all of these)</p>
+<p>4.2 What to revisit or redesign</p>
+</blockquote>
+<p><strong>5. Review of Doc B: the 16 November LangGraph
+design</strong></p>
+<blockquote>
+<p>5.1 What Doc B gets right (keep all of these)</p>
+<p>5.2 What to revisit or redesign</p>
+</blockquote>
+<p><strong>6. Where the two designs conflict, and what we
+decided</strong></p>
+<blockquote>
+<p>6.1 Cost comparison (list prices, check before quoting)</p>
+</blockquote>
+<p><strong>7. Grey areas: questions for the client and the
+Academy</strong></p>
+<blockquote>
+<p>7.1 Slots and appointments</p>
+<p>7.2 Docks and capacity</p>
+<p>7.3 ETA and driver information</p>
+<p>7.4 Priority, fairness and money</p>
+<p>7.5 People, escalation and integration</p>
+<p>7.6 For the FDE Academy</p>
+</blockquote>
+<p><strong>8. Wow factors, and how the six deliverables fit
+together</strong></p>
+<blockquote>
+<p>8.1 What goes beyond both designs</p>
+<p>8.2 The six hand-ins</p>
+</blockquote>
+<p><strong>9. Sources</strong></p>
+<h1 id="executive-summary">1. Executive summary</h1>
+<p>We reviewed everything in the package and both of our existing
+designs. The package is the 10-page brief, the SQLite snapshot (18
+tables, 4 views), the database guide and the data dictionary. The
+designs are <strong>Doc A</strong>, the GitHub site
+<em>sdaistudio.github.io/SetuHaul_Logistics</em> (18 pages, an AWS L1/L2
+design and a branch-and-bound solver), and <strong>Doc B</strong>, the
+"Driver-Exception Agent, Solution Design" of 16 November (LangGraph with
+two LLM nodes and a greedy planner).</p>
+<p><strong>Verdict.</strong> Both designs are strong and agree on the
+most important principle: language at the edges, deterministic code in
+the middle. Doc A is the deeper engineering piece. Doc B draws the LLM
+boundary more clearly and maps better to the instructor's asks. But they
+<strong>disagree on eight points a reviewer will probe</strong> (hold
+model, pending expiry, LLM use, long unloads, scheduler, priority
+policy, weights, stack). Both also <strong>miss several logistics
+realities and data issues</strong> that change behaviour. We reconciled
+them, built a working prototype to settle the disagreements with
+evidence, and every deliverable now follows one design.</p>
+<h2 id="the-twelve-changes-that-matter-most">1.1 The twelve changes that
+matter most</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 38%" />
+<col style="width: 42%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Change</strong></th>
+<th><strong>Why (evidence)</strong></th>
+<th><strong>Lands in</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Picking an option books it in one checked transaction. Holds exist
+only while a coordinator decides.</td>
+<td>Doc B's extra "reply YES" turn costs a driver on the road one more
+message. Doc A's 5-minute hold is rarely needed.</td>
+<td>02 D6, 03</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Long unloads are time intervals that may run past the slot end if
+the dock is free, never two whole slots</td>
+<td>Booking two slots for a 75-minute unload wastes 45 dock-minutes each
+time (Doc B)</td>
+<td>03, 05</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>A database trigger forbids overlapping time on one dock (the SQLite
+stand-in for Postgres EXCLUDE)</td>
+<td>The supplied indexes allowed 7 bad bookings in our probe (F09). A
+simulated feasibility bug was caught by this trigger (test 11).</td>
+<td>01, 05</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>Scarcity earmarks</strong>: capacity is protected for
+HIGH/CRITICAL trucks and for any truck whose deadline leaves it few
+choices</td>
+<td>First-come-first-served stranded SHP1012 (13:30 deadline) in our
+replay. Earmarks prevented it.</td>
+<td>02 D7, 04</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Coordinator-approved <strong>atomic swaps</strong>, trialled first
+in a transaction that always rolls back</td>
+<td>A CRITICAL load needs a way to move a lower-priority promise, but
+never by breaking another driver's deadline. Demonstrated in the
+scenario run.</td>
+<td>02 D7, 04</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><strong>Booking health monitor</strong>: every dock event or ETA
+change re-checks all affected bookings</td>
+<td>The reefer booking APT1015A was infeasible from 1 Aug 14:00 (F07).
+The monitor flagged it at 09:16, seven hours before the driver
+wrote.</td>
+<td>01, 04</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><strong>Physical-plausibility checks</strong> on ETAs (truck busy on
+another trip, "departed" before it left)</td>
+<td>SHP1018's 12:00 slot was released at 09:45 instead of waiting for a
+12:30 no-show (F14)</td>
+<td>01, 03</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><strong>Time-travel replay</strong>: rewind the snapshot to 08:20
+and replay events at their own time</td>
+<td>The snapshot has no single "now" (F15). This gives an honest,
+reproducible scenario run.</td>
+<td>04</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Rules-first language reading. An LLM (Claude Haiku) is called only
+when the rules fail, with a strict JSON schema.</td>
+<td>Same input gives the same output, with fewer moving parts. The LLM
+costs cents a month either way, so the choice rests on determinism, not
+money.</td>
+<td>02 D16, 03</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td><strong>Lean deployment</strong>: one small container plus managed
+Postgres for the pilot. Doc A's AWS design becomes the scale path.</td>
+<td>About US$20-30 a month instead of a fixed floor near US$170 before
+any traffic (section 6)</td>
+<td>03, 06</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Pending decisions get a deadline of min(15 min, slot start - 30
+min)</td>
+<td>A fixed 20 minutes (Doc A) can leave a coordinator 5 minutes before
+the truck must leave</td>
+<td>02 D5</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Weights 8:4:2:1, with a <strong>sensitivity test</strong> against
+both docs' weights</td>
+<td>Today's plan is identical under all three weight sets, so the choice
+is a policy question, not a technical one</td>
+<td>02 D7, 04</td>
+</tr>
+</tbody>
+</table>
+<h2 id="results-we-can-now-show-from-the-prototype-not-from-claims">1.2
+Results we can now show (from the prototype, not from claims)</h2>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 56%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Measure</strong></th>
+<th><strong>Result</strong></th>
+<th><strong>Source</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Double bookings: 10 drivers, one slot, repeated 50 times</td>
+<td>50 of 50 runs had exactly one winner, 450 clean refusals, 0 errors
+leaked to drivers</td>
+<td>05</td>
+</tr>
+<tr class="even">
+<td>Negative control: the same race with the guards removed</td>
+<td>All 10 drivers booked the same slot. The test can fail, so its pass
+means something.</td>
+<td>05</td>
+</tr>
+<tr class="odd">
+<td>Random stress: 8 threads x 25 bookings</td>
+<td>0 overlaps, 0 duplicates, 0 incompatible bookings</td>
+<td>05</td>
+</tr>
+<tr class="even">
+<td>Scenario run (13 driver conversations, 1 coordinator case)</td>
+<td>10 of 13 resolved without a person. The 3 that reached a person were
+meant to (safety, no feasible reefer slot, data-conflict approval).
+Median of 2 driver messages per case.</td>
+<td>04</td>
+</tr>
+<tr class="odd">
+<td>Data audit</td>
+<td>36 findings, each proven by a query (5 Critical, 15 High). About 15
+are new compared with both designs.</td>
+<td>01</td>
+</tr>
+<tr class="even">
+<td>Scheduling tool vs dispatch rules (09:45 snapshot)</td>
+<td>Our exact engine proves the plan optimal over all 8! job orders
+after searching 5,425 of them, and it matches the priority + repair
+first answer. First-come-first-served leaves a deadline truck without a
+dock.</td>
+<td>04</td>
+</tr>
+</tbody>
+</table>
+<h1 id="how-we-approached-it">2. How we approached it</h1>
+<p>We followed the brief's own flow (Frame, Design, Build, Break,
+Defend) and kept three questions in front of every decision:</p>
+<ol type="1">
+<li><p><strong>Who owns this decision?</strong> The model reads words.
+Code decides capacity. The database refuses conflicting writes. A person
+decides safety, penalties and anything with no safe automatic answer.
+This is the brief's layer table, and the test every design choice had to
+pass.</p></li>
+<li><p><strong>Is it a workflow or an agent?</strong> Anthropic's
+guidance (<em>Building effective agents</em>) separates fixed code paths
+from agents that choose their own steps, and advises the simplest thing
+that works. Our path is fixed, so it is a workflow. Nothing in it lets a
+model pick the next tool.</p></li>
+<li><p><strong>What would prove it?</strong> Every claim in the six
+deliverables points to a query, a test or a transcript line. When the
+two designs disagreed, we built both options into the prototype and
+measured them.</p></li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | An analogy for the whole
+system</strong></p>
+<p>Think of a busy hospital outpatient desk. The receptionist (the
+language layer) listens to patients describe their problem in their own
+words. The appointment book (the database) never lets two patients have
+the same doctor at the same time. The triage rules (the scheduling tool)
+decide who goes first when the queue is long. And the duty doctor (the
+coordinator) handles emergencies and anything the rules can't settle. A
+receptionist who invents free appointments, or lets the loudest patient
+jump the queue, is exactly what we are designing against.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="logistics-primer-the-domain-knowledge-behind-the-rules">3.
+Logistics primer: the domain knowledge behind the rules</h1>
+<p>This section explains the operations the data describes. Every rule
+in the prototype traces back to one of these realities.</p>
+<h2 id="a-trucks-visit-step-by-step">3.1 A truck's visit, step by
+step</h2>
+<p><img
+src="media/00_SetuHaul_Review_Pack/media/57ddacee339fff81b17d1477685e0e6ecf145ed9.png"
+title="One truck&#39;s visit to a distribution centre. Only the dock stage uses the scarce resource; the other stages decide when a truck is really ready for it."
+style="width:6.5in;height:1.46875in"
+alt="One truck&#39;s visit to a distribution centre. Only the dock stage uses the scarce resource; the other stages decide when a truck is really ready for it." /></p>
+<p><em>One truck's visit to a distribution centre. Only the dock stage
+uses the scarce resource; the other stages decide when a truck is really
+ready for it.</em></p>
+<ol type="1">
+<li><p><strong>On the road.</strong> The plan holds an original ETA. In
+India, legally moving goods worth more than ₹50,000 needs an
+<strong>e-way bill</strong>, which is valid for one day per 200 km of
+distance for normal cargo, or one day per 20 km for over-dimensional
+cargo.</p></li>
+<li><p><strong>Gate-in.</strong> Security checks the vehicle number, the
+e-way bill, the invoice and the lorry receipt (LR, the carrier's
+consignment note). Some sites also weigh the truck or check its seal.
+This is why we assume a <strong>15-minute gate-to-dock time</strong>
+that the client must confirm (question Q5).</p></li>
+<li><p><strong>Yard queue.</strong> The truck parks and waits to be
+called. The snapshot calls this queue_state (WAITING_EARLY,
+WAITING_LATE, WAITING_DOCK_UNAVAILABLE).</p></li>
+<li><p><strong>Dock-in.</strong> The driver reverses against the dock
+door. Wheel chocks or a restraint lock the truck, the <strong>dock
+leveller</strong> bridges the gap between truck bed and floor, and a
+<strong>dock seal or shelter</strong> closes the gap around the
+door.</p></li>
+<li><p><strong>Unload.</strong> Forklifts or pallet jacks move
+palletised loads. Loose cartons are unloaded by hand by loading labour
+(often contract "hamali" crews), which is much slower.
+expected_unload_min (45-90 minutes in the data) is the planner's
+estimate of this step.</p></li>
+<li><p><strong>Count, check and sign.</strong> The warehouse counts the
+goods and records a <strong>GRN</strong> (goods received note). The
+driver gets the signed <strong>POD</strong> (proof of delivery), which
+the carrier needs to be paid.</p></li>
+<li><p><strong>Pull out and gate-out.</strong> The next truck cannot
+reverse in until this one leaves and the leveller is reset. We call this
+<strong>changeover</strong> and assume 10 minutes (Q4).</p></li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | Why only one step is scarce</strong></p>
+<p>A restaurant has many seats in the waiting area but few tables.
+Guests can wait anywhere; a table can seat one party at a time. The yard
+is the waiting area, the dock door is the table. A late guest does not
+need a new waiting chair, they need a new table time, and the table time
+must not overlap with the next party.</p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="is-a-dock-one-way-unload-only-or-two-way-load-and-unload">3.2 Is
+a dock one-way (unload only) or two-way (load and unload)?</h2>
+<p><strong>Physically, every dock door is two-way.</strong> The same
+door can receive a truck (inbound, unloading) or dispatch one (outbound,
+loading). What makes a door one-way is how the site
+<strong>assigns</strong> it:</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 44%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Arrangement</strong></th>
+<th><strong>How it works</strong></th>
+<th><strong>Typical site</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dedicated receiving doors</td>
+<td>Inbound only, on the receiving side of the building</td>
+<td>Large distribution centres with separate inbound and outbound
+flows</td>
+</tr>
+<tr class="even">
+<td>Dedicated shipping doors</td>
+<td>Outbound only, near the despatch area</td>
+<td>Same, on the other side</td>
+</tr>
+<tr class="odd">
+<td>Mixed doors</td>
+<td>Receiving in the morning, despatch in the afternoon, or by plan</td>
+<td>Smaller DCs (Jaipur, with only six doors, is likely mixed)</td>
+</tr>
+<tr class="even">
+<td>Cross-dock</td>
+<td>Inbound doors on one side, outbound on the other. Goods move
+straight across with little storage.</td>
+<td>The Gurugram Cross-Dock in this dataset</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What this means for us.</strong> The snapshot only contains
+<strong>receiving appointments</strong>. If Jaipur also loads outbound
+trucks or return loads on the same doors, that capacity is invisible to
+our scheduler, and we could promise a slot that is really taken by an
+outbound truck. This is grey-area question <strong>Q11</strong>, and one
+of the most important to ask before go-live.</p>
+<p><strong>Two related terms.</strong> <em>Live unload</em> means the
+driver waits while the truck is unloaded, which is the case modelled
+here and the norm for rigid Indian trucks. <em>Drop-and-hook</em> means
+a trailer is left in the yard and the tractor leaves at once. It only
+works with detachable trailers (the 40-ft trailers here could, in
+principle). <em>Side unloading</em> is used for flatbeds and heavy
+machinery, which are lifted off by crane or a heavy forklift at ground
+level. That is probably what the heavy dock D6 is.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | One-way or two-way, in one
+line</strong></p>
+<p>A dock door is like a shop's back door: goods can come in or go out
+through it, but at any moment it serves one truck, and the shop decides
+whether that door is "deliveries only" or shared.</p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-three-dock-types-in-the-data">3.3 The three dock types in
+the data</h2>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 36%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Dock type</strong></th>
+<th><strong>Jaipur door</strong></th>
+<th><strong>What is different</strong></th>
+<th><strong>Why the rules exist</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Standard</td>
+<td>D1-D4 (20 t or 25 t)</td>
+<td>Dry goods: FMCG, electronics, textiles, auto parts</td>
+<td>D1 and D3 are rated 20 t, so a 21 t load (SHP1014) must use D2 or
+D4</td>
+</tr>
+<tr class="even">
+<td>Reefer</td>
+<td>D5</td>
+<td>Temperature-controlled door. It is sealed against a cold room so the
+cold chain is never broken.</td>
+<td>Chilled dairy (SHP1015) or frozen foods (SHP1010) unloaded at a
+normal door warm up while the doors are open (RULE003)</td>
+</tr>
+<tr class="odd">
+<td>Heavy</td>
+<td>D6 (35 t, 90-minute slots)</td>
+<td>Machinery and construction equipment. Often ground-level with crane
+or heavy-forklift access.</td>
+<td>Loads above 25 t must use it (RULE004). The 90-minute windows match
+the slower unload.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reefer trucks carry their own refrigeration unit</strong>,
+which runs on diesel. So a reefer truck that cannot unload tonight can
+usually hold temperature overnight in the yard, at a fuel cost, as long
+as the unit is monitored. This is one of the options our hand-off record
+gives the coordinator for SHP1015.</p>
+<h2 id="the-trucks-in-the-data">3.4 The trucks in the data</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 27%" />
+<col style="width: 15%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Code</strong></th>
+<th><strong>What it is</strong></th>
+<th><strong>Payload in data</strong></th>
+<th><strong>Plain meaning</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>20FT</td>
+<td>20-foot closed-body truck</td>
+<td>about 9 t</td>
+<td>A city/short-haul box truck</td>
+</tr>
+<tr class="even">
+<td>32FT_SXL</td>
+<td>32-foot single-axle</td>
+<td>about 15 t</td>
+<td>Long body, one rear axle: lighter loads</td>
+</tr>
+<tr class="odd">
+<td>32FT_MXL</td>
+<td>32-foot multi-axle</td>
+<td>about 22 t</td>
+<td>Same length, more axles: heavier loads</td>
+</tr>
+<tr class="even">
+<td>REEFER_32</td>
+<td>32-foot refrigerated</td>
+<td>about 18 t</td>
+<td>Insulated body with its own cooling unit</td>
+</tr>
+<tr class="odd">
+<td>HEAVY_40</td>
+<td>40-foot heavy trailer</td>
+<td>about 32 t</td>
+<td>Tractor plus trailer, for machinery</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-words-of-appointment-scheduling">3.5 The words of
+appointment scheduling</h2>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 39%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Term</strong></th>
+<th><strong>Meaning</strong></th>
+<th><strong>Where it shows in our design</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Appointment / slot</td>
+<td>A promised time window on one dock</td>
+<td>appointment_slots, one active booking per slot</td>
+</tr>
+<tr class="even">
+<td>Start window vs fixed start</td>
+<td>Can the truck start anywhere inside 10:00-11:00, or must it start at
+10:00?</td>
+<td>Grey area Q1. The original plan itself puts SHP1016 (ETA 10:30) into
+a 09:30 heavy slot, which only works if a slot is a window.</td>
+</tr>
+<tr class="odd">
+<td>Grace / no-show</td>
+<td>How late a truck may check in before losing the slot (30 min at
+Jaipur)</td>
+<td>Certain-miss rule. SHP1004 at 09:25 for a 09:00 slot is late but
+inside grace, so it keeps the slot (F19).</td>
+</tr>
+<tr class="even">
+<td>Early arrival</td>
+<td>Allowed up to 60 minutes before the slot (RULE001). It gives no
+right to jump the queue.</td>
+<td>Early flow offers an earlier dock only if nobody is displaced</td>
+</tr>
+<tr class="odd">
+<td>Dwell time</td>
+<td>Gate-in to gate-out</td>
+<td>Brief metric: average waiting after rescheduling</td>
+</tr>
+<tr class="even">
+<td>Detention / halting</td>
+<td>Waiting beyond the free time, often paid to the carrier</td>
+<td>Grey area Q25: rupee cost of waiting per contract</td>
+</tr>
+<tr class="odd">
+<td>Changeover / turn time</td>
+<td>Time between one truck leaving and the next starting</td>
+<td>10-minute assumption (Q4)</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="where-the-minutes-go-and-why-a-60-minute-slot-is-not-60-minutes-of-capacity">3.6
+Where the minutes go, and why a 60-minute slot is not 60 minutes of
+capacity</h2>
+<p>A booked 60-minute slot hides three numbers: gate-to-dock (when the
+truck can arrive at the dock), unload (when the dock is busy), and
+changeover (when the next truck can start). The snapshot books 75-minute
+unloads into 60-minute slots (F04). With the 10-minute changeover, the
+dock is busy for 85 minutes. So each such booking overflows into the
+next hour, which is exactly what happened on D2 on 4 August (SHP1002
+overran and SHP1004 waited in the yard).</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>FDE NOTE | Rule of thumb we used to size the
+problem</strong></p>
+<p>Jaipur has 6 doors open about 13 usable hours (08:00-21:00 starts).
+At about 70 minutes per truck (60 min unload + 10 min changeover), that
+is roughly 6 x 13 x 60 / 70, or about 67 truck-starts a day. Across 32
+doors the same arithmetic gives about 357 a day against 190-240
+appointments, so normal utilisation is about 55-65%. A wave of 20-35
+delayed trucks in 30 minutes can still exhaust the next three hours of
+compatible capacity, especially for reefer and heavy loads, which have
+one door each.</p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="etas-in-india-without-gps">3.7 ETAs in India without GPS</h2>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 22%" />
+<col style="width: 24%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Source</strong></th>
+<th><strong>What it gives</strong></th>
+<th><strong>Strength</strong></th>
+<th><strong>Weakness</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Driver declaration</td>
+<td>"Reaching 11:20"</td>
+<td>Free, immediate, knows local conditions</td>
+<td>Optimism, vague phrasing, no proof</td>
+</tr>
+<tr class="even">
+<td>FASTag toll crossings via ULIP (the government's Unified Logistics
+Interface Platform)</td>
+<td>Toll plaza name, time and direction for a vehicle number</td>
+<td>Automatic, cannot be faked by the driver, works where phones lose
+signal</td>
+<td>Only at toll plazas; access needs a ULIP-integrated provider</td>
+</tr>
+<tr class="odd">
+<td>SIM/phone location with consent</td>
+<td>Approximate position</td>
+<td>No hardware</td>
+<td>Consent and accuracy issues</td>
+</tr>
+<tr class="even">
+<td>Telematics/GPS box</td>
+<td>Continuous position</td>
+<td>Best accuracy</td>
+<td>Not available here ("0 live GPS feeds")</td>
+</tr>
+</tbody>
+</table>
+<p>The brief says there is no GPS, so our design plans on the
+<strong>late edge</strong> of each estimate and flags trucks whose ETA
+fails a plausibility check. FASTag through ULIP is the cheapest real
+upgrade: it would have caught DRV007's double assignment (F11) at once.
+It is on the roadmap, not in the prototype.</p>
+<h2 id="money-and-law-that-affect-the-design">3.8 Money and law that
+affect the design</h2>
+<ul>
+<li><p><strong>Detention and halting charges.</strong> Indian contracts
+typically give 2-4 hours of free waiting at loading or unloading, then
+charge per hour or per day. The rates vary widely: from about ₹200-500
+an hour in one industry guide, to "nominal" ₹1,000-1,500 a day reported
+in trade press. SetuHaul's contracts are not in the data (Q25). If they
+were, the scheduler could minimise rupees instead of weighted
+minutes.</p></li>
+<li><p><strong>E-way bill validity.</strong> If a load is held overnight
+(the reefer case), someone must check the e-way bill. An extension can
+be requested within 8 hours before or after expiry. We put this in the
+hand-off record so the coordinator does not forget it.</p></li>
+</ul>
+<h2 id="who-is-who-in-this-case">3.9 Who is who in this case</h2>
+<p>SetuHaul is a <strong>third-party logistics provider (3PL)</strong>.
+It coordinates its own and contracted trucks (carriers CAR001-CAR004)
+for customers ("consignees" such as CareSupply Rajasthan) and runs the
+destination facilities. That is why the driver chats with SetuHaul, the
+warehouse coordinator is a SetuHaul employee, and the carrier's
+dispatcher must be told when a booking is released.</p>
+<h1 id="review-of-doc-a-the-github-l1l2-design">4. Review of Doc A: the
+GitHub L1/L2 design</h1>
+<p>Pages reviewed: system design, solution design, decision register,
+data audit, problem definition, solver design, client readout and
+scenario transcript on
+<em>sdaistudio.github.io/SetuHaul_Logistics</em>.</p>
+<h2 id="what-doc-a-gets-right-keep-all-of-these">4.1 What Doc A gets
+right (keep all of these)</h2>
+<ul>
+<li><p>The control flow is code; "no model chooses a slot, ever."
+Driver-facing text comes from a reviewed catalogue, and an
+<strong>output guard</strong> checks every time and dock. We kept the
+guard: in our runs it caught two of our own bugs before any driver saw
+them.</p></li>
+<li><p><strong>Showing reserves nothing.</strong> Every commit re-checks
+inside the write transaction. Idempotency keys and inbound dedupe are in
+place.</p></li>
+<li><p>Coordinator approvals are <strong>re-validated</strong> (its 21
+t-on-20 t refusal). Routing skips vacant contacts and failed
+channels.</p></li>
+<li><p>Assumptions are stated back to the driver ("late by one hour read
+as 11:00"). Priority comes from the shipment record, never from the
+message.</p></li>
+<li><p>A serious evaluation habit: golden cases, solver cross-checked
+against CP-SAT, guardrail tests.</p></li>
+</ul>
+<h2 id="what-to-revisit-or-redesign">4.2 What to revisit or
+redesign</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 26%" />
+<col style="width: 30%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Severity</strong></th>
+<th><strong>Issue in Doc A</strong></th>
+<th><strong>Evidence</strong></th>
+<th><strong>Recommendation</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A1</td>
+<td>High</td>
+<td>About 12 AWS services (API Gateway, SQS FIFO, Lambda, Aurora
+Serverless v2 + RDS Proxy, EFS, EventBridge, Cognito, SNS, CloudWatch,
+X-Ray, Bedrock) for roughly one driver message a minute. The page says
+the stack has not been deployed.</td>
+<td>The fixed monthly floor is about US$170 before traffic (section 6).
+Lambda in a VPC also needs a NAT gateway to reach the WhatsApp API.</td>
+<td>Pilot on one container plus managed Postgres. Keep this design as
+the documented scale path (deliverable 3).</td>
+</tr>
+<tr class="even">
+<td>A2</td>
+<td>High</td>
+<td>The integrity proof runs on SQLite with a single writer (Lambda
+reserved concurrency 1, SQLite on EFS). The production path (Aurora,
+advisory lock, EXCLUDE) is untested.</td>
+<td>With one writer, a race test passes almost by construction. SQLite's
+own documentation warns that file locking on network file systems is
+unreliable.</td>
+<td>Run the same race tests on the production engine in CI. We provide
+the Postgres DDL and a test plan (deliverable 5, section 8).</td>
+</tr>
+<tr class="odd">
+<td>A3</td>
+<td>Medium</td>
+<td>Audit A03 lists 7 "unload longer than slot" bookings; only 4
+are.</td>
+<td>APT1004, APT1007 and APT1020 have 60-minute unloads in 60-minute
+slots. We reproduced the wrong count of 7 using
+CAST(julianday-difference x 1440 AS INT), which truncates 60 to 59.</td>
+<td>Round minute arithmetic and unit-test the audit queries.</td>
+</tr>
+<tr class="even">
+<td>A4</td>
+<td>Medium</td>
+<td>The audit misses issues that change behaviour</td>
+<td>F07 (reefer booking dead since 1 Aug), F08 (historic double
+booking), F13 (truck departs while inside Jaipur), F14 (no-show caused
+by the plan), F19 (LATE inside grace), F31 (untyped driver limit), F32
+(weight column meaning), plus about 8 more</td>
+<td>Merged into our 36-finding audit (deliverable 1)</td>
+</tr>
+<tr class="odd">
+<td>A5</td>
+<td>High</td>
+<td>A custom branch-and-bound with look-ahead: impressive, but costly to
+maintain. Its numbers (offer scores 54,575 vs 66,800) cannot be
+explained to a warehouse planner.</td>
+<td>The brief says to start with a dispatch rule and a transparent
+score, and move to constraint programming only if you can explain why.
+On the 09:45 snapshot our priority list plus repair found the same
+answer as exhaustive search over 8! orders.</td>
+<td>Decision (v1.1): keep an exact engine, because the brief asks for an
+optimal deterministic solver. It is a branch and bound over truck
+orders, warm-started by the priority list plus repair, which is also the
+first answer the coordinator sees. It scores plans on the same three
+plain measures and gives every truck a one-line reason. Exhaustive
+search confirms it; CP-SAT stays the scale path.</td>
+</tr>
+<tr class="even">
+<td>A6</td>
+<td>Medium</td>
+<td>Weights of 100:40:15:5 (20 to 1 between CRITICAL and LOW) were never
+validated with the client</td>
+<td>Our sensitivity run gives an identical plan under 100:40:15:5,
+4:2:1:0.5 and 8:4:2:1</td>
+<td>Use a simple ladder and ask the head of operations (Q24)</td>
+</tr>
+<tr class="odd">
+<td>A7</td>
+<td>Medium</td>
+<td>A fixed 20-minute pending TTL</td>
+<td>For a slot starting in 25 minutes, the coordinator would answer
+after the truck has to be told</td>
+<td>Deadline = min(15 min, start - 30 min). Shorter than that goes
+straight to a phone call.</td>
+</tr>
+<tr class="even">
+<td>A8</td>
+<td>Medium</td>
+<td>A "slot is a start window" assumption alongside a 30-minute no-show
+rule, without saying which one wins</td>
+<td>RULE002 vs the plan's own SHP1016/SHP1015 bookings</td>
+<td>Ask (Q1). Until then, the truck must gate in by start + grace and
+may start anywhere in the window.</td>
+</tr>
+<tr class="odd">
+<td>A9</td>
+<td>Medium</td>
+<td>Priority is protected mainly by look-ahead ranking plus coordinator
+swaps</td>
+<td>A lower-priority driver can still take capacity a CRITICAL load
+needs if that slot was shown first</td>
+<td>Scarcity earmarks at display time (cheap, explainable); swaps only
+by coordinator</td>
+</tr>
+<tr class="even">
+<td>A10</td>
+<td>Low</td>
+<td>Location on demand (FASTag, OSRM, buying fixes at ₹1.5) uses
+simulated corridor data</td>
+<td>The site says timings are illustrative</td>
+<td>Keep as roadmap; first check ULIP access and cost with the
+client</td>
+</tr>
+<tr class="odd">
+<td>A11</td>
+<td>Medium</td>
+<td>"80% on held-out" is based on 20 messages</td>
+<td>A 95% interval around 80% on 20 cases is roughly 56-94%</td>
+<td>Report intervals; grow the held-out set from real messages
+weekly</td>
+</tr>
+<tr class="even">
+<td>A12</td>
+<td>Low</td>
+<td>18 web pages vs 6 hand-ins</td>
+<td>Reviewers grade the six</td>
+<td>Consolidated into the six Word deliverables</td>
+</tr>
+</tbody>
+</table>
+<h1 id="review-of-doc-b-the-16-november-langgraph-design">5. Review of
+Doc B: the 16 November LangGraph design</h1>
+<h2 id="what-doc-b-gets-right-keep-all-of-these">5.1 What Doc B gets
+right (keep all of these)</h2>
+<ul>
+<li><p>The clearest <strong>LLM-boundary table</strong> of the two
+designs, step by step, with the reason for each step.</p></li>
+<li><p>Deterministic language detection by Unicode script plus a
+Hinglish word list (the instructor's explicit ask). Hinglish replies in
+Latin script.</p></li>
+<li><p>Hard filters F1-F9, including facility match, driver window and
+shipment status, with a source column for each.</p></li>
+<li><p>A <strong>pending-confirmation deadline tied to the slot
+start</strong> (the better rule; we adopted it).</p></li>
+<li><p>A guardrail table with evidence logged per boundary, and an evals
+plan built from the seeded cases with a clear error taxonomy.</p></li>
+<li><p>Honest about scope: it lists what is out of scope rather than
+ignoring it.</p></li>
+</ul>
+<h2 id="what-to-revisit-or-redesign-1">5.2 What to revisit or
+redesign</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 26%" />
+<col style="width: 27%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Severity</strong></th>
+<th><strong>Issue in Doc B</strong></th>
+<th><strong>Evidence</strong></th>
+<th><strong>Recommendation</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>B1</td>
+<td>High</td>
+<td>An LLM reads every message and writes every reply</td>
+<td>Non-deterministic outputs, a model on the critical path of every
+turn, a larger prompt-injection surface. The money cost is trivial:
+Claude Haiku 5.5 is listed at US$0.10/0.50 per million input/output
+tokens.</td>
+<td>Rules first. Call the LLM only when the rules return UNKNOWN, with a
+strict JSON schema, and validate its output. Transactional replies come
+from the catalogue.</td>
+</tr>
+<tr class="even">
+<td>B2</td>
+<td>High</td>
+<td>Pick, then a 3-minute hold, then "Reply YES to book": two turns to
+book</td>
+<td>The driver is driving. The brief measures turns. Three minutes is
+too short for someone at a toll plaza.</td>
+<td>Picking 1, 2 or 3 is the booking request. One transaction re-checks
+and books. A hold exists only while a coordinator decides.</td>
+</tr>
+<tr class="odd">
+<td>B3</td>
+<td>High</td>
+<td>Long unloads book two consecutive slots</td>
+<td>SHP1014's 75-minute unload would block D2 12:00-14:00, wasting 45
+minutes. Four long unloads a day at Jaipur waste about three dock-hours,
+roughly three appointments.</td>
+<td>Interval occupancy: the unload may run past the slot end if the dock
+is free. A DB trigger forbids overlap.</td>
+</tr>
+<tr class="even">
+<td>B4</td>
+<td>High</td>
+<td>Worked example 6.3 cannot be reproduced</td>
+<td>It omits SHP1004 and SHP1005 (in the yard) and SHP1007, SHP1010 and
+SHP1011 (booked, in transit). Hand-worked plans drift from what code
+would produce.</td>
+<td>Let the planner produce the plan; we include its 09:45 output
+(deliverable 4).</td>
+</tr>
+<tr class="odd">
+<td>B5</td>
+<td>High</td>
+<td>For the reefer no-slot case, the option offered to the coordinator
+is "start after 21:00 with approval"</td>
+<td>D5 maintenance runs until 22:00 and Jaipur closes at 22:00, so that
+option does not exist</td>
+<td>Computed options: move the maintenance start to 19:55, hold
+overnight with the reefer unit running, or divert to the Gurugram reefer
+door (check road time)</td>
+</tr>
+<tr class="even">
+<td>B6</td>
+<td>Medium</td>
+<td>"Mark it planned (a soft hold)" vs "showing reserves nothing"</td>
+<td>Undefined lifetime and enforcement</td>
+<td>Earmarks: 20-minute TTL, only for HIGH/CRITICAL or deadline-limited
+trucks, enforced at commit, never a promise</td>
+</tr>
+<tr class="odd">
+<td>B7</td>
+<td>Medium</td>
+<td>Strict priority order (CRITICAL &gt; HIGH &gt; NORMAL &gt; LOW)</td>
+<td>In our replay, pure priority order makes HIGH SHP1005, already in
+the yard, wait 165 minutes, and can strand deadline-limited NORMAL
+trucks</td>
+<td>Priority order plus a repair step that never leaves a truck without
+a dock if a re-ordering avoids it</td>
+</tr>
+<tr class="even">
+<td>B8</td>
+<td>Medium</td>
+<td>Stack spread: LangGraph, FastAPI, Gradio, AgentCore, Cognito, Redis,
+LangSmith, Presidio, LiteLLM, Cloudflare, Supabase/Neon</td>
+<td>Each is defensible; together they are a lot to build and defend in a
+mini project</td>
+<td>Plain Python state machine, one web service, one database. Adopt the
+rest when there is a reason.</td>
+</tr>
+<tr class="odd">
+<td>B9</td>
+<td>Medium</td>
+<td>The workflow state is stored in the seed's
+chat_threads.thread_status</td>
+<td>Mixes channel state with conversation state; no versioning for
+concurrent turns</td>
+<td>Our own conversations table with an optimistic version check</td>
+</tr>
+<tr class="even">
+<td>B10</td>
+<td>Low</td>
+<td>The deliverables mapping is "provisional" (the brief's images were
+missing)</td>
+<td>The brief lists six: PDS + audit, decision register, prototype,
+scenario run, integrity proof, client readout</td>
+<td>Now aligned (this pack, section 8)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="where-the-two-designs-conflict-and-what-we-decided">6. Where the
+two designs conflict, and what we decided</h1>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 11%" />
+<col style="width: 27%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Topic</strong></th>
+<th><strong>Doc A</strong></th>
+<th><strong>Doc B</strong></th>
+<th><strong>Reconciled decision</strong></th>
+<th><strong>How we settled it</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Reading the message</td>
+<td>Rules; LLM fallback built but off</td>
+<td>LLM on every message</td>
+<td>Rules first; LLM only when rules fail, schema-validated</td>
+<td>Rules read all 13 scenario cases plus Hindi/Hinglish variants;
+determinism is testable</td>
+</tr>
+<tr class="even">
+<td>Writing the reply</td>
+<td>Reviewed catalogue</td>
+<td>LLM fills a template</td>
+<td>Catalogue in EN / Hinglish / Hindi, plus output guard</td>
+<td>The guard blocked two bad replies in testing</td>
+</tr>
+<tr class="odd">
+<td>Agent framework</td>
+<td>Custom Python workflow</td>
+<td>LangGraph</td>
+<td>Plain Python state machine (LangGraph optional later)</td>
+<td>Fewer dependencies; identical behaviour</td>
+</tr>
+<tr class="even">
+<td>Hold model</td>
+<td>5-min hold after pick</td>
+<td>3-min hold, then YES</td>
+<td>Pick = book (one transaction). Holds only for approvals.</td>
+<td>One fewer driver turn; race test proves safety without holds</td>
+</tr>
+<tr class="odd">
+<td>Pending deadline</td>
+<td>Fixed 20 min</td>
+<td>min(15 min, start - 30)</td>
+<td>min(15 min, start - 30)</td>
+<td>Decision always arrives before the truck must be told</td>
+</tr>
+<tr class="even">
+<td>Long unloads</td>
+<td>Start window, may spill</td>
+<td>Two slots</td>
+<td>Start window, may spill, interval trigger</td>
+<td>Saves about 45 dock-minutes per long unload</td>
+</tr>
+<tr class="odd">
+<td>Planner</td>
+<td>Branch-and-bound with look-ahead</td>
+<td>Greedy priority plan</td>
+<td>Exact branch and bound over truck orders, warm-started by priority
+list + repair (the first, explainable answer)</td>
+<td>Proven optimal on the 09:45 snapshot after 5,425 of 40,320 orders;
+equals priority + repair and the exhaustive benchmark</td>
+</tr>
+<tr class="even">
+<td>Priority vs first-come</td>
+<td>First valid commit wins; look-ahead; swaps</td>
+<td>Plan by priority, then offer</td>
+<td>Earmarks for scarce capacity; coordinator-approved atomic swaps that
+never break deadlines</td>
+<td>FCFS stranded a truck; earmarks did not</td>
+</tr>
+<tr class="odd">
+<td>Weights</td>
+<td>100:40:15:5</td>
+<td>4:2:1:0.5</td>
+<td>8:4:2:1 plus a sensitivity check</td>
+<td>Plan identical under all three</td>
+</tr>
+<tr class="even">
+<td>"Late by one hour"</td>
+<td>State the assumption back</td>
+<td>Ask first</td>
+<td>State back with a one-tap correction; ask only about which
+shipment</td>
+<td>2 clarification questions in 13 cases, none wasted</td>
+</tr>
+<tr class="odd">
+<td>Infrastructure</td>
+<td>AWS serverless (about 12 services)</td>
+<td>FastAPI + AgentCore + Cognito</td>
+<td>One container + managed Postgres; AWS path at scale</td>
+<td>Cost table below</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cost-comparison-list-prices-check-before-quoting">6.1 Cost
+comparison (list prices, check before quoting)</h2>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 50%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Item</strong></th>
+<th><strong>Doc A AWS serverless (fixed floor)</strong></th>
+<th><strong>Reconciled lean pilot</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Database</td>
+<td>Aurora Serverless v2 minimum 0.5 ACU at about US$0.12 per ACU-hour,
+about US$43.80/month (scale-to-zero exists but adds resume delay to a
+chat reply)</td>
+<td>Lightsail managed DB from US$15/month, or Neon (free tier; Launch at
+US$0.106 per compute-hour, no minimum)</td>
+</tr>
+<tr class="even">
+<td>Connection pooling</td>
+<td>RDS Proxy for Serverless v2: 8-ACU minimum, about
+US$87.60/month</td>
+<td>Not needed (one service, pooled connections)</td>
+</tr>
+<tr class="odd">
+<td>Network</td>
+<td>NAT gateway in Mumbai at US$0.056/hour, about US$40/month plus
+data</td>
+<td>None (public egress from the container)</td>
+</tr>
+<tr class="even">
+<td>Compute</td>
+<td>Lambda, SQS, EventBridge, API Gateway: small at this volume</td>
+<td>Lightsail instance, US$7-12/month (1-2 GB RAM)</td>
+</tr>
+<tr class="odd">
+<td>WhatsApp</td>
+<td>Same for both. Driver-initiated replies: 1,000 free per number per
+month from 1 Oct 2026, then about ₹0.145 each; proactive utility
+templates about ₹0.145 each. A few hundred rupees a month at this
+volume.</td>
+<td>Same</td>
+</tr>
+<tr class="even">
+<td>LLM</td>
+<td>Bedrock (fallback off)</td>
+<td>Claude Haiku fallback only: well under US$1/month at this
+volume</td>
+</tr>
+<tr class="odd">
+<td><strong>Floor before traffic</strong></td>
+<td><strong>about US$170/month</strong></td>
+<td><strong>about US$22-30/month</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>FDE NOTE | Why cost is not the main argument</strong></p>
+<p>At this volume both designs are cheap in absolute terms. The real
+cost of Doc A's stack is that the path we tested (SQLite, one writer) is
+not the path we would run (Aurora, many writers). The lean design runs
+the same engine in demo and production, so the integrity proof
+transfers.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="grey-areas-questions-for-the-client-and-the-academy">7. Grey
+areas: questions for the client and the Academy</h1>
+<p>The brief answers none of these. Each comes with our working
+assumption, so the build is never blocked, and with the data evidence
+that raised it.</p>
+<h2 id="slots-and-appointments">7.1 Slots and appointments</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 33%" />
+<col style="width: 19%" />
+<col style="width: 20%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>Our working assumption</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q1</td>
+<td>Is a slot a start window (start any time inside it) or a fixed start
+with a 30-minute check-in grace?</td>
+<td>Decides who is a no-show and when a slot is free</td>
+<td>Start window; truck must gate in by start + grace</td>
+<td>Original plan puts SHP1016 (ETA 10:30) into a 09:30 slot;
+RULE002</td>
+</tr>
+<tr class="even">
+<td>Q2</td>
+<td>May an unload run past its slot end, or must long loads book two
+slots?</td>
+<td>45 dock-minutes per long unload</td>
+<td>May run past, if the dock is free</td>
+<td>F04, F05</td>
+</tr>
+<tr class="odd">
+<td>Q3</td>
+<td>Is a start at exactly 21:00 allowed without approval?</td>
+<td>Five published slots start at 21:00</td>
+<td>Needs approval (strict reading)</td>
+<td>F20</td>
+</tr>
+<tr class="even">
+<td>Q4</td>
+<td>Does expected_unload_min include docking and paperwork? What is the
+changeover between trucks?</td>
+<td>Every planned start depends on it</td>
+<td>Unload only; 10-minute changeover</td>
+<td>F04</td>
+</tr>
+<tr class="odd">
+<td>Q5</td>
+<td>Gate-to-dock time per facility (gate checks, weighbridge)?</td>
+<td>When a truck is really ready</td>
+<td>15 min from the road; 10 min from the yard</td>
+<td>None in data</td>
+</tr>
+<tr class="even">
+<td>Q6</td>
+<td>May an early truck be unloaded early when a dock is idle?</td>
+<td>Uses idle capacity</td>
+<td>Yes, if nobody is displaced</td>
+<td>SHP1003</td>
+</tr>
+<tr class="odd">
+<td>Q7</td>
+<td>Which grace value wins: facilities.checkin_grace_min or the
+NO_SHOW_GRACE_MIN rule?</td>
+<td>Two sources of truth</td>
+<td>The rule table</td>
+<td>F21</td>
+</tr>
+<tr class="even">
+<td>Q8</td>
+<td>When are the next day's slots published?</td>
+<td>"First slot tomorrow" cannot be offered</td>
+<td>Escalation states the gap</td>
+<td>F23</td>
+</tr>
+</tbody>
+</table>
+<h2 id="docks-and-capacity">7.2 Docks and capacity</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 31%" />
+<col style="width: 25%" />
+<col style="width: 19%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>Our working assumption</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q9</td>
+<td>Does max_vehicle_weight_kg mean payload, gross vehicle weight or
+leveller rating?</td>
+<td>Under the literal meaning every loaded 32-ft MXL is over every
+standard door</td>
+<td>Payload</td>
+<td>F32</td>
+</tr>
+<tr class="even">
+<td>Q10</td>
+<td>May a standard load use an idle heavy or reefer door (a "flex
+dock")?</td>
+<td>Could absorb a wave</td>
+<td>No, unless a coordinator approves</td>
+<td>Config flag</td>
+</tr>
+<tr class="odd">
+<td>Q11</td>
+<td>Do Jaipur's doors also load outbound or return trucks?</td>
+<td>Hidden capacity use: we could promise a door that is really
+busy</td>
+<td>Receiving only</td>
+<td>Data has inbound only</td>
+</tr>
+<tr class="even">
+<td>Q12</td>
+<td>Are unloading crews or forklifts a separate limit? How many per
+shift?</td>
+<td>A free door with no crew is not free</td>
+<td>Doors are the only limit</td>
+<td>Brief lists "labour and equipment" as scarce</td>
+</tr>
+<tr class="odd">
+<td>Q13</td>
+<td>Can planned maintenance (D5, 18:00-22:00) be moved, and who
+decides?</td>
+<td>It is the only way the reefer unloads tonight</td>
+<td>Coordinator decides; we compute the needed shift</td>
+<td>DEVT002</td>
+</tr>
+<tr class="even">
+<td>Q14</td>
+<td>Who updates slot and dock status after a breakdown, and how
+fast?</td>
+<td>Slots stayed OPEN on a broken door</td>
+<td>Derive from events; never trust slot status alone</td>
+<td>F02, F03</td>
+</tr>
+</tbody>
+</table>
+<h2 id="eta-and-driver-information">7.3 ETA and driver information</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 32%" />
+<col style="width: 18%" />
+<col style="width: 24%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>Our working assumption</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q15</td>
+<td>Can we use any location source (ULIP FASTag, telematics, driver
+location share)? Budget?</td>
+<td>Turns guesses into evidence</td>
+<td>Not in the pilot</td>
+<td>Brief: 0 GPS feeds</td>
+</tr>
+<tr class="even">
+<td>Q16</td>
+<td>When a driver says "late by one hour", relative to what: the slot,
+the plan or now?</td>
+<td>A wrong anchor shifts every option</td>
+<td>Their slot if they have one, otherwise the plan; stated back</td>
+<td>THR003, MSG006</td>
+</tr>
+<tr class="odd">
+<td>Q17</td>
+<td>Is "leave by 1:30" a gate-out time?</td>
+<td>Changes feasible slots by about an hour</td>
+<td>Yes: "leave" means gate-out, stored with its type</td>
+<td>F31</td>
+</tr>
+<tr class="even">
+<td>Q18</td>
+<td>Do dispatchers or helpers message on a driver's behalf? Are phones
+shared?</td>
+<td>Identity comes from the phone number</td>
+<td>One phone per driver</td>
+<td>drivers.phone unique</td>
+</tr>
+<tr class="odd">
+<td>Q19</td>
+<td>Who is driving VEH008 (SHP1007), and did VEH001 really leave
+Neemrana at 08:15?</td>
+<td>Both ETAs are unreliable until answered</td>
+<td>Confidence lowered; dispatch alerted</td>
+<td>F11, F13</td>
+</tr>
+<tr class="even">
+<td>Q20</td>
+<td>Do drivers use other languages (Marathi, Gujarati, Punjabi) or voice
+notes?</td>
+<td>Coverage of the language layer</td>
+<td>Other languages and voice go to the LLM fallback or a person</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priority-fairness-and-money">7.4 Priority, fairness and
+money</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 34%" />
+<col style="width: 17%" />
+<col style="width: 25%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>Our working assumption</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q21</td>
+<td>Who sets priority_code, and can it change during the day?</td>
+<td>It ranks scarce capacity</td>
+<td>Set by planning; not by the chat</td>
+<td>Priority claims in chat are ignored</td>
+</tr>
+<tr class="even">
+<td>Q22</td>
+<td>May a CRITICAL load move a confirmed lower-priority booking? Minimum
+gain? How often can one truck be moved? Any compensation?</td>
+<td>Fairness and trust</td>
+<td>Only by coordinator, never breaking a deadline, at most once per
+truck per day</td>
+<td>Scenario C10</td>
+</tr>
+<tr class="odd">
+<td>Q23</td>
+<td>Does a truck already in the yard outrank a booked truck still on the
+road?</td>
+<td>Yard dwell vs promises</td>
+<td>No, promises are kept; the yard truck gets the next free door</td>
+<td>THR007 policy</td>
+</tr>
+<tr class="even">
+<td>Q24</td>
+<td>Which waiting weights does the business want?</td>
+<td>Ranks trade-offs</td>
+<td>8:4:2:1; plan unchanged under alternatives today</td>
+<td>Sensitivity run</td>
+</tr>
+<tr class="odd">
+<td>Q25</td>
+<td>What detention free time and rates are in carrier contracts?</td>
+<td>Lets the plan minimise rupees, not minutes</td>
+<td>Not modelled</td>
+<td>Not in data</td>
+</tr>
+<tr class="even">
+<td>Q26</td>
+<td>Do any consignees have hard cut-offs (production lines, hospital
+stock)?</td>
+<td>Turns priority into deadlines</td>
+<td>None known</td>
+<td>Not in data</td>
+</tr>
+</tbody>
+</table>
+<h2 id="people-escalation-and-integration">7.5 People, escalation and
+integration</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 26%" />
+<col style="width: 15%" />
+<col style="width: 21%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>Our working assumption</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q27</td>
+<td>What is the coordinator's response SLA for approvals? Who covers
+Gurugram at night?</td>
+<td>Holds expire; night escalations had nowhere to go</td>
+<td>15 min max; vacant roles skipped; shift manager fallback</td>
+<td>F29</td>
+</tr>
+<tr class="even">
+<td>Q28</td>
+<td>Must the warehouse confirm every reschedule, or only
+exceptions?</td>
+<td>Coordinator load in a wave</td>
+<td>Only exceptions (after 21:00, data conflict, swaps)</td>
+<td>Seed has chat-made PENDING bookings</td>
+</tr>
+<tr class="odd">
+<td>Q29</td>
+<td>Who owns safety incidents per facility and shift, and what may the
+agent say?</td>
+<td>Duty of care</td>
+<td>Shift manager; agent says "safety first, call 112", stops scheduling
+talk</td>
+<td>Scenario C12</td>
+</tr>
+<tr class="even">
+<td>Q30</td>
+<td>Coordinators' preferred channel: e-mail, phone, WhatsApp group?</td>
+<td>Speed of hand-off</td>
+<td>Dashboard + e-mail; phone for CRITICAL</td>
+<td>F29</td>
+</tr>
+<tr class="odd">
+<td>Q31</td>
+<td>Which system is the record for appointments: ours, the WMS or the
+warehouse scheduler?</td>
+<td>Two writers mean two truths</td>
+<td>Ours, with warehouse notices through an outbox</td>
+<td>appointments.warehouse_confirmation_ref</td>
+</tr>
+<tr class="even">
+<td>Q32</td>
+<td>How fresh are gate and yard events: real time or batch?</td>
+<td>Stale yard data gives wrong queue answers</td>
+<td>Real time</td>
+<td>F15: check-ins end at 09:30</td>
+</tr>
+<tr class="odd">
+<td>Q33</td>
+<td>How long may chat text and phone numbers be kept (India's DPDP Act,
+2023)?</td>
+<td>Privacy compliance</td>
+<td>Minimum retention; no phone or licence in model prompts</td>
+<td>Deliverable 3, section 10</td>
+</tr>
+</tbody>
+</table>
+<h2 id="for-the-fde-academy">7.6 For the FDE Academy</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 48%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Q</strong></th>
+<th><strong>Question</strong></th>
+<th><strong>Our working assumption</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q34</td>
+<td>Is a scripted, reproducible replay acceptable as the "recorded or
+scripted" scenario run?</td>
+<td>Yes: the brief allows "recorded or scripted"</td>
+</tr>
+<tr class="even">
+<td>Q35</td>
+<td>Is SQLite acceptable for the integrity proof if production is
+Postgres?</td>
+<td>Yes, with the Postgres DDL and test plan included</td>
+</tr>
+<tr class="odd">
+<td>Q36</td>
+<td>May we add tables to the schema?</td>
+<td>Yes, additions only; the supplied snapshot is never modified</td>
+</tr>
+<tr class="even">
+<td>Q37</td>
+<td>Is an exact branch and bound over truck orders, with a transparent
+first answer and a reason per truck, acceptable instead of CP-SAT for
+the optional tool?</td>
+<td>Yes: it is proven optimal on our snapshot, checked against
+exhaustive search, and explains every truck; CP-SAT remains the scale
+path</td>
+</tr>
+</tbody>
+</table>
+<h1 id="wow-factors-and-how-the-six-deliverables-fit-together">8. Wow
+factors, and how the six deliverables fit together</h1>
+<h2 id="what-goes-beyond-both-designs">8.1 What goes beyond both
+designs</h2>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>WOW FACTOR | Twelve things a reviewer has not seen
+twice</strong></p>
+<ol type="1">
+<li><p><strong>Scarcity earmarks.</strong> Capacity is protected for
+priority loads and for the truck whose deadline leaves it one choice,
+like an airline protecting seats for connecting passengers.</p></li>
+<li><p><strong>Swap trial in a rolled-back transaction.</strong> The
+exact effect of a swap is computed with the real commit code, then
+undone, so a coordinator sees facts, not estimates.</p></li>
+<li><p><strong>Swaps that refuse to break deadlines.</strong> Shown
+live: the CRITICAL load waited 40 minutes rather than make another
+driver miss his 13:30 pickup.</p></li>
+<li><p><strong>Booking health monitor.</strong> The reefer booking was
+flagged at 09:16, seven hours before the driver wrote; the data shows it
+was predictable on 1 August.</p></li>
+<li><p><strong>Plausibility-checked ETAs.</strong> SHP1018's slot was
+freed at 09:45 instead of after a 12:30 no-show.</p></li>
+<li><p><strong>Negative-control testing.</strong> The race test is shown
+failing without the guards: all 10 drivers booked the same
+slot.</p></li>
+<li><p><strong>A simulated bug caught by the database.</strong> We broke
+the feasibility code on purpose, and the overlap trigger still refused
+the booking.</p></li>
+<li><p><strong>Time-travel replay</strong> of the snapshot: an honest
+answer to "there is no single now".</p></li>
+<li><p><strong>WhatsApp reply buttons</strong> (up to 3, each up to 20
+characters) and lists (up to 10 rows): drivers tap instead of type,
+which is safer and can't be misread.</p></li>
+<li><p><strong>Hand-off records with computed what-ifs</strong>: for
+example, "move D5 maintenance to 19:55 and the reefer unloads
+tonight".</p></li>
+<li><p><strong>Policy sensitivity.</strong> The plan is shown to be
+robust to the weight choice.</p></li>
+<li><p><strong>Hindi, Hinglish and English</strong> replies from a
+reviewed catalogue, with one guard for all three.</p></li>
+</ol></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-six-hand-ins">8.2 The six hand-ins</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 18%" />
+<col style="width: 42%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Deliverable</strong></th>
+<th><strong>What it proves</strong></th>
+<th><strong>Key evidence inside</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Problem Definition Sheet and data audit</td>
+<td>Facts vs estimates vs assumptions vs unknowns; 36 data issues, each
+with a query</td>
+<td>Query results; probe of the supplied indexes</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Decision register</td>
+<td>All 13 brief decisions plus 8 of our own, each with a reason and
+evidence</td>
+<td>Links to tests and transcript lines</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Working prototype</td>
+<td>Conversation layer, tools and state; library versions</td>
+<td>Code walk-through; how to run</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Scenario run</td>
+<td>The 7 must-show items, ending in escalation; plus the scheduling
+tool</td>
+<td>Transcript, metrics, Gantt charts</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Integrity proof</td>
+<td>Competing requests cannot double-book</td>
+<td>50 x 10 race; negative controls; stress test; guard tests</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Client readout</td>
+<td>Plain-language policy, limits and open risks for the head of
+operations and the warehouse planner</td>
+<td>Four pages, no jargon</td>
+</tr>
+</tbody>
+</table>
+<h1 id="sources">9. Sources</h1>
+<ul>
+<li><p>FDE Academy, <em>SetuHaul Logistics: FDE Challenge Project
+Brief</em> (10 pages) and the database guide and data dictionary
+supplied with it.</p></li>
+<li><p>Doc A: <a
+href="https://sdaistudio.github.io/SetuHaul_Logistics/">https://sdaistudio.github.io/SetuHaul_Logistics/</a>
+(system-design, design, decisions, audit, problem, solver, readout and
+scenarios pages).</p></li>
+<li><p>Doc B: "SetuHaul Driver-Exception Agent, Solution Design (Mini
+Project 2)", 16 Nov 2026 (team document).</p></li>
+<li><p>Anthropic, <em>Building effective agents</em>; SQLite
+documentation on partial indexes; Google OR-Tools CP-SAT; ATRI detention
+research (all cited in the brief).</p></li>
+<li><p>WhatsApp pricing: <a
+href="https://developers.facebook.com/docs/whatsapp/pricing">https://developers.facebook.com/docs/whatsapp/pricing</a>
+and <a
+href="https://m.aisensy.com/blog/whatsapp-pricing-update-october-2026/">https://m.aisensy.com/blog/whatsapp-pricing-update-october-2026/</a>
+; interactive message limits: <a
+href="https://developers.facebook.com/docs/whatsapp/guides/interactive-messages/">https://developers.facebook.com/docs/whatsapp/guides/interactive-messages/</a>
+and <a
+href="https://developer.exotel.com/docs/whatsapp-support/interactive-messages">https://developer.exotel.com/docs/whatsapp-support/interactive-messages</a></p></li>
+<li><p>AWS: Aurora Serverless v2 scaling to zero (<a
+href="https://aws.amazon.com/about-aws/whats-new/2024/11/amazon-aurora-serverless-v2-scaling-zero-capacity">https://aws.amazon.com/about-aws/whats-new/2024/11/amazon-aurora-serverless-v2-scaling-zero-capacity</a>),
+Aurora pricing guide (<a
+href="https://wring.co/blog/aws-aurora-pricing-guide">https://wring.co/blog/aws-aurora-pricing-guide</a>),
+RDS Proxy minimum (<a
+href="https://repost.aws/questions/QUj6Fg7zh1RPeI2S1AwWPD3Q">https://repost.aws/questions/QUj6Fg7zh1RPeI2S1AwWPD3Q</a>),
+NAT gateway in Mumbai (<a
+href="https://www.cloudkeeper.com/insights/blog/aws-cloud-cost-optimization-nat-gateway">https://www.cloudkeeper.com/insights/blog/aws-cloud-cost-optimization-nat-gateway</a>),
+Lightsail pricing (<a
+href="https://aws.amazon.com/lightsail/pricing/">https://aws.amazon.com/lightsail/pricing/</a>).</p></li>
+<li><p>Neon pricing: <a
+href="https://neon.com/blog/why-we-no-longer-lock-premium-features">https://neon.com/blog/why-we-no-longer-lock-premium-features</a>
+; Claude Haiku 5.5 pricing: <a
+href="https://www.developersdigest.tech/models/claude-haiku-5-5">https://www.developersdigest.tech/models/claude-haiku-5-5</a>
+(citing platform.claude.com).</p></li>
+<li><p>E-way bill validity and extension: <a
+href="https://www.taxmanagementindia.com/visitor/detail_manual.asp?ID=1986">https://www.taxmanagementindia.com/visitor/detail_manual.asp?ID=1986</a>
+and <a
+href="https://lorrycare.com/blog/how-to-avoid-eway-bill-expiry-penalty">https://lorrycare.com/blog/how-to-avoid-eway-bill-expiry-penalty</a></p></li>
+<li><p>Detention and halting charges in India: <a
+href="https://truckguru.co.in/blog/?p=1867">https://truckguru.co.in/blog/?p=1867</a>
+, <a
+href="https://indiaseatradenews.com/from-idle-fleets-to-streamlined-operations-solving-indias-truck-detention-crisis/">https://indiaseatradenews.com/from-idle-fleets-to-streamlined-operations-solving-indias-truck-detention-crisis/</a>
+, <a
+href="https://www.fr8.in/specialHaltingTerms.html">https://www.fr8.in/specialHaltingTerms.html</a></p></li>
+<li><p>FASTag and ULIP tracking: <a
+href="https://lorrycare.com/fastag-tracking">https://lorrycare.com/fastag-tracking</a>
+and <a
+href="https://mastersindia.co/vehicle-tracking/">https://mastersindia.co/vehicle-tracking/</a></p></li>
+</ul>

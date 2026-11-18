@@ -180,10 +180,32 @@ def main():
     return 0 if report["all_gates_pass"] else 1
 
 
+def wilson(k: float, n: int, z: float = 1.96) -> tuple[float, float]:
+    """95% Wilson score interval for k successes in n trials (review item A11)."""
+    if not n:
+        return (0.0, 1.0)
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    return (max(0.0, c - h), min(1.0, c + h))
+
+
+def _gate_n(r, k):
+    return {"nlu_case_accuracy": r["nlu"]["cases"], "nlu_holdout_accuracy": r["nlu_holdout"]["cases"],
+            "feasibility": r["feasibility"]["cases"], "guardrails": r["guardrails"]["cases"],
+            "integrity_tests": r["integrity"]["tests"], "solver_optimality": len(r["solver"]["rows"])}.get(k)
+
+
 def to_md(r) -> str:
-    L = ["# SetuHaul evaluation report", "", "| Gate | Value | Threshold | Result |", "|---|---:|---:|---|"]
+    L = ["# SetuHaul evaluation report", "",
+         "Each rate is shown with its sample size and a 95% Wilson interval: on small samples the range matters more than the point "
+         "(for example 16 of 20 is 80%, but the interval is about 58% to 92%).", "",
+         "| Gate | Value | n | 95% interval | Threshold | Result |", "|---|---:|---:|---|---:|---|"]
     for k, g in r["gates"].items():
-        L.append(f"| {k} | {g['value']:.3f} | {g['threshold']:.2f} | {'PASS' if g['pass'] else 'FAIL'} |")
+        n = _gate_n(r, k)
+        ci = "-" if not n else "{:.0%} – {:.0%}".format(*wilson(round(g["value"] * n), n))
+        L.append(f"| {k} | {g['value']:.3f} | {n or '-'} | {ci} | {g['threshold']:.2f} | {'PASS' if g['pass'] else 'FAIL'} |")
     n = r["nlu"]
     L += ["", f"## Language understanding ({n['cases']} cases)", "",
           f"Case accuracy {n['case_accuracy']:.1%}; language detection {n['language_detection_accuracy']:.1%}.", "",

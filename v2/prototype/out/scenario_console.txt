@@ -1,0 +1,242 @@
+
+[08:20] SYSTEM: World rewound to 08:20; later rows are replayed at their own time
+    ["removed APT1013A (booked after 08:20)", "removed APT1014A (booked after 08:20)", "kept APT1012A cancelled: restoring it would double-book SLOT-JAI-003 with APT1007 (audit F08)", "restored APT1016A (cancelled later at 09:50)", "restored APT1019 (cancelled later at 10:10)"]
+
+[08:22] C01 DRV003 (en): I am already at the gate. Can I get a dock now instead of waiting for 9?
+   tools: ['read_message:EARLY_ARRIVAL', 'resolve_shipment:SHP1003 (the truck at our gate)', 'check_slot_feasibility:2 earlier options (no displacement)']
+   reply: Welcome - you're early. Dock D4 is free now: I can move you from 9:00 AM to 8:35 AM, and it does not delay any other booking.
+          1) Take Dock D4 at 8:35 AM
+          2) Keep my 9:00 AM slot
+   state: OPTIONS_SHOWN
+
+[08:23] C01 DRV003 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0001']
+   reply: Booked: Dock D4 at Jaipur DC, start 8:35 AM. You're already checked in; the yard team will call you to Dock D4. Booking ref APT-N0001.
+   state: BOOKED
+
+[08:30] WORLD: ETA update from carrier: SHP1004 now 09:20 (seed ETA003)
+
+[08:35] WORLD: SHP1003 docks at D4 (its new early booking)
+
+[08:42] WORLD: SHP1001 finishes at D1; gate-out 08:50 (seed CHK1001)
+
+[08:50] WORLD: ETA update: SHP1006 now 10:50, medium confidence (seed ETA005)
+
+[09:05] WORLD: SHP1005 gates in for its 09:00 D3 slot (seed CHK1005)
+
+[09:15] WORLD: Dock D3 hydraulic leveller breaks down until 13:00 (seed DEVT001, logged 09:16)
+
+[09:16] SYSTEM: Booking health monitor (event-driven re-check after the D3 breakdown)
+    [{"appointment_id": "APT1005", "shipment_id": "SHP1005", "slot_id": "SLOT-JAI-030", "dock_code": "D3", "slot_start": "2026-08-04T09:00:00+05:30", "status": "INVALID", "reasons": ["OVER_DOCK_WEIGHT"], "action": "Booking breaks a hard rule; re-plan now and tell the driver before departure."}, {"appointment_id": "APT1016A", "shipment_id": "SHP1016", "slot_id": "SLOT-JAI-072", "dock_code": "D6", "slot_start": "2026-08-04T09:30:00+05:30", "status": "CERTAIN_MISS", "reasons": ["earliest arrival 10:20 is after check-in limit 10:00"], "action": "Release the slot (truck cannot check in within grace); tell dispatch; re-plan the truck."}, {"appointment_id": "APT1006", "shipment_id": "SHP1006", "slot_id": "SLOT-JAI-045", "dock_code": "D4", "slot_start": "2026-08-04T10:00:00+05:30", "status": "CERTAIN_MISS", "reasons": ["earliest arrival 10:40 is after check-in limit 10:30"], "action": "Release the s
+
+[09:16] SYSTEM: Proactive alert to coordinator: the reefer booking APT1015A (17:00) cannot work
+    {"why": "D5 maintenance from 18:00 was planned on 1 Aug at 14:00, after this booking (audit F07). Planned arrival 17:30 + 60-min unload cannot finish before 18:00.", "suggested": ["Ask the carrier to reach Jaipur by 16:45 so unloading runs 17:00-18:00", "Ask maintenance on Dock D5 to start at 7:10 PM instead of 6:00 PM: the truck could unload 6:00 PM-7:00 PM."]}
+
+[09:16] SYSTEM: Scheduling tool proposal after the dock event (proposes only)
+    {"fixed": "trucks in docks, kept bookings, D3 breakdown 09:15-13:00", "proposal": {"SHP1014": {"dock": "D2", "start": "10:45", "wait_min": 0}, "SHP1016": {"dock": "D6", "start": "12:50", "wait_min": 110}, "SHP1015": null, "SHP1005": {"dock": "D4", "start": "09:35", "wait_min": 5}, "SHP1006": {"dock": "D1", "start": "11:30", "wait_min": 10}, "SHP1012": {"dock": "D2", "start": "12:10", "wait_min": 115}, "SHP1013": {"dock": "D4", "start": "12:40", "wait_min": 130}, "SHP1018": {"dock": "D2", "start": "13:55", "wait_min": 0}}, "order": ["SHP1014", "SHP1016", "SHP1015", "SHP1005", "SHP1006", "SHP1012", "SHP1013", "SHP1018"], "score": {"unscheduled_weight": 3, "weighted_wait": 990, "changes": 4}}
+
+[09:17] SYSTEM: Coordinator approves the move for SHP1005 (in the yard; D3 broken; 20.5 t also exceeds D3's 20 t limit)
+    {"result": "CONFIRMED", "appointment": "APT-N0002", "dock": "D4", "start": "09:35", "released": []}
+
+[09:19] C03 DRV013 (en): I am late by one hour.
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1013', 'record_eta:11:00 MEDIUM', 'scheduling_tool:replan+earmarks', 'check_slot_feasibility:3 options']
+   reply: I've noted your arrival as about 11:00 AM (planned 10:00 AM + 60 min). If that's wrong, just send the time.
+          Slots your truck can make at Jaipur DC (nothing is booked until you choose):
+          1) Dock D2 - start 11:30 AM, unloading done by about 12:30 PM
+          2) Dock D2 - start 12:00 PM, unloading done by about 1:00 PM
+          3) Dock D4 - start 12:40 PM, unloading done by about 1:40 PM
+          Reply 1, 2 or 3 to book.
+   state: OPTIONS_SHOWN
+
+[09:20] WORLD: SHP1003 finishes unloading; gate-out 8 minutes later
+
+[09:25] WORLD: SHP1004 gates in, 25 minutes into its 09:00 D2 slot (seed CHK1004)
+
+[09:27] C04 DRV004 (en): I reached late and am in the yard. Has a new dock been assigned?
+   tools: ['read_message:AT_YARD_STATUS', 'resolve_shipment:SHP1004 (the truck at our gate)', 'get_booking_status:OK']
+   reply: Your 9:00 AM booking on Dock D2 is still valid: you checked in at 9:25 AM, inside the 30-minute grace. Dock D2 is running late because the truck before you is still unloading. Expected call to dock: about 9:50 AM. Queue position 2.
+   state: BOOKED
+
+[09:28] WORLD: SHP1002 finally finishes at D2 (ran 10 minutes past its 70-minute unload)
+
+[09:29] C05 DRV012 (en): Tyre repaired. I can reach 11:10. I need to leave the warehouse before 1:30 for another pickup.
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1012', 'record_eta:11:10 HIGH', 'scheduling_tool:replan+earmarks', 'check_slot_feasibility:2 options']
+   reply: Slots your truck can make at Jaipur DC (nothing is booked until you choose):
+          1) Dock D2 - start 11:25 AM, unloading done by about 12:10 PM
+          2) Dock D2 - start 12:00 PM, unloading done by about 12:45 PM
+          Reply 1 or 2 to book.
+   state: OPTIONS_SHOWN
+
+[09:30] C05 DRV012 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0003']
+   reply: Booked: Dock D2 at Jaipur DC, start 11:25 AM. Please be at the gate by 11:10 AM. Booking ref APT-N0003.
+   state: BOOKED
+
+[09:31] C06 DRV004 (en): I will be late by 45 minutes.
+   tools: ['read_message:REPORT_DELAY', 'ask:WHICH_SHIPMENT']
+   reply: You have 2 trips today. Which one is this about?
+          1) ORD-260804-004 - Kota load, due 8:45 AM - at our gate now
+          2) ORD-260804-020 - Kota load, due 6:00 PM
+          (Your other truck is already at our gate, so I think you mean ORD-260804-020.)
+   state: NEED_SHIPMENT
+
+[09:32] C06 DRV004 (hi): शाम वाला
+   tools: ['read_message:ANSWER', 'resolve_shipment:SHP1020 (your answer)', 'record_eta:18:45 MEDIUM', 'scheduling_tool:replan+earmarks', 'check_current_booking:AT_RISK', 'check_slot_feasibility:3 options']
+   reply: आपके पहुँचने का समय लगभग 6:45 PM माना है (आपका 6:00 PM स्लॉट + 45 मिनट)। गलत हो तो समय भेज दीजिए।
+          Jaipur DC में ये स्लॉट आपके ट्रक के लिए हैं (आपके चुनने पर ही बुक होगा):
+          1) डॉक D1 - 7:30 PM से शुरू, लगभग 8:30 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी चाहिए)
+          2) डॉक D1 - 8:00 PM से शुरू, लगभग 9:00 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी चाहिए)
+          3) डॉक D1 - 9:00 PM से शुरू, लगभग 10:00 PM तक खाली (कोऑर्डिनेटर की मंज़ूरी चाहिए)
+          बुक करने के लिए 1, 2 या 3 भेजिए।
+   state: OPTIONS_SHOWN
+
+[09:33] C06 DRV004 (hi): 1
+   tools: ['read_message:CHOOSE', 'hold_for_approval:HLD-0001']
+   reply: डॉक D1, 7:30 PM के लिए कोऑर्डिनेटर से मंज़ूरी माँगी है (रिकॉर्ड में यह ट्रक दूसरी ट्रिप पर दिख रहा है)। अभी पक्का नहीं है। 9:48 AM तक जवाब मिलेगा।
+   state: PENDING_APPROVAL
+
+[09:34] C07 DRV006 (en): Traffic after Shahpura. Reaching around 11:20. Any slot after 12?
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1006 (the trip you are driving now)', 'record_eta:11:20 MEDIUM', 'scheduling_tool:replan+earmarks', 'check_current_booking:CERTAIN_MISS', 'check_slot_feasibility:3 options']
+   reply: Slots your truck can make at Jaipur DC (nothing is booked until you choose):
+          1) Dock D4 - start 12:40 PM, unloading done by about 1:25 PM
+          2) Dock D2 - start 1:00 PM, unloading done by about 1:45 PM
+          3) Dock D1 - start 2:00 PM, unloading done by about 2:45 PM
+          Reply 1, 2 or 3 to book.
+   state: OPTIONS_SHOWN
+
+[09:35] WORLD: SHP1005 docks at D4
+
+[09:35] C07 DRV006 (en): Traffic after Shahpura. Reaching around 11:20. Any slot after 12?
+   tools: ['dedupe:SUPPRESSED (same as wa-9001)']
+   reply: <no reply>
+   state: OPTIONS_SHOWN
+
+[09:36] SYSTEM: Race: both drivers choose the same slot at the same instant (two threads, two database connections)
+    {"slot": "SLOT-JAI-047", "DRV013_choice": 3, "DRV013_offer_shown_at": "09:19", "DRV006_choice": 1, "DRV006_offer_shown_at": "09:34", "same_slot_offered_to_both": true}
+
+[09:36] C03 DRV013 (en): 3
+   tools: ['read_message:CHOOSE', 'book:OPTION_GONE (TAKEN_BY_ANOTHER_TRUCK)']
+   reply: Sorry, Dock D4 at 12:40 PM was just taken by another truck. Nothing was booked for you yet. Fresh options:
+          1) Dock D1 - start 11:30 AM, unloading done by about 12:30 PM
+          2) Dock D2 - start 1:00 PM, unloading done by about 2:00 PM
+          3) Dock D4 - start 1:35 PM, unloading done by about 2:35 PM
+          Reply 1, 2 or 3 to book.
+   state: OPTIONS_SHOWN
+
+[09:36] C07 DRV006 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0004', 'scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1011: HIGH_CANNOT_TAKE_SLOT)']
+   reply: Booked: Dock D4 at Jaipur DC, start 12:40 PM. Please be at the gate by 12:25 PM. Booking ref APT-N0004.
+   state: BOOKED
+
+[09:37] C03 DRV013 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0005']
+   reply: Booked: Dock D1 at Jaipur DC, start 11:30 AM. Please be at the gate by 11:15 AM. Booking ref APT-N0005.
+   state: BOOKED
+
+[09:38] WORLD: Yard team calls SHP1004 to D2
+
+[09:39] C08 DRV007 (en): Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1016 (your heavy load)', 'escalate:DATA_CONFLICT (non-blocking)', 'record_eta:12:00 HIGH', 'scheduling_tool:replan+earmarks', 'check_current_booking:CERTAIN_MISS', 'check_slot_feasibility:3 options']
+   reply: Slots your truck can make at Jaipur DC (nothing is booked until you choose):
+          1) Dock D6 - start 12:50 PM, unloading done by about 2:20 PM
+          2) Dock D6 - start 2:00 PM, unloading done by about 3:30 PM
+          3) Dock D6 - start 3:30 PM, unloading done by about 5:00 PM
+          Reply 1, 2 or 3 to book.
+   state: OPTIONS_SHOWN
+
+[09:40] C08 DRV007 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0006', 'scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1013: HIGH_CANNOT_TAKE_SLOT)']
+   reply: Booked: Dock D6 at Jaipur DC, start 12:50 PM. Please be at the gate by 12:35 PM. Booking ref APT-N0006.
+   state: BOOKED
+
+[09:41] SYSTEM: Coordinator approves HLD-0001 for SHP1020; the approval is re-checked before booking
+    {"result": "CONFIRMED", "appointment": "APT-N0007"}
+
+[09:41] NOTIFY DRV004: पक्का हो गया: कोऑर्डिनेटर ने Jaipur DC, डॉक D1, 7:30 PM मंज़ूर कर दिया। गेट पर 7:15 PM तक पहुँचिए। रेफ़ APT-N0007।
+
+[09:42] C09 DRV010 (hi-Latn): thoda late hoon bhai, traffic hai
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1010', 'ask:ETA']
+   reply: Batane ke liye shukriya. Jaipur DC kitne baje tak pahunchoge? Jaise 11:30 likhiye, taaki sahi slot mil sake.
+   state: NEED_ETA
+
+[09:43] C09 DRV010 (hi-Latn): 11:30 tak pahunch jaunga
+   tools: ['read_message:REPORT_DELAY', 'record_eta:11:30 HIGH', 'scheduling_tool:replan+earmarks', 'check_current_booking:STILL_FEASIBLE']
+   reply: Shukriya. Lagbhag 11:30 AM pahunchne par bhi aapki booking (Dock D5, 11:45 AM se) chalegi. Kuch badalne ki zarurat nahi.
+   state: BOOKED
+
+[09:44] C10 DRV014 (en): Origin released me late. ETA 11:25. This load is urgent. Can I get the first possible dock?
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1014', 'record_eta:11:25 HIGH', 'scheduling_tool:replan+earmarks', 'check_slot_feasibility:3 options', 'policy:urgency_claim_ignored']
+   reply: Dock order follows the priority on the shipment record, not the message, so I can't move you ahead for urgency. These are the earliest slots that fit.
+          Slots your truck can make at Jaipur DC (nothing is booked until you choose):
+          1) Dock D2 - start 12:20 PM, unloading done by about 1:35 PM
+          2) Dock D2 - start 1:00 PM, unloading done by about 2:15 PM
+          3) Dock D4 - start 1:35 PM, unloading done by about 2:50 PM
+          Reply 1, 2 or 3 to book.
+   state: OPTIONS_SHOWN
+
+[09:45] C10 DRV014 (en): 1
+   tools: ['read_message:CHOOSE', 'book:CONFIRMED APT-N0008 (released APT1018)', 'scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: SHP1012 has no other slot that keeps its limits (latest gate out 13:30); SHP1013: HIGH_CANNOT_TAKE_SLOT; SHP1010: HIGH_CANNOT_TAKE_SLOT; SHP1011: HIGH_CANNOT_TAKE_SLOT)']
+   reply: Booked: Dock D2 at Jaipur DC, start 12:20 PM. Please be at the gate by 12:05 PM. Booking ref APT-N0008.
+   state: BOOKED
+
+[09:55] WORLD: SHP1017's driver phones dispatch: arrival between 12:30 and 13:00 (seed ETA012, low confidence)
+
+[09:56] SYSTEM: Booking health monitor: SHP1017's 12:00 booking is at risk, so a proactive WhatsApp check-in goes out
+    {"status": [{"appointment_id": "APT1017", "shipment_id": "SHP1017", "slot_id": "SLOT-JAI-005", "dock_code": "D1", "slot_start": "2026-08-04T12:00:00+05:30", "status": "AT_RISK", "reasons": ["dock busy; planned start 13:15 is after window end 13:00"], "planned_start": "2026-08-04T13:15:00+05:30", "action": "Ask the driver to confirm arrival (proactive message); coordinator watches the dock."}], "message": "Hi Rajesh, checking on ORD-260804-017 to Jaipur DC: your slot starts 12:00 PM. Are you on track?\n1) On time  2) Running late  3) Need help"}
+
+[10:02] C11 DRV001 (en): What slots are possible after 1 PM if I reach around 12:45?
+   tools: ['read_message:ASK_OPTIONS', 'resolve_shipment:SHP1017', 'check_slot_feasibility:3 options (read-only, nothing recorded)']
+   reply: Just options for now; nothing is booked or held. If you reach about 12:45 PM, these slots at Jaipur DC would work:
+          1) Dock D1 - start 1:15 PM, unloading done by about 2:05 PM
+          2) Dock D4 - start 1:35 PM, unloading done by about 2:25 PM
+          3) Dock D1 - start 2:00 PM, unloading done by about 2:50 PM
+          Reply 1, 2 or 3 if you want one booked.
+   state: OPTIONS_SHOWN
+
+[10:03] C11 DRV001 (en): what about after 3 PM?
+   tools: ['read_message:ASK_OPTIONS', 'resolve_shipment:SHP1017', 'check_slot_feasibility:3 options (read-only, nothing recorded)']
+   reply: Just options for now; nothing is booked or held. If you reach about 12:45 PM, these slots at Jaipur DC would work:
+          1) Dock D1 - start 3:00 PM, unloading done by about 3:50 PM
+          2) Dock D1 - start 4:00 PM, unloading done by about 4:50 PM
+          3) Dock D1 - start 5:00 PM, unloading done by about 5:50 PM
+          Reply 1, 2 or 3 if you want one booked.
+   state: OPTIONS_SHOWN
+
+[10:04] C11 DRV001 (en): ok no thanks, I will keep my slot
+   tools: ['read_message:DECLINE', 'decline:NOTHING_HELD']
+   reply: No problem - nothing has been booked or held. Your current plan stays as it is.
+   state: BOOKED
+
+[10:05] C12 DRV011 (hi-Latn): bhai accident ho gaya, helper ko chot lagi hai, truck side mein laga diya
+   tools: ['read_message:SAFETY', 'escalate:SAFETY ESC-0003 -> Anita Joshi via PHONE_CALL+WHATSAPP']
+   reply: Sabse pehle sabki suraksha dekhiye. Koi ghayal ho to abhi 112 par call kijiye. Shift manager Anita Joshi ko bata diya hai, woh 5 minute mein call karenge. Dock slot ki chinta mat kijiye.
+   state: ESCALATED
+
+[10:10] WORLD: Dispatch cancels SHP1019; its 16:00 D4 booking returns to the pool
+
+[10:12] C13 DRV008 (en): Is my 4 PM slot still active?
+   tools: ['read_message:CHECK_STATUS', 'resolve_shipment:SHP1019', 'get_booking_status:SHIPMENT_CANCELLED']
+   reply: Shipment ORD-260804-019 and its appointment were cancelled by dispatch at 10:10 AM. Please don't travel to Jaipur DC; call your dispatcher on +91-22-4104004.
+   state: CLOSED
+
+[12:20] WORLD: SHP1015 (reefer, from Delhi) departs 20 minutes late (seed actual departure)
+
+[16:24] C14 DRV015 (en): Evening traffic. ETA 6:30. Can the reefer unload tonight?
+   tools: ['read_message:REPORT_DELAY', 'resolve_shipment:SHP1015', 'record_eta:18:30 HIGH', 'scheduling_tool:replan+earmarks', 'check_current_booking:CERTAIN_MISS', 'check_slot_feasibility:0 options', 'escalate:NO_FEASIBLE_SLOT ESC-0004 -> Neha Bansal via EMAIL+DASHBOARD']
+   reply: I'm sorry - I can't find a reefer dock at Jaipur DC that your truck can reach today (Dock D5 maintenance 6:00 PM-10:00 PM; no new unloading starts after 9:00 PM without approval). I've passed your case to Neha Bansal (warehouse coordinator), who will contact you by 4:39 PM. Please don't go to the dock until they do.
+   state: ESCALATED
+
+SUMMARY {
+ "driver_cases": 13,
+ "median_minutes_to_outcome": 1,
+ "resolved_without_manual_takeover": 10,
+ "conflicting_or_duplicate_allocations": 0,
+ "options_gone_at_commit": "1 of 8 picks",
+ "no_slot_escalations_complete": "1 of 1",
+ "avg_wait_after_reschedule_min": 34.2,
+ "slot_utilisation_10_16": "10 of 31 open slots",
+ "clarification_questions": 2,
+ "median_driver_messages": 2,
+ "duplicates_suppressed": 1
+}
+INVARIANTS {'slots_with_two_active_bookings': 0, 'shipments_with_two_current_bookings': 0, 'overlapping_service_bookings': 0, 'service_bookings_breaking_compatibility': 0}

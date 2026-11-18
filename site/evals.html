@@ -21,12 +21,17 @@
 .kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
 .arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
 footer{color:var(--mu);font-size:12.5px;margin-top:30px}
-</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>SetuHaul evaluation report</h1>
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>SetuHaul evaluation report</h1>
+<p>Each rate is shown with its sample size and a 95% Wilson interval: on small samples the range matters more than the point (for example 16 of 20 is 80%, but the interval is about 58% to 92%).</p>
 <table>
 <thead>
 <tr>
 <th>Gate</th>
 <th style="text-align: right;">Value</th>
+<th style="text-align: right;">n</th>
+<th>95% interval</th>
 <th style="text-align: right;">Threshold</th>
 <th>Result</th>
 </tr>
@@ -35,42 +40,56 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <tr>
 <td>nlu_case_accuracy</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">52</td>
+<td>93% – 100%</td>
 <td style="text-align: right;">0.90</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>nlu_holdout_accuracy</td>
 <td style="text-align: right;">0.800</td>
+<td style="text-align: right;">20</td>
+<td>58% – 92%</td>
 <td style="text-align: right;">0.70</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>nlu_min_language_accuracy</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">-</td>
+<td>-</td>
 <td style="text-align: right;">0.85</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>feasibility</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">11</td>
+<td>74% – 100%</td>
 <td style="text-align: right;">1.00</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>guardrails</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">15</td>
+<td>80% – 100%</td>
 <td style="text-align: right;">1.00</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>integrity_tests</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">21</td>
+<td>85% – 100%</td>
 <td style="text-align: right;">1.00</td>
 <td>PASS</td>
 </tr>
 <tr>
 <td>solver_optimality</td>
 <td style="text-align: right;">1.000</td>
+<td style="text-align: right;">8</td>
+<td>68% – 100%</td>
 <td style="text-align: right;">1.00</td>
 <td>PASS</td>
 </tr>
@@ -237,10 +256,10 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>PROVEN_OPTIMAL</td>
 <td style="text-align: right;">55050</td>
 <td style="text-align: right;">4795</td>
-<td style="text-align: right;">83</td>
+<td style="text-align: right;">105</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">55050</td>
-<td style="text-align: right;">230.7</td>
+<td style="text-align: right;">244.5</td>
 <td>True</td>
 </tr>
 <tr>
@@ -253,7 +272,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td style="text-align: right;">1</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">55175</td>
-<td style="text-align: right;">17.3</td>
+<td style="text-align: right;">16.0</td>
 <td>True</td>
 </tr>
 <tr>
@@ -263,10 +282,10 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>PROVEN_OPTIMAL</td>
 <td style="text-align: right;">56025</td>
 <td style="text-align: right;">4725</td>
-<td style="text-align: right;">97</td>
+<td style="text-align: right;">92</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">56025</td>
-<td style="text-align: right;">359.9</td>
+<td style="text-align: right;">413.9</td>
 <td>True</td>
 </tr>
 <tr>
@@ -279,7 +298,7 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td style="text-align: right;">1</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">56375</td>
-<td style="text-align: right;">13.5</td>
+<td style="text-align: right;">16.0</td>
 <td>True</td>
 </tr>
 <tr>
@@ -289,10 +308,10 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>PROVEN_OPTIMAL</td>
 <td style="text-align: right;">59125</td>
 <td style="text-align: right;">12091</td>
-<td style="text-align: right;">222</td>
+<td style="text-align: right;">261</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">59125</td>
-<td style="text-align: right;">731.0</td>
+<td style="text-align: right;">778.7</td>
 <td>True</td>
 </tr>
 <tr>
@@ -302,10 +321,10 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>PROVEN_OPTIMAL</td>
 <td style="text-align: right;">77375</td>
 <td style="text-align: right;">76</td>
-<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">77375</td>
-<td style="text-align: right;">15.8</td>
+<td style="text-align: right;">17.7</td>
 <td>True</td>
 </tr>
 <tr>
@@ -315,10 +334,10 @@ footer{color:var(--mu);font-size:12.5px;margin-top:30px}
 <td>PROVEN_OPTIMAL</td>
 <td style="text-align: right;">72350</td>
 <td style="text-align: right;">56554</td>
-<td style="text-align: right;">1214</td>
+<td style="text-align: right;">1184</td>
 <td>OPTIMAL</td>
 <td style="text-align: right;">72350</td>
-<td style="text-align: right;">2819.2</td>
+<td style="text-align: right;">3042.2</td>
 <td>True</td>
 </tr>
 </tbody>

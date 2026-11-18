@@ -1,0 +1,940 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>L1 / L2 system design — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>SetuHaul: L1 and L2 system design</h1>
+<p>This document has two levels of detail, so each reader can stop where they have what they need.</p>
+<ul>
+<li><strong>L1 (what the system does, and who decides what)</strong> is for the head of operations, the warehouse planner and anyone deciding whether to trust it.</li>
+<li><strong>L2 (how it works)</strong> is for engineers: the components, contracts, data access, concurrency and tests. It names the three code layers: <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/model.py"><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/model.py"><code>setuhaul/model.py</code></a></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/tool.py"><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/tool.py"><code>setuhaul/tool.py</code></a></a> and <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/database.py"><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/database.py"><code>setuhaul/database.py</code></a></a>, plus the facility scheduling tool <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/scheduling_tool.py"><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/scheduling_tool.py"><code>setuhaul/scheduling_tool.py</code></a></a>.</li>
+</ul>
+<p>Every table marked <em>generated</em> below is produced from the code and from a recorded run (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tools/build_design_doc.py"><code>tools/build_design_doc.py</code></a>), not typed by hand.</p>
+<h2>How the brief maps to this design</h2>
+<table>
+<thead>
+<tr>
+<th>Brief: Learn (FDE judgement)</th>
+<th>Where it is handled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frame an unclear operations problem from a messy data package</td>
+<td>Problem definition sheet + 20 data issues, each proved by SQL (<a href="problem.html">problem.html</a>, <a href="audit.html">audit.html</a>)</td>
+</tr>
+<tr>
+<td>Decide which choices belong to a model, a tool, a database or a person</td>
+<td>L1 §3 decision split; L2 §6 to §8 layer contracts</td>
+</tr>
+<tr>
+<td>Reason about stale reads, concurrent requests and promises</td>
+<td>L2 §10: holds, revalidation at commit, unique indexes, idempotency, dedupe</td>
+</tr>
+<tr>
+<td>Weigh priority, waiting time, fairness and appointment commitments</td>
+<td>L2 §11 allocation policy; L2 §12 facility objective</td>
+</tr>
+<tr>
+<td>Design safe failure and escalation</td>
+<td>L1 §5; L2 §13 escalation routes and hand-off record</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Brief: Apply (tools you already have)</th>
+<th>Where it is handled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool calling with structured inputs and outputs</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tool.py"><code>tool.py</code></a> contracts (L2 §7), validated by <code>tool.call()</code></td>
+</tr>
+<tr>
+<td>Conversation state and memory across turns</td>
+<td><code>agent_conversations</code> row with a version number (L2 §9, state machine)</td>
+</tr>
+<tr>
+<td>The choice between a fixed workflow and an agent</td>
+<td>Fixed workflow (L1 §2); the model never chooses the next step</td>
+</tr>
+<tr>
+<td>Human approval checkpoints</td>
+<td>PENDING bookings, swaps and moved promises go to a coordinator (L2 §13)</td>
+</tr>
+<tr>
+<td>SQL, constraints and transactions</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/database.py"><code>database.py</code></a>: named queries, BEGIN IMMEDIATE, partial unique indexes (L2 §8, §10)</td>
+</tr>
+<tr>
+<td>Multi-turn evaluation of agent behaviour</td>
+<td>Scenario run + eval gates (L2 §15)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Brief: Build (what you ship)</th>
+<th>Where it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A conversational exception service for drivers</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/workflow.py"><code>workflow.py</code></a> on top of the three layers; <a href="prototype.html">Prototype</a></td>
+</tr>
+<tr>
+<td>A capacity layer that holds, confirms and releases slots</td>
+<td><code>hold_slot</code> / <code>confirm_booking</code> / <code>release_hold</code> (L2 §10)</td>
+</tr>
+<tr>
+<td>An escalation path to a human coordinator</td>
+<td><code>escalate_to_human</code> + <a href="demo2.html#conversations">Demo 2</a> queue</td>
+</tr>
+<tr>
+<td>A test that tries to double-book capacity and fails</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a> (10-driver race, replays) + level 5 below</td>
+</tr>
+<tr>
+<td>Optional: a facility-level scheduling tool</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scheduling_tool.py"><code>scheduling_tool.py</code></a> (L2 §12)</td>
+</tr>
+</tbody>
+</table>
+<h2>The workflow we followed</h2>
+<p><img alt="How the work flows" src="design/workflow.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Hand-in</th>
+<th>Proves</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Frame</td>
+<td>Problem Definition Sheet and data audit</td>
+<td>Facts vs estimates vs assumptions vs unknowns; every data issue with the query that proves it</td>
+<td><a href="problem.html">Problem</a> · <a href="audit.html">Audit</a></td>
+</tr>
+<tr>
+<td>2 Design</td>
+<td>Decision register + this L1/L2 design</td>
+<td>Answer, reason and evidence for each decision D1 to D13</td>
+<td><a href="decisions.html">Decisions</a> · this page</td>
+</tr>
+<tr>
+<td>3 Build</td>
+<td>Working prototype</td>
+<td>Conversation layer, the tools it calls and the state it keeps (versions in README)</td>
+<td><a href="prototype.html">Prototype</a> · <a href="https://github.com/sdaistudio/SetuHaul_Logistics">code</a></td>
+</tr>
+<tr>
+<td>+ Optional</td>
+<td>Facility scheduling tool</td>
+<td>Explicit objective vs simple dispatch rules on the competing-trucks snapshot</td>
+<td>L2 §12</td>
+</tr>
+<tr>
+<td>4 Break</td>
+<td>Integrity proof</td>
+<td>Competing requests for the same slot, no double booking</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a>, L2 §10</td>
+</tr>
+<tr>
+<td>5 Defend</td>
+<td>Scenario run + client readout</td>
+<td>Demonstration list ending in an escalation; policy, limits and open risks</td>
+<td><a href="scenarios.html">Scenario run</a> · <a href="readout.html">Readout</a></td>
+</tr>
+</tbody>
+</table>
+<p>The scenario run covers all seven points the brief lists: (1) a delay plus clarification answers (DRV004, DRV010); (2) later options asked for and compared (DRV001); (3) several requests on one facility schedule; (4) competition for the same capacity (DRV006 and DRV012 on D4 12:30); (5) an option that disappears (OPTION_GONE, then fresh options); (6) an escalation because no safe automatic outcome exists (SHP1015 reefer); (7) the scheduling tool re-planning before and after an ETA update or gate check-in.</p>
+<hr />
+<h1>L1: what the system does</h1>
+<h2>1. Problem and scope</h2>
+<p>On 4 August at the Jaipur DC, many inbound drivers report delays at once on WhatsApp, in English, Hindi or Hinglish. Each wants a dock slot. Docks have hard limits: dock type, the reefer dock D5, weight limits, maintenance and the 21:00 last-start rule. Some trucks are already in the yard or unloading. The service must answer each driver quickly, offer only slots the truck can really make, never promise the same capacity twice, and hand anything unsafe to a person.</p>
+<p><strong>In scope:</strong> inbound driver exceptions (delay, early arrival, options, status) and slot rebooking at one facility; coordinator approvals and escalations; a facility re-plan proposal.
+<strong>Out of scope:</strong> route planning, outbound dispatch, payments and penalties (escalated as <code>PENALTY_OR_DISPUTE</code>).</p>
+<h2>2. A fixed workflow, not an autonomous agent</h2>
+<p>The next step is always chosen by code (a state machine), never by a language model. The only uncertain step is reading the driver's words, and that is done by a deterministic parser with a narrow, validated LLM fallback. Reasons: a wrong slot costs a missed unload or a double booking; behaviour must be explainable to a planner; and the same input must give the same answer so it can be tested.</p>
+<h2>3. Who decides what</h2>
+<p><img alt="L1 system context" src="design/l1_context.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Belongs to</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What did the driver mean (ETA, delay, constraint, choice, language)?</td>
+<td><strong>Model</strong> (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/model.py"><code>model.py</code></a>)</td>
+<td>Only language is fuzzy; output is structured, with evidence spans</td>
+</tr>
+<tr>
+<td>Is something missing (which shipment, what time)?</td>
+<td><strong>Model</strong> proposes, <strong>workflow</strong> asks</td>
+<td>Ask before calling a tool (ladder level 2)</td>
+</tr>
+<tr>
+<td>Can this truck use this slot?</td>
+<td><strong>Tool</strong> <code>check_slot_feasibility</code></td>
+<td>Hard rules R1 to R8 from data and <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules.yaml"><code>rules.yaml</code></a>; every rejection has a reason code</td>
+</tr>
+<tr>
+<td>Which slot is best for the driver and the facility?</td>
+<td><strong>Tool</strong> <code>rank_options_lookahead</code></td>
+<td>Branch-and-bound look-ahead across all trucks; priority weights CRITICAL 100, HIGH 40, NORMAL 15, LOW 5</td>
+</tr>
+<tr>
+<td>Is the slot still free right now?</td>
+<td><strong>Database</strong></td>
+<td>Unique indexes and a write transaction, not the model's memory</td>
+</tr>
+<tr>
+<td>Book it</td>
+<td><strong>Tool</strong> <code>hold_slot</code> → <code>confirm_booking</code></td>
+<td>Re-checks feasibility at commit; idempotent</td>
+</tr>
+<tr>
+<td>A low-confidence ETA, conflicting data, a start after 21:00, moving someone's reachable booking, no feasible slot, safety</td>
+<td><strong>Person</strong></td>
+<td>Policy and accountability decisions; the system prepares the facts and a recommendation</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Containers on AWS</h2>
+<p>The production layout is in the <a href="architecture.svg">architecture diagram</a> and <a href="design.html">solution design</a>. In short: API Gateway receives the WhatsApp webhook; a FIFO SQS queue keyed per driver keeps one driver's messages in order; a worker Lambda runs the workflow; Aurora PostgreSQL stores state (an EXCLUDE constraint on dock intervals); EventBridge runs the sweeper (expires holds and pending bookings); a coordinator API sits behind Cognito; SNS sends notifications; CloudWatch holds metrics, traces and alarms. Bedrock (with a Guardrail) is used only for the language fallback.</p>
+<h2>5. Safe failure and escalation (L1)</h2>
+<ul>
+<li>If unsure what the driver meant, ask (at most 2 clarification questions), then hand over to a person.</li>
+<li>If no feasible slot exists, say so, escalate with the facts and the options tried, and tell the driver not to go to the dock until a person confirms.</li>
+<li>If a chosen slot was taken meanwhile, say so and offer fresh options. Never confirm a stale option.</li>
+<li>If a reply would claim a booking that was not committed, or contain a time no tool produced, block it and escalate.</li>
+<li>Safety messages (accident, injury) go straight to the shift manager.</li>
+<li>If a notification fails (OM004 e-mail FAILED in the seed data), the escalation stays OPEN in the queue and is visible on the coordinator dashboard; it is not lost.</li>
+</ul>
+<h2>6. Non-functional targets</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Target / mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latency</td>
+<td>median time to a usable answer 2 min in the scenario run; solver look-ahead budget 400 ms per candidate</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>one live hold per slot and per shipment; revalidation at commit; zero double bookings in the race test</td>
+</tr>
+<tr>
+<td>Determinism</td>
+<td>same message + same database → same reply; ties broken by start time, then dock code, then slot id</td>
+</tr>
+<tr>
+<td>Configurability</td>
+<td>every threshold in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a> (hold TTL 5 min, gate-to-dock 15 min, ETA buffers, weights, solver budgets)</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>trace spans per turn, tool-call record, metrics (OptionsShown, OptionGone, Escalations, GuardrailBlocks)</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>PII redacted before any LLM call and in logs; drivers only see their own shipments</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1>L2: how it works</h1>
+<h2>7. Components</h2>
+<p><img alt="L2 components" src="design/l2_components.svg" /></p>
+<ul>
+<li><strong><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/model.py"><code>model.py</code></a> (language).</strong> It <strong>may</strong>: detect language, extract intent, extract ETA / delay / window + confidence, extract driver constraints, extract option choice, extract shipment hints, list missing facts, fill a reviewed template. It <strong>may not</strong>: pick or rank a slot, call a WRITE tool, read or write the database, promise a booking, change priority on request, produce a time no tool returned, decide an escalation outcome. A unit test checks that <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/model.py"><code>model.py</code></a> imports no database, capacity or solver module and runs no SQL.</li>
+<li><strong><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tool.py"><code>tool.py</code></a> (decisions).</strong> Deterministic functions with structured inputs and outputs. <code>call()</code> checks that the tool exists, that the caller may use it (drivers' workflow vs coordinator vs scheduler), that the conversation state allows it, and that required inputs are present. The workflow uses the same traced functions, so each turn records which tools ran.</li>
+<li><strong><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/database.py"><code>database.py</code></a> (facts and integrity).</strong> Named read queries, write helpers that only run inside <code>write_txn</code> (BEGIN IMMEDIATE), and a SQL capture that lists the tables each turn touched.</li>
+<li><strong><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/workflow.py"><code>workflow.py</code></a></strong> is the state machine that calls the model and the tools in a fixed order. <strong><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scheduling_tool.py"><code>scheduling_tool.py</code></a></strong> is the facility-level re-plan.</li>
+</ul>
+<h3>7.1 Tool catalogue <em>(generated from <code>tool.SPECS</code>)</em></h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Kind</th>
+<th>Caller</th>
+<th>Purpose</th>
+<th>Inputs</th>
+<th>Output</th>
+<th>Guardrail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_driver_context</code></td>
+<td>READ</td>
+<td>workflow</td>
+<td>Who is writing, which shipments are live, thread history</td>
+<td>driver_id: str, thread_id: str?</td>
+<td>driver, open_shipments[], thread, history[]</td>
+<td>Driver can only see own shipments</td>
+</tr>
+<tr>
+<td><code>get_eta</code></td>
+<td>READ</td>
+<td>workflow</td>
+<td>Best ETA: gate check-in &gt; ops override &gt; warehouse &gt; driver &gt; plan</td>
+<td>shipment_id: str</td>
+<td>EtaEstimate(point, confidence, source, window, evidence)</td>
+<td>LOW confidence adds a buffer; plan is MEDIUM not HIGH</td>
+</tr>
+<tr>
+<td><code>check_slot_feasibility</code></td>
+<td>READ</td>
+<td>workflow</td>
+<td>Hard rules R1-R8 on every slot (dock type, reefer, weight, maintenance, occupancy, holds, 21:00 rule, driver constraints)</td>
+<td>shipment_id: str, now: datetime, constraints: Constraints?, eta: EtaEstimate?</td>
+<td>SlotEval[] with feasible, reasons[], planned_start/end</td>
+<td>Read-only; asking never books</td>
+</tr>
+<tr>
+<td><code>rank_options_lookahead</code></td>
+<td>READ</td>
+<td>workflow</td>
+<td>Order the driver's feasible slots by the optimal plan for every other truck (branch &amp; bound look-ahead)</td>
+<td>shipment_id: str, now: datetime, eta: EtaEstimate, constraints: Constraints, feasible_slot_ids: list[str]</td>
+<td>RankedOption[] (facility cost, trucks stranded)</td>
+<td>Deterministic tie-break; time budget from rules.yaml</td>
+</tr>
+<tr>
+<td><code>get_booking_status</code></td>
+<td>READ</td>
+<td>workflow</td>
+<td>Live booking, check-in, queue position</td>
+<td>shipment_id: str</td>
+<td>shipment_status, appointment, checkin</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>record_eta</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Store the driver's new ETA as an eta_updates row</td>
+<td>shipment_id: str, eta: datetime, confidence: HIGH</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td><code>hold_slot</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Reserve one slot for 5 minutes while the driver decides/commits</td>
+<td>shipment_id: str, slot_id: str (must be one of the options shown), now: datetime</td>
+<td>hold_id, expires_at</td>
+<td>Unique index: one live hold per slot and per shipment</td>
+</tr>
+<tr>
+<td><code>confirm_booking</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Re-check feasibility inside BEGIN IMMEDIATE, then write the appointment (CONFIRMED or PENDING_CONFIRMATION)</td>
+<td>hold_id: str, idem_key: str, approval_reasons: list[str]</td>
+<td>appointment_id, status, dock, planned_start/end, replaced</td>
+<td>Idempotency key; revalidation; LOW-confidence ETA or data conflict -&gt; PENDING, never auto-confirmed</td>
+</tr>
+<tr>
+<td><code>release_hold</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Give a held slot back (driver declined / timeout)</td>
+<td>hold_id: str</td>
+<td>released</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>notify_warehouse</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Queue an internal/e-mail message about a booking</td>
+<td>shipment_id: str, subject: str</td>
+<td>operational_message_id</td>
+<td>Delivery status tracked (OM004 FAILED)</td>
+</tr>
+<tr>
+<td><code>escalate_to_human</code></td>
+<td>WRITE</td>
+<td>workflow</td>
+<td>Hand the case to a named person with facts, options tried and a recommendation</td>
+<td>reason: SAFETY</td>
+<td>HUMAN_REQUESTED</td>
+<td>NO_FEASIBLE_SLOT</td>
+</tr>
+<tr>
+<td><code>decide_pending_booking</code></td>
+<td>WRITE</td>
+<td>coordinator</td>
+<td>Approve/reject a PENDING booking (re-validated first)</td>
+<td>appointment_id: str, approve: bool, approver: str</td>
+<td>status</td>
+<td>Human only; approval of an infeasible slot is refused</td>
+</tr>
+<tr>
+<td><code>propose_facility_sequence</code></td>
+<td>READ</td>
+<td>scheduler</td>
+<td>Facility-level re-plan after an ETA update or gate check-in: compare dispatch rules with the optimal plan on one objective</td>
+<td>facility_id: str, now: datetime, trigger: str</td>
+<td>Proposal(objective, protected work, policies[], recommended plan, moves vs today)</td>
+<td>Proposes only; a coordinator approves before any booking changes</td>
+</tr>
+</tbody>
+</table>
+<h2>8. Data access <em>(generated from <code>database.Q</code>)</em></h2>
+<p>Every fact comes from a named, parameterised query. The supplied views (<code>v_latest_eta</code>, <code>v_slot_availability</code>) are only used for cross-checks, because the audit showed they can mislead (for example <code>v_latest_eta</code> reports the original plan as HIGH confidence).</p>
+<table>
+<thead>
+<tr>
+<th>Named query</th>
+<th>What it answers</th>
+<th>Tables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>driver</code></td>
+<td>Driver profile and phone</td>
+<td>drivers</td>
+</tr>
+<tr>
+<td><code>driver_open_shipments</code></td>
+<td>All of a driver's shipments that are still live today (ambiguity check, DRV004)</td>
+<td>shipments</td>
+</tr>
+<tr>
+<td><code>shipment</code></td>
+<td>One shipment: load, priority, dock type, reefer, weight, unload minutes</td>
+<td>shipments</td>
+</tr>
+<tr>
+<td><code>vehicle</code></td>
+<td>Vehicle type and gross weight (weight-limit rule)</td>
+<td>vehicle_types, vehicles</td>
+</tr>
+<tr>
+<td><code>thread</code></td>
+<td>Seed chat thread (status, intent, linked shipment)</td>
+<td>chat_threads</td>
+</tr>
+<tr>
+<td><code>thread_messages</code></td>
+<td>Messages already exchanged on a thread</td>
+<td>chat_messages</td>
+</tr>
+<tr>
+<td><code>agent_state</code></td>
+<td>Our conversation state machine row (state, language, remembered facts, version)</td>
+<td>agent_conversations</td>
+</tr>
+<tr>
+<td><code>eta_updates</code></td>
+<td>Every ETA statement for a shipment (driver, warehouse, ops override)</td>
+<td>eta_updates</td>
+</tr>
+<tr>
+<td><code>latest_eta_view</code></td>
+<td>Supplied view v_latest_eta (used for comparison only; its confidence is not trusted)</td>
+<td>v_latest_eta</td>
+</tr>
+<tr>
+<td><code>checkin</code></td>
+<td>Gate-in, yard queue, dock-in, unload start/end (ground truth once the truck is here)</td>
+<td>facility_checkins</td>
+</tr>
+<tr>
+<td><code>current_appointment</code></td>
+<td>The shipment's live booking and its slot window</td>
+<td>appointment_slots, appointments, docks</td>
+</tr>
+<tr>
+<td><code>appointment</code></td>
+<td>One appointment by id (APT1008 cancelled mid-conversation)</td>
+<td>appointments</td>
+</tr>
+<tr>
+<td><code>facility_slots</code></td>
+<td>All slots at a facility with dock attributes</td>
+<td>appointment_slots, docks</td>
+</tr>
+<tr>
+<td><code>slot_availability_view</code></td>
+<td>Supplied view v_slot_availability (cross-checked, not trusted alone)</td>
+<td>v_slot_availability</td>
+</tr>
+<tr>
+<td><code>live_holds</code></td>
+<td>Holds still alive (5-minute reservations from other conversations)</td>
+<td>slot_holds</td>
+</tr>
+<tr>
+<td><code>dock_events</code></td>
+<td>Maintenance, blockages, capacity reductions on docks</td>
+<td>dock_status_events, docks</td>
+</tr>
+<tr>
+<td><code>facility_rules</code></td>
+<td>Facility rules (reefer dock, heavy dock, last new start 21:00, no-show grace)</td>
+<td>facility_rules</td>
+</tr>
+<tr>
+<td><code>facility_queue_view</code></td>
+<td>Supplied view v_current_facility_queue (who is at the DC now)</td>
+<td>v_current_facility_queue</td>
+</tr>
+<tr>
+<td><code>contacts</code></td>
+<td>Who to escalate to (role, name, channel); vacant posts are skipped</td>
+<td>facility_contacts</td>
+</tr>
+<tr>
+<td><code>ops_messages</code></td>
+<td>Messages already sent about a shipment (OM004: escalation e-mail FAILED)</td>
+<td>operational_messages</td>
+</tr>
+<tr>
+<td><code>open_escalations</code></td>
+<td>Escalations waiting for a person</td>
+<td>escalations</td>
+</tr>
+</tbody>
+</table>
+<p>Tables added to the supplied schema: <code>slot_holds</code>, <code>appointment_plan</code>, <code>agent_conversations</code>, <code>escalations</code>, <code>idempotency_keys</code>, <code>inbound_dedupe</code>, <code>audit_log</code> (see <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/db.py"><code>setuhaul/db.py</code></a>). The supplied snapshot is never modified; each run works on a copy.</p>
+<h2>9. One message, end to end</h2>
+<p><img alt="L2 turn sequence" src="design/l2_turn.svg" /></p>
+<p><img alt="L2 state machines" src="design/l2_states.svg" /></p>
+<p>Conversation memory is one <code>agent_conversations</code> row per thread: state, language, remembered facts (shipment, ETA, constraints, options shown, clarification count) and a version number that is checked on save (optimistic concurrency). Facts said in an earlier turn are kept, so "शाम वाला" (the evening one) after a question resolves the shipment without the driver repeating the delay.</p>
+<h2>10. Stale reads, concurrent requests and promises</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mechanism</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Two drivers pick the same slot</td>
+<td>Hold placed inside BEGIN IMMEDIATE; partial unique index <code>ux_live_hold_per_slot</code>; the second gets OPTION_GONE</td>
+<td>10-driver race in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a>; level 5 race: {'slot': 'SLOT-JAI-006', 'SHP1017': 'HOLD-8D66F73C', 'SHP1018': 'OPTION_GONE'}</td>
+</tr>
+<tr>
+<td>Options shown, then the world changes</td>
+<td>Options hold nothing; <code>confirm_booking</code> re-runs feasibility inside the write transaction</td>
+<td>Level 5: DRV012 picks D4 12:30 after a parallel booking took it → "just taken" + fresh options</td>
+</tr>
+<tr>
+<td>A retried confirm (network retry)</td>
+<td><code>idempotency_keys</code>: same key returns the first result</td>
+<td>Level 5: first APT-93D002C9 and retry APT-93D002C9, replay = True</td>
+</tr>
+<tr>
+<td>WhatsApp re-delivers a message (THR001 / THR009)</td>
+<td><code>inbound_dedupe</code> on external id and normalised text within a window</td>
+<td>Level 5: second copy suppressed, no tool called</td>
+</tr>
+<tr>
+<td>Asking is mistaken for booking</td>
+<td>Options are READ only; a booking needs an explicit choice</td>
+<td>Level 1: appointments created 0, holds created 0</td>
+</tr>
+<tr>
+<td>A booking that can no longer be reached blocks a slot</td>
+<td>Certain-miss release: if the owner's ETA is past the slot end, the slot is released (and the owner's dispatcher is told)</td>
+<td><code>capacity.commit_hold</code>, solver tests</td>
+</tr>
+<tr>
+<td>Holds or pending bookings left forever</td>
+<td>TTL: hold 5 min, pending approval 20 min; the sweeper expires them</td>
+<td><code>capacity.expire_stale</code></td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Postgres <code>EXCLUDE USING gist (dock_id WITH =, tstzrange(start, end) WITH &amp;&amp;)</code></td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/infra/postgres_schema.sql"><code>infra/postgres_schema.sql</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2>11. Allocation policy: priority, waiting, fairness, commitments</h2>
+<ol>
+<li><strong>Hard rules first</strong> (R1 to R8): compatible dock type, reefer to D5, weight limit, dock maintenance or blocks, physical occupancy, live holds, the 21:00 rule (needs approval), and the driver's own constraints (not before X, must leave by Y).</li>
+<li><strong>Keep promises:</strong> a reachable booking is not moved because someone else asks. Moving one is a coordinator decision (a swap proposal).</li>
+<li><strong>Priority comes from data only</strong> (<code>shipments.priority_code</code>), never from the message. "Load bahut zaroori hai" gets a polite note, not a higher rank.</li>
+<li><strong>Look-ahead, not first-come:</strong> each feasible slot for this driver is scored by solving the rest of the facility as if the driver took it (branch and bound). The driver gets the slots that strand nobody else and keep total priority-weighted waiting lowest.</li>
+<li><strong>Fairness:</strong> the same rules, weights and tie-breaks for every driver; LOW-priority trucks are delayed only when the weighted cost says so, and never left without a dock if one exists.</li>
+</ol>
+<h2>12. Facility-level scheduling tool</h2>
+<p><code>scheduling_tool.propose_sequence()</code> is called (through <code>tool.propose_facility_sequence</code>) after an ETA update or a gate check-in, or by a coordinator. It reads structured data only and <strong>never writes</strong>: the run below checked <code>wrote_to_database = False</code>.</p>
+<p><strong>Model:</strong> job = truck; machine = dock; release = planning ETA + 15 min gate-to-dock (or now if already in the yard); processing = expected unload minutes; due = current booking; fixed = trucks already unloading (protected work) and dock events.</p>
+<p><strong>Objective, in order:</strong> 1 nobody left without a dock &gt; 2 fewest missed appointments &gt; 3 least priority-weighted wait &gt; 4 fewest schedule changes. Weights per minute of waiting: CRITICAL 100, HIGH 40, NORMAL 15, LOW 5.</p>
+<p><strong>Comparison on the 09:50 snapshot</strong> <em>(generated)</em>:</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Unscheduled</th>
+<th>Missed appointments</th>
+<th>Weighted wait</th>
+<th>Schedule changes</th>
+<th>Avg wait (min)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FCFS</td>
+<td>1</td>
+<td>1</td>
+<td>5200</td>
+<td>8</td>
+<td>8.3</td>
+</tr>
+<tr>
+<td>EDD</td>
+<td>1</td>
+<td>1</td>
+<td>3300</td>
+<td>8</td>
+<td>12.3</td>
+</tr>
+<tr>
+<td>WEIGHTED</td>
+<td>1</td>
+<td>1</td>
+<td>4950</td>
+<td>11</td>
+<td>32.0</td>
+</tr>
+<tr>
+<td>COMMITMENT_FIRST_WEIGHTED</td>
+<td>1</td>
+<td>0</td>
+<td>7450</td>
+<td>6</td>
+<td>15.7</td>
+</tr>
+<tr>
+<td>COMMITMENT_FIRST_WEIGHTED + approved swaps</td>
+<td>1</td>
+<td>0</td>
+<td>3775</td>
+<td>7</td>
+<td>24.0</td>
+</tr>
+<tr>
+<td>OPTIMAL (branch &amp; bound, proven optimal)</td>
+<td>1</td>
+<td>1</td>
+<td>4900</td>
+<td>6</td>
+<td>17.7</td>
+</tr>
+</tbody>
+</table>
+<p>Recommended: <strong>COMMITMENT_FIRST_WEIGHTED + approved swaps</strong>. Protected work: D2 08:05-10:00 SHP1002 on dock; D2 08:08-10:00 SHP1002 unloading. Every move of a reachable booking, every swap and every start after 21:00 is listed for a coordinator. Before and after an event:</p>
+<ul>
+<li>ETA update SHP1009 -&gt; 12:20: SHP1003 D2 12:55 → D2 11:00; SHP1014 D2 11:40 → D4 11:40; SHP1013 D4 12:30 → D2 11:45; SHP1009 D4 11:15 → D1 12:35; SHP1012 D1 12:20 → D2 12:45; SHP1018 D3 13:00 → D4 12:55; SHP1017 D1 13:15 → D3 13:15</li>
+<li>gate check-in SHP1014 at 10:45: SHP1014 D2 11:40 → D2 10:55; SHP1005 D4 12:30 → D2 12:10; SHP1012 D2 12:55 → D4 12:30; SHP1003 D2 10:55 → D4 13:15; SHP1017 D2 13:40 → D2 13:25</li>
+</ul>
+<p>Run it: <code>python -m setuhaul.scheduling_tool --at 09:50</code> or <code>python -m setuhaul.scheduling_tool --at 09:50 --eta SHP1009=12:20</code>.</p>
+<h2>13. Human approval checkpoints and escalation</h2>
+<table>
+<thead>
+<tr>
+<th>Checkpoint</th>
+<th>Trigger</th>
+<th>Who</th>
+<th>What they receive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pending booking</td>
+<td>LOW-confidence ETA, data conflict, start after 21:00</td>
+<td>Warehouse coordinator</td>
+<td>Booking, reasons, 20-minute TTL; approval is re-validated (an infeasible slot is refused)</td>
+</tr>
+<tr>
+<td>Moved promise / swap</td>
+<td>Scheduler proposes moving a reachable booking</td>
+<td>Warehouse coordinator</td>
+<td>Before/after, who is displaced, driver notice needed</td>
+</tr>
+<tr>
+<td>No feasible slot</td>
+<td>Feasibility returns nothing</td>
+<td>Coordinator (night shift after 18:00)</td>
+<td>Facts, ETA, constraints, rejection summary, options tried, recommendation</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Accident or injury words</td>
+<td>Shift manager</td>
+<td>Redacted message; SLA 5 min</td>
+</tr>
+<tr>
+<td>Unclear after 2 tries / guard block / rate limit</td>
+<td>Workflow</td>
+<td>Coordinator</td>
+<td>Last message, what was asked</td>
+</tr>
+</tbody>
+</table>
+<p>Routing skips vacant roles and contacts without a channel (<code>facility_contacts</code>), and falls back to the ops queue.</p>
+<h2>14. How data is fetched in each situation <em>(generated from a recorded run)</em></h2>
+<p>Each level of the brief's ladder was run through the production workflow on a fresh copy of the database. The model column shows what the language layer extracted; the other columns come from the tool-call record and SQLite's statement trace. Full turn-by-turn detail, including replies, is on the <a href="walkthrough.html">situation walkthrough</a> page.</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Case (driver)</th>
+<th>Model step (language only)</th>
+<th>Tools called, in order</th>
+<th>Key tool result</th>
+<th>Tables read</th>
+<th>Tables written</th>
+<th>States</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A driver only asks about options (DRV001)</td>
+<td>en, REPORT_DELAY/ASK_OPTIONS, eta 12:45 CLOCK MEDIUM, not before 13:00 / hinglish, ASK_OPTIONS, not before 15:00 / hinglish, DECLINE</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code></td>
+<td>68 slots checked, 35 feasible; rejected: DOCK_TYPEx20, SLOT_TAKENx7, SLOT_BLOCKEDx7; planning ETA 13:00 · 68 slots checked, 27 feasible; rejected: DOCK_TYPEx20, BEFORE_DRIVER_EARLIESTx13, SLOT_TAKENx7; planning ETA 13:00</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
+<td>options shown → options shown → need eta</td>
+</tr>
+<tr>
+<td>2a</td>
+<td>The message misses key facts (DRV013)</td>
+<td>en, REPORT_DELAY, eta 10:39 RELATIVE_DELAY MEDIUM, delay 60m</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 38 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:15</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, inbound_dedupe, eta_updates, driver_exceptions, agent_conversations</td>
+<td>pending warehouse</td>
+</tr>
+<tr>
+<td>2b</td>
+<td>〃 (DRV004)</td>
+<td>hi, REPORT_DELAY, eta 10:26 RELATIVE_DELAY MEDIUM, delay 45m / hi, UNKNOWN</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 12 feasible; rejected: ETA_AFTER_WINDOWx29, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 19:00</td>
+<td>chat_threads, facilities, chat_messages, inbound_dedupe, agent_conversations, shipments, facility_checkins, appointment_slots …</td>
+<td>chat_threads, chat_messages, inbound_dedupe, agent_conversations, driver_exceptions, eta_updates</td>
+<td>need shipment → options shown</td>
+</tr>
+<tr>
+<td>2c</td>
+<td>〃 (DRV010)</td>
+<td>hinglish, REPORT_DELAY, clarify ['ETA_VAGUE'] / hinglish, ADD_CONSTRAINT, leave by 11:30</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx9, SLOT_BLOCKEDx7; planning ETA 11:45</td>
+<td>chat_threads, shipments, facility_checkins, chat_messages, inbound_dedupe, agent_conversations, facilities, eta_updates …</td>
+<td>chat_threads, chat_messages, inbound_dedupe, agent_conversations, driver_exceptions, eta_updates</td>
+<td>need eta → options shown</td>
+</tr>
+<tr>
+<td>3a</td>
+<td>Rules and compatibility narrow the choices (DRV007)</td>
+<td>en, REPORT_DELAY/ASK_OPTIONS, eta 12:00 CLOCK HIGH / en, SELECT_OPTION, option 1</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>hold_slot</code> → <code>confirm_booking</code> → <code>notify_warehouse</code></td>
+<td>73 slots checked, 6 feasible; rejected: WEIGHTx65, DOCK_TYPEx65, SLOT_TAKENx11; planning ETA 12:00 · PENDING_CONFIRMATION D6 12:40 approval: ['DATA_CONFLICT']</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations, slot_holds, audit_log, appointments, appointment_plan, idempotency_keys, operational_messages</td>
+<td>options shown → pending warehouse</td>
+</tr>
+<tr>
+<td>3b</td>
+<td>〃 (DRV010)</td>
+<td>hinglish, REPORT_DELAY, eta 11:30 CLOCK MEDIUM</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 6 feasible; rejected: DOCK_TYPEx60, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:45</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
+<td>options shown</td>
+</tr>
+<tr>
+<td>4a</td>
+<td>Several delayed trucks chase nearby slots (DRV006)</td>
+<td>en, REPORT_DELAY/ASK_OPTIONS, eta 11:20 CLOCK MEDIUM, not before 12:00</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
+<td>options shown</td>
+</tr>
+<tr>
+<td>4b</td>
+<td>〃 (DRV012)</td>
+<td>en, REPORT_DELAY, eta 11:10 CLOCK HIGH, leave by 13:30</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 1 feasible; rejected: DRIVER_DEADLINEx36, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10</td>
+<td>shipments, facility_checkins, eta_updates, appointment_slots, appointments, agent_conversations, chat_threads, driver_exceptions …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
+<td>options shown</td>
+</tr>
+<tr>
+<td>4c</td>
+<td>〃 (DRV013)</td>
+<td>en, REPORT_DELAY, eta 10:39 RELATIVE_DELAY MEDIUM, delay 60m</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 38 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx10, SLOT_BLOCKEDx7; planning ETA 11:15</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, inbound_dedupe, eta_updates, driver_exceptions, agent_conversations</td>
+<td>pending warehouse</td>
+</tr>
+<tr>
+<td>4d</td>
+<td>〃 (DRV014)</td>
+<td>hi, SELECT_OPTION/REPORT_DELAY, eta 11:25 CLOCK HIGH, option 1 / en, SELECT_OPTION, option 1</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>hold_slot</code> → <code>confirm_booking</code> → <code>notify_warehouse</code> → <code>get_eta</code></td>
+<td>73 slots checked, 17 feasible; rejected: WEIGHTx26, DOCK_TYPEx21, SLOT_TAKENx10; planning ETA 11:25 · CONFIRMED D2 12:30 (replaces APT1014A)</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations, slot_holds, audit_log, appointments, appointment_plan, idempotency_keys, operational_messages</td>
+<td>options shown → confirmed</td>
+</tr>
+<tr>
+<td>5a</td>
+<td>The world changes mid-conversation (DRV006)</td>
+<td>en, REPORT_DELAY/ASK_OPTIONS, eta 11:20 CLOCK MEDIUM, not before 12:00</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 37 feasible; rejected: DOCK_TYPEx21, SLOT_TAKENx11, SLOT_BLOCKEDx7; planning ETA 11:35</td>
+<td>shipments, facility_checkins, appointment_slots, eta_updates, appointments, agent_conversations, driver_exceptions, facilities …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations</td>
+<td>options shown → duplicate suppressed</td>
+</tr>
+<tr>
+<td>5b</td>
+<td>〃 (DRV012)</td>
+<td>en, REPORT_DELAY, eta 11:10 CLOCK HIGH, leave by 13:30 / en, SELECT_OPTION, option 1</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code> → <code>find_driver_shipments</code> → <code>get_eta</code> → <code>hold_slot ✗</code> → <code>get_eta</code> → <code>check_slot_feasibility</code> → <code>rank_options_lookahead</code></td>
+<td>73 slots checked, 1 feasible; rejected: DRIVER_DEADLINEx36, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10 · CapacityError: OPTION_GONE · 73 slots checked, 2 feasible; rejected: DRIVER_DEADLINEx35, DOCK_TYPEx21, SLOT_TAKENx11; planning ETA 11:10</td>
+<td>shipments, facility_checkins, eta_updates, appointment_slots, appointments, agent_conversations, chat_threads, driver_exceptions …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, agent_conversations, slot_holds</td>
+<td>options shown → options shown</td>
+</tr>
+<tr>
+<td>5b′ parallel booking</td>
+<td>〃 (OTHER)</td>
+<td>-</td>
+<td><code>hold_slot</code> → <code>confirm_booking</code></td>
+<td>CONFIRMED D4 12:30 (replaces APT1013A)</td>
+<td>shipments, facility_checkins, eta_updates, appointment_slots, appointments, slot_holds, facilities, docks …</td>
+<td>slot_holds, audit_log, appointments, appointment_plan, idempotency_keys</td>
+<td>parallel booking confirmed</td>
+</tr>
+<tr>
+<td>6</td>
+<td>No feasible slot exists (DRV015)</td>
+<td>en, REPORT_DELAY, eta 18:30 CLOCK HIGH</td>
+<td><code>find_driver_shipments</code> → <code>get_eta</code> → <code>record_eta</code> → <code>check_slot_feasibility</code> → <code>escalate_to_human</code></td>
+<td>34 slots checked, 0 feasible; rejected: DOCK_TYPEx28, SLOT_BLOCKEDx4, ETA_AFTER_WINDOWx2; planning ETA 18:30 · ESC-37E21DB0 NO_FEASIBLE_SLOT -&gt; WAREHOUSE_COORDINATOR Neha Bansal via EMAIL</td>
+<td>shipments, facility_checkins, eta_updates, chat_threads, appointment_slots, facilities, docks, appointments …</td>
+<td>chat_threads, chat_messages, driver_exceptions, inbound_dedupe, eta_updates, escalations, audit_log, agent_conversations</td>
+<td>escalated</td>
+</tr>
+<tr>
+<td>+</td>
+<td>An early truck, a late truck and work in progress share one facility</td>
+<td>none (structured data only)</td>
+<td><code>propose_facility_sequence</code></td>
+<td>recommend COMMITMENT_FIRST_WEIGHTED + approved swaps</td>
+<td>shipments, facility_checkins, eta_updates, appointment_slots, appointments, driver_exceptions, agent_conversations, facilities …</td>
+<td>none</td>
+<td>proposal for a coordinator</td>
+</tr>
+</tbody>
+</table>
+<p>Note on level 2a: "late by one hour" is parsed by the model as now + 60 min; the workflow then anchors a relative delay to the shipment's planned ETA (10:00 + 60 = 11:00) and states that assumption in the reply, so the driver can correct it.</p>
+<p><strong>Data used to frame each case:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Where to look</th>
+<th>Named queries that frame the case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>THR011, SHP1017</code></td>
+<td><code>thread(THR011)</code> → 1 row(s), <code>thread_messages(THR011)</code> → 1 row(s), <code>shipment(SHP1017)</code> → 1 row(s), <code>current_appointment(SHP1017)</code> → 1 row(s)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>THR003, SHP1013, THR010, DRV004</code></td>
+<td><code>thread_messages(THR003)</code> → 2 row(s), <code>thread_messages(THR010)</code> → 2 row(s), <code>driver_open_shipments(DRV004)</code> → 2 row(s), <code>eta_updates(SHP1013)</code> → 1 row(s)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>SHP1010, SHP1015, SHP1016, RULE005</code></td>
+<td><code>facility_rules(FAC-JAI-01)</code> → 5 row(s), <code>shipment(SHP1016)</code> → 1 row(s), <code>shipment(SHP1010)</code> → 1 row(s), <code>dock_events(FAC-JAI-01)</code> → 3 row(s)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>SHP1006, SHP1012, SHP1013, SHP1014, SHP1009</code></td>
+<td><code>eta_updates(SHP1006)</code> → 2 row(s), <code>eta_updates(SHP1012)</code> → 1 row(s), <code>eta_updates(SHP1014)</code> → 1 row(s), <code>current_appointment(SHP1009)</code> → 1 row(s)</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>SHP1005, APT1008, THR001, THR009, SHP1002</code></td>
+<td><code>thread_messages(THR009)</code> → 1 row(s), <code>appointment(APT1008)</code> → 1 row(s), <code>checkin(SHP1005)</code> → 1 row(s), <code>checkin(SHP1002)</code> → 1 row(s)</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>SHP1015, THR005, OM004</code></td>
+<td><code>thread_messages(THR005)</code> → 2 row(s), <code>ops_messages(SHP1015)</code> → 1 row(s), <code>contacts(FAC-JAI-01)</code> → 3 row(s), <code>dock_events(FAC-JAI-01)</code> → 3 row(s)</td>
+</tr>
+</tbody>
+</table>
+<h2>15. Evaluation and break tests</h2>
+<ul>
+<li><strong>Unit and integrity tests</strong> (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/tests/"><code>tests/</code></a>): 10-driver race on one slot, replayed confirms, duplicate deliveries, certain-miss release, solver optimality, and the layer contracts in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_layers.py"><code>tests/test_layers.py</code></a> (model has no data access, asking writes nothing, write tools blocked in the wrong state, scheduler writes nothing).</li>
+<li><strong>Eval gates</strong> (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/evals/run_evals.py"><code>evals/run_evals.py</code></a>, run in CI): NLU on tuned and held-out sets (EN, HI, Hinglish), feasibility golden cases, guardrail cases, solver vs OR-Tools CP-SAT. See <a href="evals.html">evals</a>.</li>
+<li><strong>Multi-turn scenario run</strong> (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scenarios/run_scenarios.py"><code>scenarios/run_scenarios.py</code></a>): 12 conversations replayed against one facility, ending in an escalation, with metrics (resolved without takeover, time to usable answer, double bookings = 0). See <a href="scenarios.html">scenario run</a>.</li>
+</ul>
+<h2>16. Library versions</h2>
+<p>Python 3.10+ (tested on 3.13), PyYAML 6.0, OR-Tools 9.15 (optional, for the CP-SAT cross-check), Markdown 3.x (site build only). No other runtime dependencies: SQLite is from the Python standard library.</p></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

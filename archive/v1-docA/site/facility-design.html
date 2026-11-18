@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Facility flow: design — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Facility flow: from a coordinator tool to agents</h1>
+<p>Live page: <a href="facility.html">Facility flow</a> · evaluation: <a href="facility-eval.html">facility-eval.html</a></p>
+<h2>Parties</h2>
+<p>Shipper (orders the move) → dispatcher / carrier (<code>carriers</code>) → driver (<code>drivers</code>, WhatsApp, own language) → <strong>SetuHaul coordinator</strong> (control tower, the user) ↔ warehouse coordinator (<code>facility_contacts</code>) → customer / consignee (<code>shipments.customer_name</code>).</p>
+<h2>Stage 1: give the coordinator a scheduling algorithm (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/coordinator.py"><code>setuhaul/coordinator.py</code></a>)</h2>
+<ol>
+<li><strong>See the day</strong>: <code>facility_day.as_of(T)</code> rebuilds the database as it was known at T (no future data), <code>snapshot()</code> shows six docks, every slot, bookings, work on the docks, breakdowns and every inbound truck with a deterministic status (will miss / no booking / at risk / in yard / unloading / on time).</li>
+<li><strong>Find slots</strong>: exact branch and bound over real slots (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/solver.py"><code>solver.py</code></a>), cost from <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules.yaml"><code>rules.yaml</code></a>, fixed node budget so the same snapshot gives the same plan. Two tiers: <em>repair</em> (working bookings locked, only trucks that need a slot move: safe) and <em>improve</em> (everything may move; saving shown against keeping every working booking). Dispatch rules (FCFS, EDD, weighted, commitment-first) are scored on the same snapshot.</li>
+<li><strong>Decide</strong>: one action card per change (rebook, new, yard → dock, move a working booking, escalate) with reasons, cost, approvals needed and dependencies ("waits for SHP1017 to move").</li>
+<li><strong>Book</strong>: approved cards go through the capacity layer at the planned start (hold → confirm, revalidated, idempotent), dependencies first.</li>
+<li><strong>Tell everyone</strong>: driver (WhatsApp, own language; held until booked), warehouse coordinator, each dispatcher, customer if more than 60 minutes later; all pass the grounding guard.</li>
+<li><strong>Check</strong>: <code>coordinator.verify()</code> re-derives the rules from raw tables: one booking per slot, compatible dock, no overlap, nothing on a down dock.</li>
+</ol>
+<h2>Stage 2: the same process run by agents (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/agents.py"><code>setuhaul/agents.py</code></a>)</h2>
+<p>IntakeAgent → MonitorAgent → PlannerAgent → VerifierAgent → PolicyGate → ExecutorAgent → EscalationAgent → CommsAgent → VerifierAgent. Each agent has a tool allow-list; a call outside it stops the run and pages a person. The PolicyGate (<code>rules.yaml → agent_autonomy</code>) lets agents book only the safe class (rebook / new / yard) and never: moving a working booking, low-confidence ETA, data conflict, start after 21:00, anything that depends on an approval, more than 6 bookings per event. Shadow mode executes nothing. An LLM may only help read an unusual message (schema-validated) or reword a reply (grounding-checked); it never chooses a slot.</p>
+<h2>Evaluation and guardrails (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/evals/facility_evals.py"><code>evals/facility_evals.py</code></a>, run in CI)</h2>
+<p>40 seeded disruption days (ETA slips bootstrapped from the real data, random breakdowns, the reefer case) with hard gates, plan quality against dispatch rules, an OR-Tools CP-SAT cross-check, 17 red-team attacks and 12 language-detection cases. See <a href="facility-eval.html">facility-eval.html</a>.</p></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

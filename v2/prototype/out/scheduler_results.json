@@ -1,0 +1,734 @@
+{
+ "as_of": "2026-08-04T09:45:00+05:30",
+ "jobs": [
+  {
+   "shipment": "SHP1005",
+   "priority": "HIGH",
+   "dock_need": "STANDARD",
+   "weight_t": 20.5,
+   "unload_min": 75,
+   "release": "09:55",
+   "eta_conf": "HIGH",
+   "limits": {},
+   "current": "SLOT-JAI-030",
+   "current_status": "INVALID",
+   "requested_at": "08:10"
+  },
+  {
+   "shipment": "SHP1006",
+   "priority": "HIGH",
+   "dock_need": "STANDARD",
+   "weight_t": 7.8,
+   "unload_min": 45,
+   "release": "11:35",
+   "eta_conf": "HIGH",
+   "limits": {
+    "EARLIEST_START": "12:00"
+   },
+   "current": "SLOT-JAI-045",
+   "current_status": "CERTAIN_MISS",
+   "requested_at": "08:50"
+  },
+  {
+   "shipment": "SHP1012",
+   "priority": "NORMAL",
+   "dock_need": "STANDARD",
+   "weight_t": 8.0,
+   "unload_min": 45,
+   "release": "11:25",
+   "eta_conf": "HIGH",
+   "limits": {
+    "LATEST_GATE_OUT": "13:30"
+   },
+   "current": null,
+   "current_status": null,
+   "requested_at": "09:30"
+  },
+  {
+   "shipment": "SHP1013",
+   "priority": "NORMAL",
+   "dock_need": "STANDARD",
+   "weight_t": 14.0,
+   "unload_min": 60,
+   "release": "11:45",
+   "eta_conf": "LOW",
+   "limits": {},
+   "current": null,
+   "current_status": null,
+   "requested_at": "09:20"
+  },
+  {
+   "shipment": "SHP1014",
+   "priority": "CRITICAL",
+   "dock_need": "STANDARD",
+   "weight_t": 21.0,
+   "unload_min": 75,
+   "release": "11:40",
+   "eta_conf": "HIGH",
+   "limits": {},
+   "current": null,
+   "current_status": null,
+   "requested_at": "09:45"
+  },
+  {
+   "shipment": "SHP1015",
+   "priority": "HIGH",
+   "dock_need": "REEFER",
+   "weight_t": 15.0,
+   "unload_min": 60,
+   "release": "18:00",
+   "eta_conf": "MEDIUM",
+   "limits": {},
+   "current": "SLOT-JAI-066",
+   "current_status": "INVALID",
+   "requested_at": "18:00"
+  },
+  {
+   "shipment": "SHP1016",
+   "priority": "HIGH",
+   "dock_need": "HEAVY",
+   "weight_t": 31.0,
+   "unload_min": 90,
+   "release": "12:15",
+   "eta_conf": "HIGH",
+   "limits": {},
+   "current": "SLOT-JAI-072",
+   "current_status": "CERTAIN_MISS",
+   "requested_at": "09:40"
+  },
+  {
+   "shipment": "SHP1018",
+   "priority": "LOW",
+   "dock_need": "STANDARD",
+   "weight_t": 6.8,
+   "unload_min": 45,
+   "release": "14:20",
+   "eta_conf": "LOW",
+   "limits": {},
+   "current": "SLOT-JAI-019",
+   "current_status": "CERTAIN_MISS",
+   "requested_at": "14:20"
+  }
+ ],
+ "fixed": {
+  "DOCK-JAI-D1": [
+   [
+    "08:55",
+    "10:05",
+    "IN_DOCK",
+    "CHK1003",
+    "SHP1003"
+   ],
+   [
+    "10:20",
+    "11:30",
+    "KEPT_BOOKING",
+    "APT1007",
+    "SHP1007"
+   ],
+   [
+    "13:00",
+    "14:00",
+    "KEPT_BOOKING",
+    "APT1017",
+    "SHP1017"
+   ]
+  ],
+  "DOCK-JAI-D2": [
+   [
+    "09:38",
+    "10:51",
+    "IN_DOCK",
+    "CHK-W005",
+    "SHP1004"
+   ],
+   [
+    "18:45",
+    "19:55",
+    "KEPT_BOOKING",
+    "APT1020",
+    "SHP1020"
+   ]
+  ],
+  "DOCK-JAI-D3": [
+   [
+    "09:15",
+    "13:00",
+    "DOCK_EVENT",
+    "DEVT001",
+    null
+   ],
+   [
+    "10:00",
+    "11:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-031",
+    null
+   ],
+   [
+    "11:00",
+    "12:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-032",
+    null
+   ],
+   [
+    "12:00",
+    "13:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-033",
+    null
+   ]
+  ],
+  "DOCK-JAI-D4": [
+   [
+    "11:15",
+    "12:40",
+    "KEPT_BOOKING",
+    "APT1009",
+    "SHP1009"
+   ],
+   [
+    "16:45",
+    "17:55",
+    "KEPT_BOOKING",
+    "APT1019",
+    "SHP1019"
+   ]
+  ],
+  "DOCK-JAI-D5": [
+   [
+    "11:20",
+    "12:25",
+    "KEPT_BOOKING",
+    "APT1010",
+    "SHP1010"
+   ],
+   [
+    "18:00",
+    "22:00",
+    "DOCK_EVENT",
+    "DEVT002",
+    null
+   ],
+   [
+    "18:00",
+    "19:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-067",
+    null
+   ],
+   [
+    "19:00",
+    "20:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-068",
+    null
+   ],
+   [
+    "20:00",
+    "21:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-069",
+    null
+   ],
+   [
+    "21:00",
+    "22:00",
+    "BLOCKED_SLOT",
+    "SLOT-JAI-070",
+    null
+   ]
+  ],
+  "DOCK-JAI-D6": [
+   [
+    "11:10",
+    "12:50",
+    "KEPT_BOOKING",
+    "APT1011",
+    "SHP1011"
+   ]
+  ]
+ },
+ "kpis": [
+  {
+   "policy": "FCFS",
+   "jobs": 8,
+   "served": 6,
+   "unscheduled": [
+    "SHP1012",
+    "SHP1015"
+   ],
+   "weighted_wait": 1040,
+   "avg_wait": 33.3,
+   "critical_wait": 60,
+   "high_plus_max_wait": 60,
+   "approvals": 0,
+   "note": ""
+  },
+  {
+   "policy": "EDD",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1200,
+   "avg_wait": 40.0,
+   "critical_wait": 60,
+   "high_plus_max_wait": 60,
+   "approvals": 0,
+   "note": ""
+  },
+  {
+   "policy": "WSPT",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1320,
+   "avg_wait": 52.9,
+   "critical_wait": 0,
+   "high_plus_max_wait": 190,
+   "approvals": 0,
+   "note": ""
+  },
+  {
+   "policy": "PRIORITY",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1310,
+   "avg_wait": 52.9,
+   "critical_wait": 0,
+   "high_plus_max_wait": 165,
+   "approvals": 0,
+   "note": ""
+  },
+  {
+   "policy": "PRIORITY+REPAIR",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1120,
+   "avg_wait": 40.0,
+   "critical_wait": 40,
+   "high_plus_max_wait": 65,
+   "approvals": 0,
+   "note": ""
+  },
+  {
+   "policy": "EXACT",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1120,
+   "avg_wait": 40.0,
+   "critical_wait": 40,
+   "high_plus_max_wait": 65,
+   "approvals": 0,
+   "note": "proven optimal over all 8! truck orders: 5,425 nodes searched (of 40,320 orders); confirmed the priority + repair answer"
+  },
+  {
+   "policy": "BEST_ORDER",
+   "jobs": 8,
+   "served": 7,
+   "unscheduled": [
+    "SHP1015"
+   ],
+   "weighted_wait": 1120,
+   "avg_wait": 40.0,
+   "critical_wait": 40,
+   "high_plus_max_wait": 65,
+   "approvals": 0,
+   "note": "exhaustive over 8! orders"
+  }
+ ],
+ "plans": {
+  "FCFS": {
+   "SHP1005": {
+    "dock": "D2",
+    "start": "10:55",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D2",
+    "start": "12:20",
+    "wait": 45,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D1",
+    "start": "11:45",
+    "wait": 0,
+    "approval": false
+   },
+   "SHP1012": null,
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1014": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   },
+   "SHP1015": null
+  },
+  "EDD": {
+   "SHP1005": {
+    "dock": "D2",
+    "start": "10:55",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D2",
+    "start": "12:20",
+    "wait": 45,
+    "approval": false
+   },
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1014": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 75,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   },
+   "SHP1015": null
+  },
+  "WSPT": {
+   "SHP1014": {
+    "dock": "D2",
+    "start": "11:40",
+    "wait": 0,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 65,
+    "approval": false
+   },
+   "SHP1015": null,
+   "SHP1005": {
+    "dock": "D2",
+    "start": "13:05",
+    "wait": 190,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 75,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   }
+  },
+  "PRIORITY": {
+   "SHP1014": {
+    "dock": "D2",
+    "start": "11:40",
+    "wait": 0,
+    "approval": false
+   },
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1015": null,
+   "SHP1005": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 165,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 85,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D2",
+    "start": "13:05",
+    "wait": 80,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   }
+  },
+  "PRIORITY+REPAIR": {
+   "SHP1005": {
+    "dock": "D2",
+    "start": "10:55",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1015": null,
+   "SHP1014": {
+    "dock": "D2",
+    "start": "12:20",
+    "wait": 40,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 65,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 75,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   }
+  },
+  "EXACT": {
+   "SHP1005": {
+    "dock": "D2",
+    "start": "10:55",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1015": null,
+   "SHP1014": {
+    "dock": "D2",
+    "start": "12:20",
+    "wait": 40,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 65,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 75,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   }
+  },
+  "BEST_ORDER": {
+   "SHP1016": {
+    "dock": "D6",
+    "start": "12:50",
+    "wait": 35,
+    "approval": false
+   },
+   "SHP1015": null,
+   "SHP1005": {
+    "dock": "D2",
+    "start": "10:55",
+    "wait": 60,
+    "approval": false
+   },
+   "SHP1014": {
+    "dock": "D2",
+    "start": "12:20",
+    "wait": 40,
+    "approval": false
+   },
+   "SHP1006": {
+    "dock": "D4",
+    "start": "12:40",
+    "wait": 65,
+    "approval": false
+   },
+   "SHP1012": {
+    "dock": "D1",
+    "start": "11:30",
+    "wait": 5,
+    "approval": false
+   },
+   "SHP1013": {
+    "dock": "D3",
+    "start": "13:00",
+    "wait": 75,
+    "approval": false
+   },
+   "SHP1018": {
+    "dock": "D1",
+    "start": "14:20",
+    "wait": 0,
+    "approval": false
+   }
+  }
+ },
+ "sensitivity": [
+  {
+   "weights": "Ours 8:4:2:1",
+   "plan": {
+    "SHP1005": "D2 10:55",
+    "SHP1016": "D6 12:50",
+    "SHP1015": null,
+    "SHP1014": "D2 12:20",
+    "SHP1006": "D4 12:40",
+    "SHP1012": "D1 11:30",
+    "SHP1013": "D3 13:00",
+    "SHP1018": "D1 14:20"
+   }
+  },
+  {
+   "weights": "Doc A 100:40:15:5",
+   "plan": {
+    "SHP1005": "D2 10:55",
+    "SHP1016": "D6 12:50",
+    "SHP1015": null,
+    "SHP1014": "D2 12:20",
+    "SHP1006": "D4 12:40",
+    "SHP1012": "D1 11:30",
+    "SHP1013": "D3 13:00",
+    "SHP1018": "D1 14:20"
+   }
+  },
+  {
+   "weights": "Doc B 4:2:1:0.5",
+   "plan": {
+    "SHP1005": "D2 10:55",
+    "SHP1016": "D6 12:50",
+    "SHP1015": null,
+    "SHP1014": "D2 12:20",
+    "SHP1006": "D4 12:40",
+    "SHP1012": "D1 11:30",
+    "SHP1013": "D3 13:00",
+    "SHP1018": "D1 14:20"
+   }
+  }
+ ],
+ "plan_identical_across_weights": true,
+ "engine": {
+  "engine": "EXACT (branch and bound over truck orders)",
+  "status": "PROVEN_OPTIMAL",
+  "nodes": 5425,
+  "first_answer": "PRIORITY+REPAIR",
+  "first_answer_score": {
+   "unscheduled_weight": 3,
+   "weighted_wait": 1120,
+   "changes": 4
+  },
+  "score": {
+   "unscheduled_weight": 3,
+   "weighted_wait": 1120,
+   "changes": 4
+  },
+  "reasons": {
+   "SHP1005": "ready 09:55; fits D2, D4; gets D2 10:55; waits 60 min because SHP1004 uses those docks first",
+   "SHP1006": "ready 11:35; fits D1, D2, D3, D4; gets D4 12:40; waits 65 min because SHP1005, SHP1012, SHP1014 use those docks first and D3 is out of service; meets the driver's own limit",
+   "SHP1012": "ready 11:25; fits D1, D2, D3, D4; gets D1 11:30; waits 5 min because SHP1005, SHP1007, SHP1009 use those docks first and D3 is out of service; meets the driver's own limit",
+   "SHP1013": "ready 11:45; fits D1, D2, D3, D4; gets D3 13:00; waits 75 min because SHP1005, SHP1006, SHP1012 use those docks first and D3 is out of service",
+   "SHP1014": "ready 11:40; fits D2, D4; gets D2 12:20; waits 40 min because SHP1005, SHP1009 use those docks first",
+   "SHP1015": "ready 18:00; fits D5; no compatible dock time left today, so a person decides",
+   "SHP1016": "ready 12:15; fits D6; gets D6 12:50; waits 35 min because SHP1011 uses those docks first",
+   "SHP1018": "ready 14:20; fits D1, D2, D3, D4; gets D1 14:20"
+  }
+ }
+}

@@ -39,6 +39,16 @@ APPS = [  # (output, source html, title, one line)
     ("er.html", "analysis/er_browser.html", "ER diagram & data browser", "Clickable entity model; every table's rows, columns, keys and CREATE statement."),
 ]
 
+V2 = [  # (stem in v2/deliverables, site page, title, one line)
+    ("00_SetuHaul_Review_Pack", "v2-review-pack.html", "00 Review pack", "Review of both designs, what conflicted and what we decided, cost, open questions for the client."),
+    ("01_SetuHaul_Problem_Definition_and_Data_Audit", "v2-problem-audit.html", "01 Problem definition and data audit", "Facts, assumptions, unknowns; every data issue with the SQL that proves it."),
+    ("02_SetuHaul_Decision_Register", "v2-decisions.html", "02 Decision register", "D1–D18 with reasons and evidence; the exact scheduling engine and its proof."),
+    ("03_SetuHaul_Working_Prototype", "v2-prototype.html", "03 Working prototype", "How the prototype works, module by module, and how to run it."),
+    ("04_SetuHaul_Scenario_Run", "v2-scenario-run.html", "04 Scenario run", "The 13-case Jaipur replay from 08:20, turn by turn; seven scheduling policies compared."),
+    ("05_SetuHaul_Integrity_Proof", "v2-integrity.html", "05 Integrity proof", "Ten drivers racing for one slot, 50 times: one winner every time. Negative controls included."),
+    ("06_SetuHaul_Client_Readout", "v2-readout.html", "06 Client readout", "One page for the head of operations, and the 7 policy questions to answer next."),
+]
+
 CSS = """
 :root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
@@ -62,14 +72,16 @@ CSS = """
 .kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
 .arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
 footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
 """
 FONTS = '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">'
 
 
 def topbar() -> str:
-    links = [("index.html", "Home"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"), ("facility.html", "Facility flow"),
+    links = [("index.html", "Home"), ("index.html#v2", "Hand-ins (v2)"), ("design.html", "Design"), ("system-design.html", "L1/L2"), ("prototype.html", "Prototype"), ("demo2.html", "Demo 2"), ("facility.html", "Facility flow"),
              ("analysis.html", "Analysis"), ("er.html", "ER & data"), ("decisions.html", "Decisions"),
-             ("solver.html", "Solver"), ("readout.html", "Readout"), (REPO, "GitHub")]
+             ("solver.html", "Solver"), ("v1/index.html", "v1 archive"), (REPO, "GitHub")]
     return '<nav class="top"><b>SetuHaul</b>' + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</nav>"
 
 
@@ -115,6 +127,33 @@ def main():
     for out, src, _, _ in APPS:
         (SITE / out).write_text(inject_bar((ROOT / src).read_text(encoding="utf-8")), encoding="utf-8")
 
+    # v2 hand-ins (pre-rendered by tools/render_v2.py; CI needs no pandoc)
+    v2 = ROOT / "v2"
+    shutil.copytree(v2 / "html" / "media", SITE / "media")
+    (SITE / "v2").mkdir()
+    for stem, out, title, _ in V2:
+        shutil.copy(v2 / "deliverables" / f"{stem}.docx", SITE / "v2" / f"{stem}.docx")
+        frag = (v2 / "html" / f"{stem}.html").read_text(encoding="utf-8")
+        head = (f'<p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · '
+                f'<a href="v2/{stem}.docx">download the Word file</a></p>')
+        (SITE / out).write_text(page(title, f'<div class="doc">{head}{frag}</div>'), encoding="utf-8")
+    for png in ("gantt_ours.png", "gantt_fcfs.png"):
+        shutil.copy(v2 / "prototype" / "out" / png, SITE / "v2" / png)
+    for md_src, out, title in (("v2/CHANGELOG.md", "v2-changelog.html", "Change log after the review"),
+                               ("v2/README.md", "v2-readme.html", "v2 folder and the engine decision")):
+        body = md.reset().convert((ROOT / md_src).read_text(encoding="utf-8"))
+        body = body.replace('href="../archive/v1-docA/"', 'href="v1/index.html"').replace('href="CHANGELOG.md"', 'href="v2-changelog.html"')
+        (SITE / out).write_text(page(title, f'<div class="doc">{fix_links(body)}</div>'), encoding="utf-8")
+
+    # v1 archive, exactly as published from commit 492a08d, with a banner
+    shutil.copytree(ROOT / "archive" / "v1-docA" / "site", SITE / "v1")
+    banner = ('<div style="background:#7c2d12;color:#fff;padding:9px 18px;font:13.5px Inter,system-ui,sans-serif">'
+              '<b>Archived v1 (before the 18 November 2026 review).</b> Kept as a backup. '
+              '<a href="../index.html" style="color:#fde68a">Go to the current version →</a></div>')
+    for f in (SITE / "v1").rglob("*.html"):
+        raw = f.read_text(encoding="utf-8")
+        f.write_text(re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + banner, raw, count=1), encoding="utf-8")
+
     import build_demo2
     build_demo2.main()
     import build_facility_flow
@@ -130,21 +169,33 @@ def main():
             (m["share resolved without manual takeover"], "conversations resolved without takeover"),
             ("20", "data issues proved by SQL")]
     card = lambda out, title, line, big=False: f'<a class="card{" big" if big else ""}" href="{out}"><b>{html.escape(title)}</b><span>{html.escape(line)}</span></a>'
+    v2m = json.loads((ROOT / "v2" / "prototype" / "out" / "scenario_metrics.json").read_text())["summary"]
+    v2s = json.loads((ROOT / "v2" / "prototype" / "out" / "scheduler_results.json").read_text())["engine"]
+    v2k = [("0", "double bookings: 50 races × 10 drivers, one winner each time"),
+           (f'{v2m["resolved_without_manual_takeover"]} of {v2m["driver_cases"]}', "driver cases settled without a person"),
+           ("Proven optimal", f'scheduling engine at 09:45: {v2s["nodes"]:,} of 40,320 orders searched'),
+           ("09:16", "reefer booking flagged, one minute after the dock breakdown"),
+           (f'{v2m["median_minutes_to_outcome"]} min', "median time to a usable answer"),
+           ("US$22–30", "per month for the pilot (one container + managed Postgres)")]
+    def v2card(stem, out, title, line):
+        return (f'<div class="cardwrap"><b>{html.escape(title)}</b><span>{html.escape(line)}</span>'
+                f'<a href="{out}">Read online</a><a href="v2/{stem}.docx">Download .docx</a></div>')
     body = f"""<div class="hero"><h1>SetuHaul Logistics — driver exception service</h1>
-<p>When many drivers report delays at once, SetuHaul answers each one in English, Hindi or Hinglish with a dock slot the truck can really make, and never promises the same capacity twice. Language at the edges; a deterministic solver decides every slot; a person decides when no safe answer exists.</p>
-<p>Built on the 4 August 2026 Jaipur snapshot for the FDE Academy challenge. Everything below is generated from the code in <a href="{REPO}">the repository</a>.</p></div>
-<div class="kpis">{"".join(f'<div class="kpi"><div class="v">{html.escape(v)}</div><div class="l">{html.escape(l)}</div></div>' for v, l in kpis)}</div>
-<h2 class="sec">Start here</h2><div class="grid">
-{card("design.html", "Solution design", DOCS[0][3], True)}
-{card("system-design.html", "L1 / L2 system design", DOCS[1][3], True)}
-{"".join(card(o, t, l, True) for o, _, t, l in APPS[:1])}
-{card("facility.html", "Facility day: coordinator tool → agents", "Six docks, one day. Stage 1: the coordinator runs an exact scheduling algorithm and approves action cards. Stage 2: the same process run by agents with a policy gate. 40-day evaluation and 17 red-team guardrail tests.", True)}
-{card("demo2.html", "Demo 2 · Coordinator control tower (MVP 2)", "Truck GPS on a map, planned vs driver vs GPS ETA, green/amber/red per driver, one-click WhatsApp, and a dashboard of every driver conversation.", True)}
-{"".join(card(o, t, l, True) for o, _, t, l in APPS[1:])}
-</div>
-<h2 class="sec">Architecture</h2><div class="arch"><a href="architecture.svg"><img src="architecture.png" alt="SetuHaul architecture on AWS"></a></div>
-<h2 class="sec">Hand-in documents</h2><div class="grid">{"".join(card(o, t, l) for o, _, t, l in DOCS[2:])}
-{card(REPO, "Source code on GitHub", "Workflow, NLU, solver, rules.yaml, tests, evals, AWS SAM template, analysis scripts.")}</div>"""
+<p>When many drivers report delays at once, SetuHaul answers each one in English, Hindi or Hinglish with a dock slot the truck can really make, and never promises the same dock time twice. Rules read the message; an exact, proven-optimal search plans the docks; the database refuses any conflicting booking; a person decides when no safe answer exists.</p>
+<p>Built on the 4 August 2026 Jaipur snapshot for the FDE Academy challenge.</p></div>
+<div class="note"><b>Updated after the 18 November 2026 review.</b> The hand-ins below (v2) reconcile our earlier design with a second one: pick = book in one transaction, earmarks for priority loads, a lean pilot at about US$22–30 a month, and an exact scheduling engine with a plain reason for every truck. <a href="v2-changelog.html">What changed and why</a> · <a href="v2-readme.html">The engine decision</a> · <a href="v1/index.html">Previous version (archived)</a></div>
+<div class="kpis">{"".join(f'<div class="kpi"><div class="v">{html.escape(v)}</div><div class="l">{html.escape(l)}</div></div>' for v, l in v2k)}</div>
+<h2 class="sec" id="v2">Hand-ins (v2)</h2><div class="grid">{"".join(v2card(*x) for x in V2)}
+{card(REPO + "/tree/main/v2/prototype", "Working prototype (code)", "Plain Python + SQLite. 12 integrity tests, the race test, the 13-case replay and the scheduling tool, each runnable with one command.")}</div>
+<h2 class="sec">The facility plan at 09:45 (exact engine)</h2><div class="arch"><a href="v2/gantt_ours.png"><img src="v2/gantt_ours.png" alt="Dock plan at 09:45 from the exact engine"></a></div>
+<h2 class="sec">Add-ons and scale path</h2><p style="color:var(--mu);margin:4px 0 0">Built before the review and updated to agree with it. They show how the same rules run at scale and in the coordinator's hands.</p><div class="grid">
+{card("demo2.html", "Demo 2 · Coordinator control tower", "Truck GPS on a map, planned vs driver vs GPS ETA, possible slots next to each late or early truck; sending a slot books it.", True)}
+{card("facility.html", "Facility day: coordinator tool → agents", "Six docks, one day. Stage 1: the coordinator runs an exact scheduling algorithm and approves action cards. Stage 2: the same process run by agents with a policy gate.", True)}
+{card("design.html", "Solution design and AWS scale path", DOCS[0][3], True)}
+{card("system-design.html", "L1 / L2 system design", DOCS[1][3])}
+{"".join(card(o, t, l) for o, _, t, l in APPS)}
+{"".join(card(o, t, l) for o, _, t, l in DOCS[2:])}
+{card("v1/index.html", "Archived v1 site", "The whole site as it was before the review (commit 492a08d).")}</div>"""
     (SITE / "index.html").write_text(page("Home", body), encoding="utf-8")
     print("site built:", sorted(p.name for p in SITE.iterdir()))
 

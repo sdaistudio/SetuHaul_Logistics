@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Problem definition sheet — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><div style="background:#7c2d12;color:#fff;padding:9px 18px;font:13.5px Inter,system-ui,sans-serif"><b>Archived v1 (before the 18 November 2026 review).</b> Kept as a backup. <a href="../index.html" style="color:#fde68a">Go to the current version →</a></div><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Problem Definition Sheet (hand-in #1)</h1>
+<p><strong>Problem in one line.</strong> When many drivers report delays at once, SetuHaul must answer each one quickly, in their language, with a dock slot that is <em>actually</em> feasible, and must never promise the same capacity twice.</p>
+<p><strong>Users.</strong> Drivers (WhatsApp/SMS, English, Hindi, Hinglish); warehouse coordinators and shift managers (approve, take over); head of operations (policy, risk).</p>
+<p><strong>Scale to design for</strong> (brief, p.1): 280–360 loads/day, 6 facilities, 32 docks, 190–240 appointments/day, 15–25 exception messages on a normal day, <strong>20–35 messages in 30 minutes</strong> during a disruption, 5 coordinators per shift, <strong>no GPS</strong>.</p>
+<p><strong>Success measures</strong> (brief, p.9) and where we report them: <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scenarios/scenario_metrics.json"><code>scenarios/scenario_metrics.json</code></a>, <a href="evals.html"><code>evals/report.md</code></a>.</p>
+<h2>Facts, estimates, assumptions, unknowns</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Statement</th>
+<th>Source / proof</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fact</td>
+<td>2 facilities, 9 docks, 21 shipments, 106 slots; Jaipur has 4 standard, 1 reefer (D5), 1 heavy (D6) dock.</td>
+<td>snapshot</td>
+</tr>
+<tr>
+<td>Fact</td>
+<td>Slots are 60 min (heavy 90 min); unloads are 45–90 min.</td>
+<td><code>appointment_slots</code>, <code>shipments</code></td>
+</tr>
+<tr>
+<td>Fact</td>
+<td>The database already allows only one active booking per slot and one current booking per shipment.</td>
+<td>partial unique indexes</td>
+</tr>
+<tr>
+<td>Fact</td>
+<td>D3 breaks down 09:15–13:00; D5 under maintenance 18:00–22:00; D2 overrun 08:00–09:20.</td>
+<td><code>dock_status_events</code></td>
+</tr>
+<tr>
+<td>Fact</td>
+<td>Several current bookings are already infeasible (weight, dock events, missed windows).</td>
+<td>audit A01, A02, A04, A07</td>
+</tr>
+<tr>
+<td>Estimate</td>
+<td>Driver ETA ("around 11:20", "late by one hour") — confidence HIGH/MEDIUM/LOW.</td>
+<td><code>eta_updates.confidence_code</code>, our NLU</td>
+</tr>
+<tr>
+<td>Estimate</td>
+<td>Expected unload time per shipment; real unloads overrun (SHP1002).</td>
+<td>audit A19</td>
+</tr>
+<tr>
+<td>Assumption</td>
+<td>15 min gate-to-dock, 10 min dock-to-gate-out (configurable, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/config.py"><code>config.py</code></a>).</td>
+<td>to validate with Jaipur gate data</td>
+</tr>
+<tr>
+<td>Assumption</td>
+<td>A slot is a <em>start window</em>: one booking per slot, service may run past the window end if the dock is free.</td>
+<td>consistent with 75-min unloads in 60-min slots (audit A03)</td>
+</tr>
+<tr>
+<td>Assumption</td>
+<td>Standard loads do not use reefer/heavy bays (kept for loads that need them).</td>
+<td>policy choice, D4</td>
+</tr>
+<tr>
+<td>Assumption</td>
+<td>Messages in Marathi/Gujarati/Punjabi are rare; they go to the optional fallback or a person.</td>
+<td>to validate with message logs</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>True as-of time of the snapshot (rows from 08:00 to 16:30 coexist).</td>
+<td>audit A08</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>Who sets <code>shipments.latest_eta_ts</code> when no ETA record exists, and how sure it is.</td>
+<td>audit A10</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>Penalties / detention charges per facility and customer SLAs.</td>
+<td>not in data</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>Whether a driver can legally drive two trucks (DRV007) or this is a data error.</td>
+<td>audit A05</td>
+</tr>
+</tbody>
+</table>
+<h2>What the snapshot cannot tell you</h2>
+<p>Live truck position (no GPS); whether a driver's ETA is honest; real dock productivity; labour availability per dock; customer cut-off times; what coordinators actually decided outside the system (phone calls).</p>
+<h2>Data issues (20, each proved by a query)</h2>
+<p>Full list with queries and results: <a href="audit.html"><code>audit/findings.md</code></a> (generated by <code>python -m audit.run_audit</code>). Highlights:</p>
+<ul>
+<li><strong>A01/A07</strong> Active bookings on docks too weak for the load (SHP1005 20.5 t on D3 20 t; SHP1014 21 t pending on D1).</li>
+<li><strong>A02</strong> D3 breakdown starts 09:15 but slot 09:00–10:00 stays OPEN with a confirmed truck.</li>
+<li><strong>A03</strong> Seven bookings whose unload is longer than their slot.</li>
+<li><strong>A05/A06</strong> One driver on two in-transit trucks; one vehicle on several live shipments.</li>
+<li><strong>A08</strong> No single as-of time in the snapshot.</li>
+<li><strong>A09</strong> No uniqueness on message ids or exception dedupe keys; a retry arrived with a new id.</li>
+<li><strong>A11/A12</strong> Views overstate ETA confidence and cannot answer "available for this truck".</li>
+<li><strong>A13/A14</strong> Escalation contact vacant with no email; a FAILED email sits next to an "escalated" thread.</li>
+<li><strong>A20</strong> What the two unique indexes do <strong>not</strong> cover: interval overlap across slots, dock compatibility, dock events, cancelled shipments, holds.</li>
+</ul></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

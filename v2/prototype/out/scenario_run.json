@@ -1,0 +1,1556 @@
+{
+ "log": [
+  {
+   "t": "08:20",
+   "kind": "system",
+   "title": "World rewound to 08:20; later rows are replayed at their own time",
+   "detail": [
+    "removed APT1013A (booked after 08:20)",
+    "removed APT1014A (booked after 08:20)",
+    "kept APT1012A cancelled: restoring it would double-book SLOT-JAI-003 with APT1007 (audit F08)",
+    "restored APT1016A (cancelled later at 09:50)",
+    "restored APT1019 (cancelled later at 10:10)"
+   ]
+  },
+  {
+   "t": "08:22",
+   "kind": "driver",
+   "who": "DRV003",
+   "name": "Mukesh Yadav",
+   "text": "I am already at the gate. Can I get a dock now instead of waiting for 9?",
+   "ext": "wa-9007",
+   "case": "C01",
+   "seed": "THR007/MSG012",
+   "driver_id": "DRV003",
+   "shipment_id": "SHP1003",
+   "lang": "en",
+   "reply": "Welcome - you're early. Dock D4 is free now: I can move you from 9:00 AM to 8:35 AM, and it does not delay any other booking.\n1) Take Dock D4 at 8:35 AM\n2) Keep my 9:00 AM slot",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:EARLY_ARRIVAL",
+    "resolve_shipment:SHP1003 (the truck at our gate)",
+    "check_slot_feasibility:2 earlier options (no displacement)"
+   ],
+   "buttons": [
+    "Take D4 8:35 AM",
+    "Keep 9:00 AM"
+   ]
+  },
+  {
+   "t": "08:23",
+   "kind": "driver",
+   "who": "DRV003",
+   "name": "Mukesh Yadav",
+   "text": "1",
+   "ext": "wa-9007-r1",
+   "case": "C01",
+   "seed": null,
+   "driver_id": "DRV003",
+   "shipment_id": "SHP1003",
+   "lang": "en",
+   "reply": "Booked: Dock D4 at Jaipur DC, start 8:35 AM. You're already checked in; the yard team will call you to Dock D4. Booking ref APT-N0001.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0001"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0001",
+    "option": {
+     "slot_id": "SLOT-JAI-043",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T08:00:00+05:30",
+     "slot_end": "2026-08-04T09:00:00+05:30",
+     "start": "2026-08-04T08:35:00+05:30",
+     "unload_end": "2026-08-04T09:20:00+05:30",
+     "occupancy_end": "2026-08-04T09:30:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    "replaced": "APT1003",
+    "released": []
+   }
+  },
+  {
+   "t": "08:30",
+   "kind": "world",
+   "title": "ETA update from carrier: SHP1004 now 09:20 (seed ETA003)"
+  },
+  {
+   "t": "08:35",
+   "kind": "world",
+   "title": "SHP1003 docks at D4 (its new early booking)"
+  },
+  {
+   "t": "08:42",
+   "kind": "world",
+   "title": "SHP1001 finishes at D1; gate-out 08:50 (seed CHK1001)"
+  },
+  {
+   "t": "08:50",
+   "kind": "world",
+   "title": "ETA update: SHP1006 now 10:50, medium confidence (seed ETA005)"
+  },
+  {
+   "t": "09:05",
+   "kind": "world",
+   "title": "SHP1005 gates in for its 09:00 D3 slot (seed CHK1005)"
+  },
+  {
+   "t": "09:15",
+   "kind": "world",
+   "title": "Dock D3 hydraulic leveller breaks down until 13:00 (seed DEVT001, logged 09:16)"
+  },
+  {
+   "t": "09:16",
+   "kind": "system",
+   "title": "Booking health monitor (event-driven re-check after the D3 breakdown)",
+   "detail": [
+    {
+     "appointment_id": "APT1005",
+     "shipment_id": "SHP1005",
+     "slot_id": "SLOT-JAI-030",
+     "dock_code": "D3",
+     "slot_start": "2026-08-04T09:00:00+05:30",
+     "status": "INVALID",
+     "reasons": [
+      "OVER_DOCK_WEIGHT"
+     ],
+     "action": "Booking breaks a hard rule; re-plan now and tell the driver before departure."
+    },
+    {
+     "appointment_id": "APT1016A",
+     "shipment_id": "SHP1016",
+     "slot_id": "SLOT-JAI-072",
+     "dock_code": "D6",
+     "slot_start": "2026-08-04T09:30:00+05:30",
+     "status": "CERTAIN_MISS",
+     "reasons": [
+      "earliest arrival 10:20 is after check-in limit 10:00"
+     ],
+     "action": "Release the slot (truck cannot check in within grace); tell dispatch; re-plan the truck."
+    },
+    {
+     "appointment_id": "APT1006",
+     "shipment_id": "SHP1006",
+     "slot_id": "SLOT-JAI-045",
+     "dock_code": "D4",
+     "slot_start": "2026-08-04T10:00:00+05:30",
+     "status": "CERTAIN_MISS",
+     "reasons": [
+      "earliest arrival 10:40 is after check-in limit 10:30"
+     ],
+     "action": "Release the slot (truck cannot check in within grace); tell dispatch; re-plan the truck."
+    },
+    {
+     "appointment_id": "APT1017",
+     "shipment_id": "SHP1017",
+     "slot_id": "SLOT-JAI-005",
+     "dock_code": "D1",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "status": "AT_RISK",
+     "reasons": [
+      "dock busy; planned start 13:00 is after window end 13:00"
+     ],
+     "planned_start": "2026-08-04T13:00:00+05:30",
+     "action": "Ask the driver to confirm arrival (proactive message); coordinator watches the dock."
+    },
+    {
+     "appointment_id": "APT1018",
+     "shipment_id": "SHP1018",
+     "slot_id": "SLOT-JAI-019",
+     "dock_code": "D2",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "status": "CERTAIN_MISS",
+     "reasons": [
+      "earliest arrival 12:51 is after check-in limit 12:30"
+     ],
+     "action": "Release the slot (truck cannot check in within grace); tell dispatch; re-plan the truck."
+    },
+    {
+     "appointment_id": "APT1015A",
+     "shipment_id": "SHP1015",
+     "slot_id": "SLOT-JAI-066",
+     "dock_code": "D5",
+     "slot_start": "2026-08-04T17:00:00+05:30",
+     "status": "INVALID",
+     "reasons": [
+      "DOCK_UNAVAILABLE_UNTIL_CLOSE (DEVT002)"
+     ],
+     "action": "Booking breaks a hard rule; re-plan now and tell the driver before departure."
+    }
+   ],
+   "case": "C02"
+  },
+  {
+   "t": "09:16",
+   "kind": "system",
+   "title": "Proactive alert to coordinator: the reefer booking APT1015A (17:00) cannot work",
+   "detail": {
+    "why": "D5 maintenance from 18:00 was planned on 1 Aug at 14:00, after this booking (audit F07). Planned arrival 17:30 + 60-min unload cannot finish before 18:00.",
+    "suggested": [
+     "Ask the carrier to reach Jaipur by 16:45 so unloading runs 17:00-18:00",
+     "Ask maintenance on Dock D5 to start at 7:10 PM instead of 6:00 PM: the truck could unload 6:00 PM-7:00 PM."
+    ]
+   },
+   "case": "C14"
+  },
+  {
+   "t": "09:16",
+   "kind": "system",
+   "title": "Scheduling tool proposal after the dock event (proposes only)",
+   "detail": {
+    "fixed": "trucks in docks, kept bookings, D3 breakdown 09:15-13:00",
+    "proposal": {
+     "SHP1014": {
+      "dock": "D2",
+      "start": "10:45",
+      "wait_min": 0
+     },
+     "SHP1016": {
+      "dock": "D6",
+      "start": "12:50",
+      "wait_min": 110
+     },
+     "SHP1015": null,
+     "SHP1005": {
+      "dock": "D4",
+      "start": "09:35",
+      "wait_min": 5
+     },
+     "SHP1006": {
+      "dock": "D1",
+      "start": "11:30",
+      "wait_min": 10
+     },
+     "SHP1012": {
+      "dock": "D2",
+      "start": "12:10",
+      "wait_min": 115
+     },
+     "SHP1013": {
+      "dock": "D4",
+      "start": "12:40",
+      "wait_min": 130
+     },
+     "SHP1018": {
+      "dock": "D2",
+      "start": "13:55",
+      "wait_min": 0
+     }
+    },
+    "order": [
+     "SHP1014",
+     "SHP1016",
+     "SHP1015",
+     "SHP1005",
+     "SHP1006",
+     "SHP1012",
+     "SHP1013",
+     "SHP1018"
+    ],
+    "score": {
+     "unscheduled_weight": 3,
+     "weighted_wait": 990,
+     "changes": 4
+    }
+   },
+   "case": "C02"
+  },
+  {
+   "t": "09:17",
+   "kind": "system",
+   "title": "Coordinator approves the move for SHP1005 (in the yard; D3 broken; 20.5 t also exceeds D3's 20 t limit)",
+   "detail": {
+    "result": "CONFIRMED",
+    "appointment": "APT-N0002",
+    "dock": "D4",
+    "start": "09:35",
+    "released": []
+   },
+   "case": "C02"
+  },
+  {
+   "t": "09:19",
+   "kind": "driver",
+   "who": "DRV013",
+   "name": "Kailash Gurjar",
+   "text": "I am late by one hour.",
+   "ext": "wa-9003",
+   "case": "C03",
+   "seed": "THR003/MSG005",
+   "driver_id": "DRV013",
+   "shipment_id": "SHP1013",
+   "lang": "en",
+   "reply": "I've noted your arrival as about 11:00 AM (planned 10:00 AM + 60 min). If that's wrong, just send the time.\nSlots your truck can make at Jaipur DC (nothing is booked until you choose):\n1) Dock D2 - start 11:30 AM, unloading done by about 12:30 PM\n2) Dock D2 - start 12:00 PM, unloading done by about 1:00 PM\n3) Dock D4 - start 12:40 PM, unloading done by about 1:40 PM\nReply 1, 2 or 3 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1013",
+    "record_eta:11:00 MEDIUM",
+    "scheduling_tool:replan+earmarks",
+    "check_slot_feasibility:3 options"
+   ],
+   "buttons": [
+    "D2 11:30 AM",
+    "D2 12:00 PM",
+    "D4 12:40 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-018",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T11:00:00+05:30",
+     "slot_end": "2026-08-04T12:00:00+05:30",
+     "start": "2026-08-04T11:30:00+05:30",
+     "unload_end": "2026-08-04T12:30:00+05:30",
+     "occupancy_end": "2026-08-04T12:40:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-019",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:00:00+05:30",
+     "unload_end": "2026-08-04T13:00:00+05:30",
+     "occupancy_end": "2026-08-04T13:10:00+05:30",
+     "wait_min": 30,
+     "needs_approval": [],
+     "releases": [
+      "APT1018"
+     ],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-047",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:40:00+05:30",
+     "unload_end": "2026-08-04T13:40:00+05:30",
+     "occupancy_end": "2026-08-04T13:50:00+05:30",
+     "wait_min": 70,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "t": "09:20",
+   "kind": "world",
+   "title": "SHP1003 finishes unloading; gate-out 8 minutes later"
+  },
+  {
+   "t": "09:25",
+   "kind": "world",
+   "title": "SHP1004 gates in, 25 minutes into its 09:00 D2 slot (seed CHK1004)"
+  },
+  {
+   "t": "09:27",
+   "kind": "driver",
+   "who": "DRV004",
+   "name": "Sandeep Meena",
+   "text": "I reached late and am in the yard. Has a new dock been assigned?",
+   "ext": "wa-9008",
+   "case": "C04",
+   "seed": "THR008/MSG014",
+   "driver_id": "DRV004",
+   "shipment_id": "SHP1004",
+   "lang": "en",
+   "reply": "Your 9:00 AM booking on Dock D2 is still valid: you checked in at 9:25 AM, inside the 30-minute grace. Dock D2 is running late because the truck before you is still unloading. Expected call to dock: about 9:50 AM. Queue position 2.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:AT_YARD_STATUS",
+    "resolve_shipment:SHP1004 (the truck at our gate)",
+    "get_booking_status:OK"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "09:28",
+   "kind": "world",
+   "title": "SHP1002 finally finishes at D2 (ran 10 minutes past its 70-minute unload)"
+  },
+  {
+   "t": "09:29",
+   "kind": "driver",
+   "who": "DRV012",
+   "name": "Arjun Das",
+   "text": "Tyre repaired. I can reach 11:10. I need to leave the warehouse before 1:30 for another pickup.",
+   "ext": "wa-9002",
+   "case": "C05",
+   "seed": "THR002/MSG003",
+   "driver_id": "DRV012",
+   "shipment_id": "SHP1012",
+   "lang": "en",
+   "reply": "Slots your truck can make at Jaipur DC (nothing is booked until you choose):\n1) Dock D2 - start 11:25 AM, unloading done by about 12:10 PM\n2) Dock D2 - start 12:00 PM, unloading done by about 12:45 PM\nReply 1 or 2 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1012",
+    "record_eta:11:10 HIGH",
+    "scheduling_tool:replan+earmarks",
+    "check_slot_feasibility:2 options"
+   ],
+   "buttons": [
+    "D2 11:25 AM",
+    "D2 12:00 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-018",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T11:00:00+05:30",
+     "slot_end": "2026-08-04T12:00:00+05:30",
+     "start": "2026-08-04T11:25:00+05:30",
+     "unload_end": "2026-08-04T12:10:00+05:30",
+     "occupancy_end": "2026-08-04T12:20:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    {
+     "slot_id": "SLOT-JAI-019",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:00:00+05:30",
+     "unload_end": "2026-08-04T12:45:00+05:30",
+     "occupancy_end": "2026-08-04T12:55:00+05:30",
+     "wait_min": 35,
+     "needs_approval": [],
+     "releases": [
+      "APT1018"
+     ],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "t": "09:30",
+   "kind": "driver",
+   "who": "DRV012",
+   "name": "Arjun Das",
+   "text": "1",
+   "ext": "wa-9002-r1",
+   "case": "C05",
+   "seed": null,
+   "driver_id": "DRV012",
+   "shipment_id": "SHP1012",
+   "lang": "en",
+   "reply": "Booked: Dock D2 at Jaipur DC, start 11:25 AM. Please be at the gate by 11:10 AM. Booking ref APT-N0003.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0003"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0003",
+    "option": {
+     "slot_id": "SLOT-JAI-018",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T11:00:00+05:30",
+     "slot_end": "2026-08-04T12:00:00+05:30",
+     "start": "2026-08-04T11:25:00+05:30",
+     "unload_end": "2026-08-04T12:10:00+05:30",
+     "occupancy_end": "2026-08-04T12:20:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    "replaced": null,
+    "released": []
+   }
+  },
+  {
+   "t": "09:31",
+   "kind": "driver",
+   "who": "DRV004",
+   "name": "Sandeep Meena",
+   "text": "I will be late by 45 minutes.",
+   "ext": "wa-9010",
+   "case": "C06",
+   "seed": "THR010/MSG016",
+   "driver_id": "DRV004",
+   "shipment_id": "SHP1004",
+   "lang": "en",
+   "reply": "You have 2 trips today. Which one is this about?\n1) ORD-260804-004 - Kota load, due 8:45 AM - at our gate now\n2) ORD-260804-020 - Kota load, due 6:00 PM\n(Your other truck is already at our gate, so I think you mean ORD-260804-020.)",
+   "state": "NEED_SHIPMENT",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "ask:WHICH_SHIPMENT"
+   ],
+   "buttons": [
+    "Kota 8:45 AM",
+    "Kota 6:00 PM"
+   ]
+  },
+  {
+   "t": "09:32",
+   "kind": "driver",
+   "who": "DRV004",
+   "name": "Sandeep Meena",
+   "text": "\u0936\u093e\u092e \u0935\u093e\u0932\u093e",
+   "ext": "wa-9010-r1",
+   "case": "C06",
+   "seed": null,
+   "driver_id": "DRV004",
+   "shipment_id": "SHP1020",
+   "lang": "hi",
+   "reply": "\u0906\u092a\u0915\u0947 \u092a\u0939\u0941\u0901\u091a\u0928\u0947 \u0915\u093e \u0938\u092e\u092f \u0932\u0917\u092d\u0917 6:45 PM \u092e\u093e\u0928\u093e \u0939\u0948 (\u0906\u092a\u0915\u093e 6:00 PM \u0938\u094d\u0932\u0949\u091f + 45 \u092e\u093f\u0928\u091f)\u0964 \u0917\u0932\u0924 \u0939\u094b \u0924\u094b \u0938\u092e\u092f \u092d\u0947\u091c \u0926\u0940\u091c\u093f\u090f\u0964\nJaipur DC \u092e\u0947\u0902 \u092f\u0947 \u0938\u094d\u0932\u0949\u091f \u0906\u092a\u0915\u0947 \u091f\u094d\u0930\u0915 \u0915\u0947 \u0932\u093f\u090f \u0939\u0948\u0902 (\u0906\u092a\u0915\u0947 \u091a\u0941\u0928\u0928\u0947 \u092a\u0930 \u0939\u0940 \u092c\u0941\u0915 \u0939\u094b\u0917\u093e):\n1) \u0921\u0949\u0915 D1 - 7:30 PM \u0938\u0947 \u0936\u0941\u0930\u0942, \u0932\u0917\u092d\u0917 8:30 PM \u0924\u0915 \u0916\u093e\u0932\u0940 (\u0915\u094b\u0911\u0930\u094d\u0921\u093f\u0928\u0947\u091f\u0930 \u0915\u0940 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u091a\u093e\u0939\u093f\u090f)\n2) \u0921\u0949\u0915 D1 - 8:00 PM \u0938\u0947 \u0936\u0941\u0930\u0942, \u0932\u0917\u092d\u0917 9:00 PM \u0924\u0915 \u0916\u093e\u0932\u0940 (\u0915\u094b\u0911\u0930\u094d\u0921\u093f\u0928\u0947\u091f\u0930 \u0915\u0940 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u091a\u093e\u0939\u093f\u090f)\n3) \u0921\u0949\u0915 D1 - 9:00 PM \u0938\u0947 \u0936\u0941\u0930\u0942, \u0932\u0917\u092d\u0917 10:00 PM \u0924\u0915 \u0916\u093e\u0932\u0940 (\u0915\u094b\u0911\u0930\u094d\u0921\u093f\u0928\u0947\u091f\u0930 \u0915\u0940 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u091a\u093e\u0939\u093f\u090f)\n\u092c\u0941\u0915 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f 1, 2 \u092f\u093e 3 \u092d\u0947\u091c\u093f\u090f\u0964",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:ANSWER",
+    "resolve_shipment:SHP1020 (your answer)",
+    "record_eta:18:45 MEDIUM",
+    "scheduling_tool:replan+earmarks",
+    "check_current_booking:AT_RISK",
+    "check_slot_feasibility:3 options"
+   ],
+   "buttons": [
+    "D1 7:30 PM",
+    "D1 8:00 PM",
+    "D1 9:00 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-012",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T19:00:00+05:30",
+     "slot_end": "2026-08-04T20:00:00+05:30",
+     "start": "2026-08-04T19:30:00+05:30",
+     "unload_end": "2026-08-04T20:30:00+05:30",
+     "occupancy_end": "2026-08-04T20:40:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [
+      "DATA_CONFLICT:VEHICLE_BUSY_ON_SHP1004"
+     ],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "LOW"
+    },
+    {
+     "slot_id": "SLOT-JAI-013",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T20:00:00+05:30",
+     "slot_end": "2026-08-04T21:00:00+05:30",
+     "start": "2026-08-04T20:00:00+05:30",
+     "unload_end": "2026-08-04T21:00:00+05:30",
+     "occupancy_end": "2026-08-04T21:10:00+05:30",
+     "wait_min": 30,
+     "needs_approval": [
+      "DATA_CONFLICT:VEHICLE_BUSY_ON_SHP1004"
+     ],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "LOW"
+    },
+    {
+     "slot_id": "SLOT-JAI-014",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T21:00:00+05:30",
+     "slot_end": "2026-08-04T22:00:00+05:30",
+     "start": "2026-08-04T21:00:00+05:30",
+     "unload_end": "2026-08-04T22:00:00+05:30",
+     "occupancy_end": "2026-08-04T22:10:00+05:30",
+     "wait_min": 90,
+     "needs_approval": [
+      "DATA_CONFLICT:VEHICLE_BUSY_ON_SHP1004",
+      "START_AFTER_2100"
+     ],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "LOW"
+    }
+   ]
+  },
+  {
+   "t": "09:33",
+   "kind": "driver",
+   "who": "DRV004",
+   "name": "Sandeep Meena",
+   "text": "1",
+   "ext": "wa-9010-r2",
+   "case": "C06",
+   "seed": null,
+   "driver_id": "DRV004",
+   "shipment_id": "SHP1020",
+   "lang": "hi",
+   "reply": "\u0921\u0949\u0915 D1, 7:30 PM \u0915\u0947 \u0932\u093f\u090f \u0915\u094b\u0911\u0930\u094d\u0921\u093f\u0928\u0947\u091f\u0930 \u0938\u0947 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u092e\u093e\u0901\u0917\u0940 \u0939\u0948 (\u0930\u093f\u0915\u0949\u0930\u094d\u0921 \u092e\u0947\u0902 \u092f\u0939 \u091f\u094d\u0930\u0915 \u0926\u0942\u0938\u0930\u0940 \u091f\u094d\u0930\u093f\u092a \u092a\u0930 \u0926\u093f\u0916 \u0930\u0939\u093e \u0939\u0948)\u0964 \u0905\u092d\u0940 \u092a\u0915\u094d\u0915\u093e \u0928\u0939\u0940\u0902 \u0939\u0948\u0964 9:48 AM \u0924\u0915 \u091c\u0935\u093e\u092c \u092e\u093f\u0932\u0947\u0917\u093e\u0964",
+   "state": "PENDING_APPROVAL",
+   "tools": [
+    "read_message:CHOOSE",
+    "hold_for_approval:HLD-0001"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "09:34",
+   "kind": "driver",
+   "who": "DRV006",
+   "name": "Manoj Sharma",
+   "text": "Traffic after Shahpura. Reaching around 11:20. Any slot after 12?",
+   "ext": "wa-9001",
+   "case": "C07",
+   "seed": "THR001/MSG001",
+   "driver_id": "DRV006",
+   "shipment_id": "SHP1006",
+   "lang": "en",
+   "reply": "Slots your truck can make at Jaipur DC (nothing is booked until you choose):\n1) Dock D4 - start 12:40 PM, unloading done by about 1:25 PM\n2) Dock D2 - start 1:00 PM, unloading done by about 1:45 PM\n3) Dock D1 - start 2:00 PM, unloading done by about 2:45 PM\nReply 1, 2 or 3 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1006 (the trip you are driving now)",
+    "record_eta:11:20 MEDIUM",
+    "scheduling_tool:replan+earmarks",
+    "check_current_booking:CERTAIN_MISS",
+    "check_slot_feasibility:3 options"
+   ],
+   "buttons": [
+    "D4 12:40 PM",
+    "D2 1:00 PM",
+    "D1 2:00 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-047",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:40:00+05:30",
+     "unload_end": "2026-08-04T13:25:00+05:30",
+     "occupancy_end": "2026-08-04T13:35:00+05:30",
+     "wait_min": 50,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-020",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T13:00:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T13:00:00+05:30",
+     "unload_end": "2026-08-04T13:45:00+05:30",
+     "occupancy_end": "2026-08-04T13:55:00+05:30",
+     "wait_min": 70,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-007",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T14:00:00+05:30",
+     "slot_end": "2026-08-04T15:00:00+05:30",
+     "start": "2026-08-04T14:00:00+05:30",
+     "unload_end": "2026-08-04T14:45:00+05:30",
+     "occupancy_end": "2026-08-04T14:55:00+05:30",
+     "wait_min": 130,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "t": "09:35",
+   "kind": "world",
+   "title": "SHP1005 docks at D4"
+  },
+  {
+   "t": "09:35",
+   "kind": "driver",
+   "who": "DRV006",
+   "name": "Manoj Sharma",
+   "text": "Traffic after Shahpura. Reaching around 11:20. Any slot after 12?",
+   "ext": "wa-9009",
+   "case": "C07",
+   "seed": "THR009/MSG015 (retry)",
+   "driver_id": "DRV006",
+   "reply": null,
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "dedupe:SUPPRESSED (same as wa-9001)"
+   ],
+   "lang": "en",
+   "shipment_id": "SHP1006",
+   "buttons": null
+  },
+  {
+   "t": "09:36",
+   "kind": "system",
+   "title": "Race: both drivers choose the same slot at the same instant (two threads, two database connections)",
+   "detail": {
+    "slot": "SLOT-JAI-047",
+    "DRV013_choice": 3,
+    "DRV013_offer_shown_at": "09:19",
+    "DRV006_choice": 1,
+    "DRV006_offer_shown_at": "09:34",
+    "same_slot_offered_to_both": true
+   },
+   "case": null
+  },
+  {
+   "t": "09:36",
+   "kind": "driver",
+   "who": "DRV013",
+   "name": "Kailash Gurjar",
+   "text": "3",
+   "ext": "wa-9003-r1",
+   "case": "C03",
+   "seed": null,
+   "race": true,
+   "driver_id": "DRV013",
+   "shipment_id": "SHP1013",
+   "lang": "en",
+   "reply": "Sorry, Dock D4 at 12:40 PM was just taken by another truck. Nothing was booked for you yet. Fresh options:\n1) Dock D1 - start 11:30 AM, unloading done by about 12:30 PM\n2) Dock D2 - start 1:00 PM, unloading done by about 2:00 PM\n3) Dock D4 - start 1:35 PM, unloading done by about 2:35 PM\nReply 1, 2 or 3 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:OPTION_GONE (TAKEN_BY_ANOTHER_TRUCK)"
+   ],
+   "buttons": [
+    "D1 11:30 AM",
+    "D2 1:00 PM",
+    "D4 1:35 PM"
+   ]
+  },
+  {
+   "t": "09:36",
+   "kind": "driver",
+   "who": "DRV006",
+   "name": "Manoj Sharma",
+   "text": "1",
+   "ext": "wa-9001-r1",
+   "case": "C07",
+   "seed": null,
+   "race": true,
+   "driver_id": "DRV006",
+   "shipment_id": "SHP1006",
+   "lang": "en",
+   "reply": "Booked: Dock D4 at Jaipur DC, start 12:40 PM. Please be at the gate by 12:25 PM. Booking ref APT-N0004.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0004",
+    "scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1011: HIGH_CANNOT_TAKE_SLOT)"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0004",
+    "option": {
+     "slot_id": "SLOT-JAI-047",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:40:00+05:30",
+     "unload_end": "2026-08-04T13:25:00+05:30",
+     "occupancy_end": "2026-08-04T13:35:00+05:30",
+     "wait_min": 50,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    "replaced": "APT1006",
+    "released": []
+   }
+  },
+  {
+   "t": "09:37",
+   "kind": "driver",
+   "who": "DRV013",
+   "name": "Kailash Gurjar",
+   "text": "1",
+   "ext": "wa-race-r2",
+   "case": "C03",
+   "seed": null,
+   "driver_id": "DRV013",
+   "shipment_id": "SHP1013",
+   "lang": "en",
+   "reply": "Booked: Dock D1 at Jaipur DC, start 11:30 AM. Please be at the gate by 11:15 AM. Booking ref APT-N0005.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0005"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0005",
+    "option": {
+     "slot_id": "SLOT-JAI-004",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T11:00:00+05:30",
+     "slot_end": "2026-08-04T12:00:00+05:30",
+     "start": "2026-08-04T11:30:00+05:30",
+     "unload_end": "2026-08-04T12:30:00+05:30",
+     "occupancy_end": "2026-08-04T12:40:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": true,
+     "eta_confidence": "MEDIUM"
+    },
+    "replaced": null,
+    "released": []
+   }
+  },
+  {
+   "t": "09:38",
+   "kind": "world",
+   "title": "Yard team calls SHP1004 to D2"
+  },
+  {
+   "t": "09:39",
+   "kind": "driver",
+   "who": "DRV007",
+   "name": "Nitin Patil",
+   "text": "Heavy trailer ETA 12:00. Original heavy-bay slot will be missed. What is next?",
+   "ext": "wa-9006",
+   "case": "C08",
+   "seed": "THR006/MSG011",
+   "driver_id": "DRV007",
+   "shipment_id": "SHP1016",
+   "lang": "en",
+   "reply": "Slots your truck can make at Jaipur DC (nothing is booked until you choose):\n1) Dock D6 - start 12:50 PM, unloading done by about 2:20 PM\n2) Dock D6 - start 2:00 PM, unloading done by about 3:30 PM\n3) Dock D6 - start 3:30 PM, unloading done by about 5:00 PM\nReply 1, 2 or 3 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1016 (your heavy load)",
+    "escalate:DATA_CONFLICT (non-blocking)",
+    "record_eta:12:00 HIGH",
+    "scheduling_tool:replan+earmarks",
+    "check_current_booking:CERTAIN_MISS",
+    "check_slot_feasibility:3 options"
+   ],
+   "buttons": [
+    "D6 12:50 PM",
+    "D6 2:00 PM",
+    "D6 3:30 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-074",
+     "dock_id": "DOCK-JAI-D6",
+     "dock_code": "D6",
+     "dock_type": "HEAVY",
+     "slot_start": "2026-08-04T12:30:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T12:50:00+05:30",
+     "unload_end": "2026-08-04T14:20:00+05:30",
+     "occupancy_end": "2026-08-04T14:30:00+05:30",
+     "wait_min": 35,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    {
+     "slot_id": "SLOT-JAI-075",
+     "dock_id": "DOCK-JAI-D6",
+     "dock_code": "D6",
+     "dock_type": "HEAVY",
+     "slot_start": "2026-08-04T14:00:00+05:30",
+     "slot_end": "2026-08-04T15:30:00+05:30",
+     "start": "2026-08-04T14:00:00+05:30",
+     "unload_end": "2026-08-04T15:30:00+05:30",
+     "occupancy_end": "2026-08-04T15:40:00+05:30",
+     "wait_min": 105,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    {
+     "slot_id": "SLOT-JAI-076",
+     "dock_id": "DOCK-JAI-D6",
+     "dock_code": "D6",
+     "dock_type": "HEAVY",
+     "slot_start": "2026-08-04T15:30:00+05:30",
+     "slot_end": "2026-08-04T17:00:00+05:30",
+     "start": "2026-08-04T15:30:00+05:30",
+     "unload_end": "2026-08-04T17:00:00+05:30",
+     "occupancy_end": "2026-08-04T17:10:00+05:30",
+     "wait_min": 195,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "t": "09:40",
+   "kind": "driver",
+   "who": "DRV007",
+   "name": "Nitin Patil",
+   "text": "1",
+   "ext": "wa-9006-r1",
+   "case": "C08",
+   "seed": null,
+   "driver_id": "DRV007",
+   "shipment_id": "SHP1016",
+   "lang": "en",
+   "reply": "Booked: Dock D6 at Jaipur DC, start 12:50 PM. Please be at the gate by 12:35 PM. Booking ref APT-N0006.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0006",
+    "scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: HIGH_CANNOT_TAKE_SLOT; SHP1013: HIGH_CANNOT_TAKE_SLOT)"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0006",
+    "option": {
+     "slot_id": "SLOT-JAI-074",
+     "dock_id": "DOCK-JAI-D6",
+     "dock_code": "D6",
+     "dock_type": "HEAVY",
+     "slot_start": "2026-08-04T12:30:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T12:50:00+05:30",
+     "unload_end": "2026-08-04T14:20:00+05:30",
+     "occupancy_end": "2026-08-04T14:30:00+05:30",
+     "wait_min": 35,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    "replaced": "APT1016A",
+    "released": []
+   }
+  },
+  {
+   "t": "09:41",
+   "kind": "system",
+   "title": "Coordinator approves HLD-0001 for SHP1020; the approval is re-checked before booking",
+   "detail": {
+    "result": "CONFIRMED",
+    "appointment": "APT-N0007"
+   },
+   "case": "C06"
+  },
+  {
+   "t": "09:41",
+   "kind": "notify",
+   "who": "DRV004",
+   "name": "Sandeep Meena",
+   "case": "C06",
+   "driver_id": "DRV004",
+   "reply": "\u092a\u0915\u094d\u0915\u093e \u0939\u094b \u0917\u092f\u093e: \u0915\u094b\u0911\u0930\u094d\u0921\u093f\u0928\u0947\u091f\u0930 \u0928\u0947 Jaipur DC, \u0921\u0949\u0915 D1, 7:30 PM \u092e\u0902\u091c\u093c\u0942\u0930 \u0915\u0930 \u0926\u093f\u092f\u093e\u0964 \u0917\u0947\u091f \u092a\u0930 7:15 PM \u0924\u0915 \u092a\u0939\u0941\u0901\u091a\u093f\u090f\u0964 \u0930\u0947\u092b\u093c APT-N0007\u0964",
+   "state": "BOOKED",
+   "tools": [
+    "notify_driver:CONFIRMED"
+   ],
+   "lang": "hi"
+  },
+  {
+   "t": "09:42",
+   "kind": "driver",
+   "who": "DRV010",
+   "name": "Deepak Saini",
+   "text": "thoda late hoon bhai, traffic hai",
+   "ext": "wa-9101",
+   "case": "C09",
+   "seed": null,
+   "driver_id": "DRV010",
+   "shipment_id": "SHP1010",
+   "lang": "hi-Latn",
+   "reply": "Batane ke liye shukriya. Jaipur DC kitne baje tak pahunchoge? Jaise 11:30 likhiye, taaki sahi slot mil sake.",
+   "state": "NEED_ETA",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1010",
+    "ask:ETA"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "09:43",
+   "kind": "driver",
+   "who": "DRV010",
+   "name": "Deepak Saini",
+   "text": "11:30 tak pahunch jaunga",
+   "ext": "wa-9102",
+   "case": "C09",
+   "seed": null,
+   "driver_id": "DRV010",
+   "shipment_id": "SHP1010",
+   "lang": "hi-Latn",
+   "reply": "Shukriya. Lagbhag 11:30 AM pahunchne par bhi aapki booking (Dock D5, 11:45 AM se) chalegi. Kuch badalne ki zarurat nahi.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "record_eta:11:30 HIGH",
+    "scheduling_tool:replan+earmarks",
+    "check_current_booking:STILL_FEASIBLE"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "09:44",
+   "kind": "driver",
+   "who": "DRV014",
+   "name": "Pradeep Jat",
+   "text": "Origin released me late. ETA 11:25. This load is urgent. Can I get the first possible dock?",
+   "ext": "wa-9004",
+   "case": "C10",
+   "seed": "THR004/MSG007",
+   "driver_id": "DRV014",
+   "shipment_id": "SHP1014",
+   "lang": "en",
+   "reply": "Dock order follows the priority on the shipment record, not the message, so I can't move you ahead for urgency. These are the earliest slots that fit.\nSlots your truck can make at Jaipur DC (nothing is booked until you choose):\n1) Dock D2 - start 12:20 PM, unloading done by about 1:35 PM\n2) Dock D2 - start 1:00 PM, unloading done by about 2:15 PM\n3) Dock D4 - start 1:35 PM, unloading done by about 2:50 PM\nReply 1, 2 or 3 to book.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1014",
+    "record_eta:11:25 HIGH",
+    "scheduling_tool:replan+earmarks",
+    "check_slot_feasibility:3 options",
+    "policy:urgency_claim_ignored"
+   ],
+   "buttons": [
+    "D2 12:20 PM",
+    "D2 1:00 PM",
+    "D4 1:35 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-019",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:20:00+05:30",
+     "unload_end": "2026-08-04T13:35:00+05:30",
+     "occupancy_end": "2026-08-04T13:45:00+05:30",
+     "wait_min": 40,
+     "needs_approval": [],
+     "releases": [
+      "APT1018"
+     ],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    {
+     "slot_id": "SLOT-JAI-020",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T13:00:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T13:00:00+05:30",
+     "unload_end": "2026-08-04T14:15:00+05:30",
+     "occupancy_end": "2026-08-04T14:25:00+05:30",
+     "wait_min": 80,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    {
+     "slot_id": "SLOT-JAI-048",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T13:00:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T13:35:00+05:30",
+     "unload_end": "2026-08-04T14:50:00+05:30",
+     "occupancy_end": "2026-08-04T15:00:00+05:30",
+     "wait_min": 115,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "t": "09:45",
+   "kind": "driver",
+   "who": "DRV014",
+   "name": "Pradeep Jat",
+   "text": "1",
+   "ext": "wa-9004-r1",
+   "case": "C10",
+   "seed": null,
+   "driver_id": "DRV014",
+   "shipment_id": "SHP1014",
+   "lang": "en",
+   "reply": "Booked: Dock D2 at Jaipur DC, start 12:20 PM. Please be at the gate by 12:05 PM. Booking ref APT-N0008.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:CHOOSE",
+    "book:CONFIRMED APT-N0008 (released APT1018)",
+    "scheduling_tool:swap_search -> no admissible swap (SHP1007: HIGH_CANNOT_TAKE_SLOT; SHP1012: SHP1012 has no other slot that keeps its limits (latest gate out 13:30); SHP1013: HIGH_CANNOT_TAKE_SLOT; SHP1010: HIGH_CANNOT_TAKE_SLOT; SHP1011: HIGH_CANNOT_TAKE_SLOT)"
+   ],
+   "buttons": null,
+   "booking": {
+    "ok": true,
+    "code": "CONFIRMED",
+    "appointment_id": "APT-N0008",
+    "option": {
+     "slot_id": "SLOT-JAI-019",
+     "dock_id": "DOCK-JAI-D2",
+     "dock_code": "D2",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T12:00:00+05:30",
+     "slot_end": "2026-08-04T13:00:00+05:30",
+     "start": "2026-08-04T12:20:00+05:30",
+     "unload_end": "2026-08-04T13:35:00+05:30",
+     "occupancy_end": "2026-08-04T13:45:00+05:30",
+     "wait_min": 40,
+     "needs_approval": [],
+     "releases": [
+      "APT1018"
+     ],
+     "dead_gap": false,
+     "eta_confidence": "HIGH"
+    },
+    "replaced": null,
+    "released": [
+     "APT1018"
+    ]
+   }
+  },
+  {
+   "t": "09:55",
+   "kind": "world",
+   "title": "SHP1017's driver phones dispatch: arrival between 12:30 and 13:00 (seed ETA012, low confidence)"
+  },
+  {
+   "t": "09:56",
+   "kind": "system",
+   "title": "Booking health monitor: SHP1017's 12:00 booking is at risk, so a proactive WhatsApp check-in goes out",
+   "detail": {
+    "status": [
+     {
+      "appointment_id": "APT1017",
+      "shipment_id": "SHP1017",
+      "slot_id": "SLOT-JAI-005",
+      "dock_code": "D1",
+      "slot_start": "2026-08-04T12:00:00+05:30",
+      "status": "AT_RISK",
+      "reasons": [
+       "dock busy; planned start 13:15 is after window end 13:00"
+      ],
+      "planned_start": "2026-08-04T13:15:00+05:30",
+      "action": "Ask the driver to confirm arrival (proactive message); coordinator watches the dock."
+     }
+    ],
+    "message": "Hi Rajesh, checking on ORD-260804-017 to Jaipur DC: your slot starts 12:00 PM. Are you on track?\n1) On time  2) Running late  3) Need help"
+   },
+   "case": "C11"
+  },
+  {
+   "t": "10:02",
+   "kind": "driver",
+   "who": "DRV001",
+   "name": "Rajesh Kumar",
+   "text": "What slots are possible after 1 PM if I reach around 12:45?",
+   "ext": "wa-9011",
+   "case": "C11",
+   "seed": "THR011/MSG018",
+   "driver_id": "DRV001",
+   "shipment_id": "SHP1017",
+   "lang": "en",
+   "reply": "Just options for now; nothing is booked or held. If you reach about 12:45 PM, these slots at Jaipur DC would work:\n1) Dock D1 - start 1:15 PM, unloading done by about 2:05 PM\n2) Dock D4 - start 1:35 PM, unloading done by about 2:25 PM\n3) Dock D1 - start 2:00 PM, unloading done by about 2:50 PM\nReply 1, 2 or 3 if you want one booked.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:ASK_OPTIONS",
+    "resolve_shipment:SHP1017",
+    "check_slot_feasibility:3 options (read-only, nothing recorded)"
+   ],
+   "buttons": [
+    "D1 1:15 PM",
+    "D4 1:35 PM",
+    "D1 2:00 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-006",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T13:00:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T13:15:00+05:30",
+     "unload_end": "2026-08-04T14:05:00+05:30",
+     "occupancy_end": "2026-08-04T14:15:00+05:30",
+     "wait_min": 0,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-048",
+     "dock_id": "DOCK-JAI-D4",
+     "dock_code": "D4",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T13:00:00+05:30",
+     "slot_end": "2026-08-04T14:00:00+05:30",
+     "start": "2026-08-04T13:35:00+05:30",
+     "unload_end": "2026-08-04T14:25:00+05:30",
+     "occupancy_end": "2026-08-04T14:35:00+05:30",
+     "wait_min": 20,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-007",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T14:00:00+05:30",
+     "slot_end": "2026-08-04T15:00:00+05:30",
+     "start": "2026-08-04T14:00:00+05:30",
+     "unload_end": "2026-08-04T14:50:00+05:30",
+     "occupancy_end": "2026-08-04T15:00:00+05:30",
+     "wait_min": 45,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "t": "10:03",
+   "kind": "driver",
+   "who": "DRV001",
+   "name": "Rajesh Kumar",
+   "text": "what about after 3 PM?",
+   "ext": "wa-9011-r1",
+   "case": "C11",
+   "seed": null,
+   "driver_id": "DRV001",
+   "shipment_id": "SHP1017",
+   "lang": "en",
+   "reply": "Just options for now; nothing is booked or held. If you reach about 12:45 PM, these slots at Jaipur DC would work:\n1) Dock D1 - start 3:00 PM, unloading done by about 3:50 PM\n2) Dock D1 - start 4:00 PM, unloading done by about 4:50 PM\n3) Dock D1 - start 5:00 PM, unloading done by about 5:50 PM\nReply 1, 2 or 3 if you want one booked.",
+   "state": "OPTIONS_SHOWN",
+   "tools": [
+    "read_message:ASK_OPTIONS",
+    "resolve_shipment:SHP1017",
+    "check_slot_feasibility:3 options (read-only, nothing recorded)"
+   ],
+   "buttons": [
+    "D1 3:00 PM",
+    "D1 4:00 PM",
+    "D1 5:00 PM"
+   ],
+   "options": [
+    {
+     "slot_id": "SLOT-JAI-008",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T15:00:00+05:30",
+     "slot_end": "2026-08-04T16:00:00+05:30",
+     "start": "2026-08-04T15:00:00+05:30",
+     "unload_end": "2026-08-04T15:50:00+05:30",
+     "occupancy_end": "2026-08-04T16:00:00+05:30",
+     "wait_min": 105,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-009",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T16:00:00+05:30",
+     "slot_end": "2026-08-04T17:00:00+05:30",
+     "start": "2026-08-04T16:00:00+05:30",
+     "unload_end": "2026-08-04T16:50:00+05:30",
+     "occupancy_end": "2026-08-04T17:00:00+05:30",
+     "wait_min": 165,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    },
+    {
+     "slot_id": "SLOT-JAI-010",
+     "dock_id": "DOCK-JAI-D1",
+     "dock_code": "D1",
+     "dock_type": "STANDARD",
+     "slot_start": "2026-08-04T17:00:00+05:30",
+     "slot_end": "2026-08-04T18:00:00+05:30",
+     "start": "2026-08-04T17:00:00+05:30",
+     "unload_end": "2026-08-04T17:50:00+05:30",
+     "occupancy_end": "2026-08-04T18:00:00+05:30",
+     "wait_min": 225,
+     "needs_approval": [],
+     "releases": [],
+     "dead_gap": false,
+     "eta_confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "t": "10:04",
+   "kind": "driver",
+   "who": "DRV001",
+   "name": "Rajesh Kumar",
+   "text": "ok no thanks, I will keep my slot",
+   "ext": "wa-9011-r2",
+   "case": "C11",
+   "seed": null,
+   "driver_id": "DRV001",
+   "shipment_id": "SHP1017",
+   "lang": "en",
+   "reply": "No problem - nothing has been booked or held. Your current plan stays as it is.",
+   "state": "BOOKED",
+   "tools": [
+    "read_message:DECLINE",
+    "decline:NOTHING_HELD"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "10:05",
+   "kind": "driver",
+   "who": "DRV011",
+   "name": "Ramesh Choudhary",
+   "text": "bhai accident ho gaya, helper ko chot lagi hai, truck side mein laga diya",
+   "ext": "wa-9105",
+   "case": "C12",
+   "seed": null,
+   "driver_id": "DRV011",
+   "shipment_id": null,
+   "lang": "hi-Latn",
+   "reply": "Sabse pehle sabki suraksha dekhiye. Koi ghayal ho to abhi 112 par call kijiye. Shift manager Anita Joshi ko bata diya hai, woh 5 minute mein call karenge. Dock slot ki chinta mat kijiye.",
+   "state": "ESCALATED",
+   "tools": [
+    "read_message:SAFETY",
+    "escalate:SAFETY ESC-0003 -> Anita Joshi via PHONE_CALL+WHATSAPP"
+   ],
+   "buttons": null,
+   "escalation": {
+    "driver_said": "bhai accident ho gaya, helper ko chot lagi hai, truck side mein laga diya",
+    "agent_action": "Stopped all scheduling talk; advised 112; paged shift manager.",
+    "escalation_id": "ESC-0003",
+    "reason": "SAFETY",
+    "urgency": "CRITICAL",
+    "routed_to": {
+     "contact_id": "CON003",
+     "name": "Anita Joshi",
+     "role": "SHIFT_MANAGER",
+     "channel": "PHONE_CALL+WHATSAPP",
+     "address": "+91-141-5001103",
+     "skipped": []
+    },
+    "shipment": null,
+    "driver": "DRV011",
+    "created_at": "2026-08-04T10:05:00+05:30",
+    "respond_by": "2026-08-04T10:10:00+05:30"
+   }
+  },
+  {
+   "t": "10:10",
+   "kind": "world",
+   "title": "Dispatch cancels SHP1019; its 16:00 D4 booking returns to the pool"
+  },
+  {
+   "t": "10:12",
+   "kind": "driver",
+   "who": "DRV008",
+   "name": "Ashok Prajapat",
+   "text": "Is my 4 PM slot still active?",
+   "ext": "wa-9012",
+   "case": "C13",
+   "seed": "THR012/MSG019",
+   "driver_id": "DRV008",
+   "shipment_id": "SHP1019",
+   "lang": "en",
+   "reply": "Shipment ORD-260804-019 and its appointment were cancelled by dispatch at 10:10 AM. Please don't travel to Jaipur DC; call your dispatcher on +91-22-4104004.",
+   "state": "CLOSED",
+   "tools": [
+    "read_message:CHECK_STATUS",
+    "resolve_shipment:SHP1019",
+    "get_booking_status:SHIPMENT_CANCELLED"
+   ],
+   "buttons": null
+  },
+  {
+   "t": "12:20",
+   "kind": "world",
+   "title": "SHP1015 (reefer, from Delhi) departs 20 minutes late (seed actual departure)"
+  },
+  {
+   "t": "16:24",
+   "kind": "driver",
+   "who": "DRV015",
+   "name": "Mohammed Salim",
+   "text": "Evening traffic. ETA 6:30. Can the reefer unload tonight?",
+   "ext": "wa-9005",
+   "case": "C14",
+   "seed": "THR005/MSG009",
+   "driver_id": "DRV015",
+   "shipment_id": "SHP1015",
+   "lang": "en",
+   "reply": "I'm sorry - I can't find a reefer dock at Jaipur DC that your truck can reach today (Dock D5 maintenance 6:00 PM-10:00 PM; no new unloading starts after 9:00 PM without approval). I've passed your case to Neha Bansal (warehouse coordinator), who will contact you by 4:39 PM. Please don't go to the dock until they do.",
+   "state": "ESCALATED",
+   "tools": [
+    "read_message:REPORT_DELAY",
+    "resolve_shipment:SHP1015",
+    "record_eta:18:30 HIGH",
+    "scheduling_tool:replan+earmarks",
+    "check_current_booking:CERTAIN_MISS",
+    "check_slot_feasibility:0 options",
+    "escalate:NO_FEASIBLE_SLOT ESC-0004 -> Neha Bansal via EMAIL+DASHBOARD"
+   ],
+   "buttons": null,
+   "escalation": {
+    "driver_said": "Evening traffic. ETA 6:30. Can the reefer unload tonight?",
+    "facts_held": {
+     "eta": "2026-08-04T18:30:00+05:30",
+     "eta_conf": "HIGH",
+     "limits": {},
+     "earliest": null
+    },
+    "eta": {
+     "point": "2026-08-04T18:30:00+05:30",
+     "earliest": "2026-08-04T18:30:00+05:30",
+     "latest": "2026-08-04T18:30:00+05:30",
+     "confidence": "HIGH",
+     "source": "DRIVER_DECLARED",
+     "at_facility": false,
+     "release": "2026-08-04T18:45:00+05:30",
+     "flags": []
+    },
+    "current_booking": {
+     "appointment_id": "APT1015A",
+     "shipment_id": "SHP1015",
+     "slot_id": "SLOT-JAI-066",
+     "appointment_status": "CONFIRMED",
+     "booking_source": "PLANNER",
+     "is_current": 1,
+     "booked_at": "2026-08-01T12:00:00+05:30",
+     "confirmed_at": "2026-08-01T12:05:00+05:30",
+     "cancelled_at": null,
+     "cancellation_reason": null,
+     "replaced_appointment_id": null,
+     "warehouse_confirmation_ref": "WH-JAI-9015",
+     "updated_at": "2026-08-04T16:30:00+05:30",
+     "dock_id": "DOCK-JAI-D5",
+     "slot_start_ts": "2026-08-04T17:00:00+05:30",
+     "slot_end_ts": "2026-08-04T18:00:00+05:30",
+     "dock_code": "D5"
+    },
+    "options_tried": {
+     "REEFER_DOCK_REQUIRED": 5
+    },
+    "why_no_slot": [
+     "Dock D5 maintenance 6:00 PM-10:00 PM",
+     "no new unloading starts after 9:00 PM without approval"
+    ],
+    "recommendations": [
+     "Ask maintenance on Dock D5 to start at 7:55 PM instead of 6:00 PM: the truck could unload 6:45 PM-7:45 PM.",
+     "No slots are published for tomorrow (data gap F23). Park overnight in the yard with the reefer unit running, take the first compatible slot tomorrow, and check the e-way bill is still valid (it can be extended within 8 hours of expiry).",
+     "Divert to SetuHaul Gurugram Cross-Dock (D3 accepts this load): it closes at 21:00; road time is not in the data, so check before offering."
+    ],
+    "driver_told": "No slot today; do not go to the dock until contacted.",
+    "escalation_id": "ESC-0004",
+    "reason": "NO_FEASIBLE_SLOT",
+    "urgency": "HIGH",
+    "routed_to": {
+     "contact_id": "CON001",
+     "name": "Neha Bansal",
+     "role": "WAREHOUSE_COORDINATOR",
+     "channel": "EMAIL+DASHBOARD",
+     "address": "neha.bansal@setuhaul.example",
+     "backup_phone": "+91-141-5001101",
+     "skipped": []
+    },
+    "shipment": {
+     "shipment_id": "SHP1015",
+     "order_reference": "ORD-260804-015",
+     "priority_code": "HIGH",
+     "required_dock_type": "REEFER",
+     "load_weight_kg": 15000,
+     "expected_unload_min": 60,
+     "customer_name": "FreshBasket Jaipur",
+     "product_category": "Dairy products"
+    },
+    "driver": "DRV015",
+    "created_at": "2026-08-04T16:24:00+05:30",
+    "respond_by": "2026-08-04T16:39:00+05:30"
+   }
+  }
+ ],
+ "utilisation_10_16": {
+  "open_slots": 31,
+  "used": 10
+ }
+}

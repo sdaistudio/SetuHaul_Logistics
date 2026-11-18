@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Solution design — SetuHaul</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+</style></head><body><nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>SetuHaul — Solution Design for Discussion</h1>
+<p>FDE Academy challenge: driver exception service · 12 Nov 2026 (updated 17 Nov 2026)</p>
+<h2>1. The problem in one line</h2>
+<p>When 20–35 drivers message in the same half hour, SetuHaul must answer each one in their language with a dock slot the truck can actually make, and must never promise the same capacity twice. Scale to design for: 280–360 loads/day, 6 facilities, 32 docks, 5 coordinators per shift, no GPS. The 4 August 2026 Jaipur snapshot is the test bed.</p>
+<p><strong>Design stance:</strong> language at the edges, code in the middle. Anthropic's advice is to use the simplest pattern that works; capacity is a structured decision, so it is a <em>workflow</em> with fixed code paths, not an autonomous agent. Every decision that matters is deterministic, testable and repeatable.</p>
+<h2>2. Solution options considered</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>How it works</th>
+<th>Strength</th>
+<th>Weakness</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. LLM agent with tools</td>
+<td>An LLM reads the chat, picks tools, reasons about slots, writes replies</td>
+<td>Flexible language, fast to demo</td>
+<td>Non-deterministic, hard to prove no double booking, can phrase a promise it cannot keep, costly to evaluate</td>
+<td>Rejected for the core</td>
+</tr>
+<tr>
+<td>B. Deterministic workflow + rule-based NLU (chosen)</td>
+<td>Rule-based EN/Hindi/Hinglish parser, state machine, feasibility rules, atomic commit, reviewed reply templates</td>
+<td>Same input gives same output; every decision has a reason code; cheap; easy to test and audit</td>
+<td>Rules miss unusual phrasing (80% on unseen messages)</td>
+<td><strong>Chosen</strong></td>
+</tr>
+<tr>
+<td>C. Hybrid: B + LLM fallback parser</td>
+<td>As B; when rules return UNKNOWN, a small Bedrock model fills a strict JSON schema at temperature 0, behind Bedrock Guardrails</td>
+<td>Covers long-tail phrasing and other Indic languages without giving the model any decision</td>
+<td>Adds a model to evaluate and monitor</td>
+<td><strong>Built as an option, off by default</strong></td>
+</tr>
+<tr>
+<td>D. Form / IVR only</td>
+<td>Driver fills a structured form</td>
+<td>Fully deterministic</td>
+<td>Fails exactly where the brief says: "around two hours late", "anything after 7"</td>
+<td>Rejected</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Slot decisions: a solver, never a model.</strong> Which slot a truck gets is an optimisation problem, not a language problem. A branch-and-bound search over every truck that still needs a dock returns the proven optimum under the costs in one YAML rules file, and is cross-checked against Google OR-Tools CP-SAT. Engine ladder as facilities grow: our branch and bound, then CP-SAT, then OptaPlanner/Timefold, with the same model and rules.</p>
+<h2>3. Architecture on AWS</h2>
+<p><img alt="SetuHaul architecture on AWS" src="architecture.png" /></p>
+<p><strong>Flow.</strong> WhatsApp → API Gateway → WebhookFn (verifies the Meta signature) → SQS FIFO (ordered per driver, deduped by message id) → WorkerFn runs the deterministic workflow → the decision core (ETA, solver, capacity, escalation) reads and commits against the system of record → reply goes back through AWS End User Messaging Social. SchedulerFn re-plans the facility on ETA updates, gate check-ins, dock events and every 15 minutes, and only <em>proposes</em>. SweeperFn expires holds and pending confirmations every minute. Coordinators work through a Cognito-protected ops API and receive SNS email/pages.</p>
+<p><strong>Two deployment profiles.</strong> Demo: SQLite on EFS with a single writer (WorkerFn reserved concurrency 1), enough for the brief's peak with large headroom. Production: Aurora PostgreSQL Serverless v2 behind RDS Proxy, an advisory lock per facility, the two supplied unique indexes plus an EXCLUDE constraint so no two service intervals can overlap on a dock. Region ap-south-1 (Mumbai) for data residency.</p>
+<h2>4. The deterministic core</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>What it decides</th>
+<th>Key rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multilingual NLU</td>
+<td>Intent, ETA, delay, windows, deadlines, option chosen, shipment reference, flags</td>
+<td>Hindi words are mapped onto one romanised vocabulary, so one rule set serves English, Devanagari Hindi and Hinglish. Every field carries the text span that produced it</td>
+</tr>
+<tr>
+<td>ETA resolver</td>
+<td>Which ETA to plan on and how sure</td>
+<td>Gate-in beats everything; newest record wins; LOW confidence plans for the late edge</td>
+</tr>
+<tr>
+<td>Feasibility R1–R8</td>
+<td>Whether a slot works for this truck</td>
+<td>Dock type and weight; slot open; start inside window after ETA + 15 min; dock free of overruns, other bookings, holds and dock events; hours; driver deadlines; one booking per slot</td>
+</tr>
+<tr>
+<td>Solver</td>
+<td>Which feasible slot, considering every other truck</td>
+<td>Branch and bound over all trucks still needing a dock; costs and rules from <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a></td>
+</tr>
+<tr>
+<td>Capacity layer</td>
+<td>When an option becomes real</td>
+<td>SHOWN → HELD (5 min) → PENDING (20 min, coordinator) or CONFIRMED; full re-check inside the write transaction</td>
+</tr>
+<tr>
+<td>Escalation router</td>
+<td>Who takes over and with what</td>
+<td>Complete hand-off record; skips vacant or no-channel contacts</td>
+</tr>
+</tbody>
+</table>
+<h2>4a. The solver: the heart of the system</h2>
+<p>No model chooses a slot. The language layer only turns words into numbers (ETA, deadline, "after 12"). From there it is a search, like a chess engine: each level of the tree is a truck, each branch one of its feasible slots or "no dock today, a person decides". Each complete plan is scored with the costs in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules/rules.yaml"><code>rules/rules.yaml</code></a>. A lower bound that never over-estimates (each remaining truck's best possible cost on its own) cuts every branch that cannot beat the best plan found so far, which is what makes an exact search affordable. The greedy plan is the first incumbent, so pruning starts at once.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Treatment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Closed dock (breakdown, maintenance), truck already unloading</td>
+<td>Fixed block: a closed toll lane is closed, whatever the queue</td>
+</tr>
+<tr>
+<td>Dock type, weight, one booking per slot, start inside window, close time, driver deadline</td>
+<td>Hard constraint: never traded for cost</td>
+</tr>
+<tr>
+<td>Waiting × priority, lateness vs promise, moving a promise that still works, needing approval, no dock today</td>
+<td>Costs, each a number in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules.yaml"><code>rules.yaml</code></a></td>
+</tr>
+<tr>
+<td>Budget</td>
+<td>Anytime: stops at the time / node budget with the best plan and a proven lower bound; fully explored means PROVEN OPTIMAL</td>
+</tr>
+<tr>
+<td>Determinism</td>
+<td>No randomness; every tie broken by cost, time, dock, id. Same state and rules give the same plan</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Look-ahead for one driver.</strong> For every slot the driver could take, the solver pins it, solves the rest of the facility optimally and scores the whole board; options are shown in that order. In the replay, earliest-first offered DRV006 the D4 12:30 slot, the only one DRV012 (must leave by 13:30) could use. The look-ahead scores that move at 66,800 against 54,575 for D2 12:45, so DRV006 is offered D2 first and DRV012 keeps D4. The escalation disappears.</p>
+<p><strong>Proof.</strong> Identical cost to OR-Tools CP-SAT on 8 of 8 Jaipur instances (4 trucks in chat mode, 16 in a full re-plan); exhaustive enumeration agrees on a trimmed instance. Full 16-truck re-plans are proven optimal in 0.1–1.1 s. On the hardest instance (12:00, many late trucks) a 5 s budget returns a plan 2.4% above optimum with its gap stated; 10 s proves the optimum, faster than CP-SAT (36 s).</p>
+<p><strong>One consistency rule across feasibility, solver and commit.</strong> A booking whose truck cannot reach its window even at the early edge of its ETA (a certain miss) stops blocking capacity; the commit that takes the slot cancels it in the same transaction and alerts dispatch. A coordinator's approval is also re-validated: approving a 21 t truck onto a 20 t dock is refused.</p>
+<h2>4b. Location on demand, not GPS polling</h2>
+<p>Polling every truck's position is how tracking bills explode. SetuHaul asks for a position only when it can change a decision:</p>
+<ul>
+<li><strong>Value of information.</strong> For each truck with an uncertain ETA the solver plans twice, at the early and the late edge. Same plan means a fix is worthless; different plan with enough cost at stake means buy one fix, within a daily budget. At 09:50 on 4 August, 6 trucks were uncertain and <strong>1 fix was worth buying</strong> (₹1.5).</li>
+<li><strong>Source ladder.</strong> GPS / telematics first; FASTag last-toll data (ULIP) second, which still works in dead zones and when a device is switched off; driver-shared WhatsApp location last (free, needs the driver).</li>
+<li><strong>Toll-checkpoint watchdog.</strong> Trucks cross FASTag plazas at predictable times. An overdue crossing downgrades the ETA to LOW; overdue plus silent GPS sends the case to ops review (breakdown, dead zone, or a toll bypass that adds city traffic). The system never accuses a driver; a person looks.</li>
+<li><strong>Free routing.</strong> A position becomes an ETA through self-hosted OSRM on OpenStreetMap data, with no per-call map fees.</li>
+</ul>
+<p>Corridor timings in the demo are simulated (plaza names real, minutes illustrative). Common cases first: most trucks trigger neither rule and cost nothing.</p>
+<h2>5. Conversation design</h2>
+<ul>
+<li>Ask only what the backend cannot know: which trip (only when the evidence cannot narrow it) and a clock-time ETA. Everything else is looked up.</li>
+<li>State assumptions back instead of asking: "your planned time 10:00 + 60 min", "I have read your time limit as: you must leave the gate by 13:30".</li>
+<li>Showing is not booking: "Nothing is booked until you choose." Pending is not confirmed: "It is NOT confirmed yet."</li>
+<li>When an option disappears, say so and re-offer in the same reply.</li>
+<li>Replies come from a reviewed catalogue in English, Hindi and Hinglish; the system never free-generates driver text.</li>
+</ul>
+<h2>6. Guardrails</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Checks</th>
+<th>On failure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input</td>
+<td>Length cap, control characters, prompt-injection patterns, PII redaction for logs, safety keywords (accident, injury, fire, police)</td>
+<td>Safety → shift manager immediately; injection is flagged and has no effect because control flow is code</td>
+</tr>
+<tr>
+<td>Action</td>
+<td>Tool allowed only in certain states; chosen option must be one we showed; priority claims in text ignored; per-driver rate limit; idempotency key per commit</td>
+<td>Refuse the action, ask again or escalate</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>No "confirmed/booked" claim unless this turn committed a CONFIRMED booking; every clock time must come from tool evidence; no internal IDs or other drivers' data; language must match</td>
+<td>Reply replaced by a hand-off message, alarm raised</td>
+</tr>
+<tr>
+<td>LLM (optional)</td>
+<td>Bedrock Guardrails: prompt-attack filter, PII anonymisation, denied topic "booking decisions"; schema validation of the output</td>
+<td>Treated as not understood</td>
+</tr>
+</tbody>
+</table>
+<h2>7. Evaluation</h2>
+<p>All deterministic, so every run gives the same numbers and the set gates each deployment in CodeBuild.</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Result</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NLU tuned set, 52 cases (EN / HI / Hinglish)</td>
+<td>100%</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>NLU held-out set, 20 cases never used for tuning</td>
+<td><strong>80%</strong></td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Feasibility golden cases</td>
+<td>11/11</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Guardrail cases (output + input)</td>
+<td>15/15</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Integrity, workflow safety and solver tests</td>
+<td>21/21</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Solver optimum identical to OR-Tools CP-SAT</td>
+<td>8/8 instances</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table>
+<p>The held-out number is the honest estimate. Its misses produce a clarifying question, not a wrong booking; they are the input to the weekly rule update and the case for switching on the fallback parser.</p>
+<p><strong>Integrity proof.</strong> Ten drivers released by a barrier on one slot: exactly one wins, nine get a clean refusal. Eight threads making 200 random bookings: no overlapping service intervals on any dock and never two current bookings for one shipment.</p>
+<h2>8. Scenario run results (Jaipur, 4 August)</h2>
+<table>
+<thead>
+<tr>
+<th>Measure from the brief</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time from first message to usable outcome (median)</td>
+<td>2 min, 2 driver messages</td>
+</tr>
+<tr>
+<td>Share resolved without manual takeover</td>
+<td>10 of 12 conversations (the other 2 are meant to reach a person: safety, and the reefer with no slot). Two bookings went to a coordinator for approval (data conflicts) and were approved.</td>
+</tr>
+<tr>
+<td>Conflicting or duplicate allocations</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Options later found infeasible at commit</td>
+<td>1 of 24 shown; driver told and re-offered</td>
+</tr>
+<tr>
+<td>No-slot escalations with a complete hand-off</td>
+<td>1 of 1 (look-ahead removed the other)</td>
+</tr>
+<tr>
+<td>Driver clarification questions</td>
+<td>2 across 12 conversations (the heavy-trailer case is now identified from the message and stated back instead of asked)</td>
+</tr>
+<tr>
+<td>Duplicate messages suppressed</td>
+<td>1 (retry with a new message id)</td>
+</tr>
+<tr>
+<td>Promises displaced by another driver's booking</td>
+<td>0 (measured: cancellations made during the run other than a driver's own rebooking or a certain miss)</td>
+</tr>
+<tr>
+<td>Average arrival-to-dock wait after rescheduling</td>
+<td>52.6 min (the critical load waits longer so no other truck is left without a dock; a coordinator can trade this back)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Facility re-plan before the spike (09:30), 16 trucks:</strong> first-come-first-served leaves the critical load waiting 40 minutes and changes 9 promises. The proven-optimal plan (92 ms, 4,725 nodes) gives the critical load 0 minutes, changes 6 promises and cuts priority-weighted waiting from 5,825 to 3,625 minutes. The reefer SHP1015 stays unscheduled in every plan: there is no compatible dock, so a person decides.</p>
+<h2>9. Observability</h2>
+<p>One trace id per inbound message, with spans for ingest, NLU, feasibility, solver, commit and output guard, written as JSON to CloudWatch Logs. Metrics in CloudWatch Embedded Metric Format: messages, options shown, holds, bookings by status, option gone, duplicates, clarifications, escalations by reason, guardrail flags and blocks, fallback use. X-Ray tracing on every function. Dashboard plus alarms: any safety escalation, any output-guard block, anything in the dead-letter queue, a driver waiting more than 60 seconds for a reply.</p>
+<h2>10. Data issues found</h2>
+<p>Twenty findings, each proved by a query (<a href="audit.html"><code>audit/findings.md</code></a>). The ones to fix first: two active bookings on docks rated below their load; the D3 breakdown starts at 09:15 while its 09:00 slot stays open with a truck booked; seven unloads longer than their slot; one driver on two moving trucks; no single as-of time in the snapshot; message ids and exception dedupe keys not unique; the views overstate ETA confidence; the Gurugram night-shift contact is vacant with no email. The supplied unique indexes stop two bookings on one slot, but not overlapping service across slots, wrong dock type or weight, or bookings inside a dock event. The statistical profile of the data is in the Data Analysis page.</p>
+<h2>11. Decisions for discussion</h2>
+<ol>
+<li>Gate-to-dock time per facility (assumed 15 minutes).</li>
+<li>Should standard loads ever use an idle heavy or reefer bay?</li>
+<li>Who approves a start after 21:00, and how fast?</li>
+<li>May a critical shipment displace a normal one, and who tells the displaced driver?</li>
+<li>Turn on the LLM fallback parser now, or after four weeks of real messages?</li>
+<li>When to move from the demo profile to Aurora (before the second facility is onboarded is our recommendation).</li>
+</ol>
+<h2>12. Repository and hand-ins</h2>
+<table>
+<thead>
+<tr>
+<th>Hand-in</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Problem Definition Sheet + data audit</td>
+<td><a href="problem.html"><code>docs/01_problem_definition.md</code></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/audit/"><code>audit/</code></a></td>
+</tr>
+<tr>
+<td>2 Decision register (D1–D13)</td>
+<td><a href="decisions.html"><code>docs/02_decision_register.md</code></a></td>
+</tr>
+<tr>
+<td>3 Working prototype</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/setuhaul/"><code>setuhaul/</code></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/rules/"><code>rules/</code></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/infra/"><code>infra/</code></a> (SAM template, Lambda handlers, Postgres schema, CodeBuild gate)</td>
+</tr>
+<tr>
+<td>4 Scenario run</td>
+<td><a href="scenarios.html"><code>scenarios/transcript.md</code></a></td>
+</tr>
+<tr>
+<td>5 Integrity proof</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_integrity.py"><code>tests/test_integrity.py</code></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/tests/test_solver.py"><code>tests/test_solver.py</code></a></td>
+</tr>
+<tr>
+<td>6 Client readout</td>
+<td><a href="readout.html"><code>docs/06_client_readout.md</code></a></td>
+</tr>
+<tr>
+<td>+ Scheduling tool and solver</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/solver.py"><code>setuhaul/solver.py</code></a>, <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/scheduler.py"><code>setuhaul/scheduler.py</code></a>, <a href="solver.html"><code>docs/03_solver_design.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The SAM template passes cfn-lint and the Lambda handlers run locally; the stack has not yet been deployed to an AWS account.</p></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

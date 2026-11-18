@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from . import config
-from .capacity import CapacityError
+from .capacity import CapacityError, pending_deadline
 from .db import audit, write_txn
 from .escalation import summarise_tried
 from .eta import EtaEstimate
@@ -605,7 +605,7 @@ class DriverAgent:
         if "LATE_START_RULE" in res["approval_reasons"]:
             times.add("21:00")
         return tpl.render("pending", lang, dock=res["dock"], start=hhmm(parse(res["planned_start"])), why=why,
-                          ttl=config.PENDING_CONFIRMATION_TTL_MIN)
+                          ttl=int((pending_deadline(now, parse(res["planned_start"])) - now).total_seconds() // 60))
 
     def _data_conflict(self, sh) -> bool:
         # Same driver on two trucks in transit at once, or a vehicle shared by two live shipments.

@@ -13,6 +13,9 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml ortools
       - run: python -m unittest discover -s tests -v
+      - name: v2 prototype integrity tests (hand-ins of record)
+        working-directory: v2/prototype
+        run: python -I -m unittest discover -s tests -v
       - run: python -m evals.run_evals
       - name: Facility flow evaluation and guardrail gates (agents + solver + red team)
         run: python evals/facility_evals.py --n 12

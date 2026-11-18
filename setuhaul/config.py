@@ -20,6 +20,8 @@ LOW_CONF_ETA_BUFFER_MIN = _t["eta_buffer_min"]["LOW"]
 
 HOLD_TTL_MIN = _c["hold_ttl_min"]
 PENDING_CONFIRMATION_TTL_MIN = _c["pending_confirmation_ttl_min"]
+PENDING_LEAD_BEFORE_START_MIN = _c.get("pending_lead_before_start_min", 30)
+PENDING_MIN_DECISION_MIN = _c.get("pending_min_decision_min", 5)
 MAX_OPTIONS_SHOWN = _c["max_options_shown"]
 AUTO_CONFIRM = _c["auto_confirm"]
 MAX_CLARIFICATION_QUESTIONS = _c["max_clarification_questions"]

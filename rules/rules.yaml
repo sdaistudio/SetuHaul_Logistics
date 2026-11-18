@@ -80,7 +80,9 @@ solver:
 # ------------------------------------------- conversation / commitment ---
 conversation:
   hold_ttl_min: 5
-  pending_confirmation_ttl_min: 20
+  pending_confirmation_ttl_min: 15     # review change 11: deadline = min(15 min, slot start - 30 min)
+  pending_lead_before_start_min: 30
+  pending_min_decision_min: 5        # floor so the coordinator always gets a moment
   max_options_shown: 3
   auto_confirm: true
   max_clarification_questions: 2
