@@ -8,7 +8,7 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif}
 nav.top{background:#1c1917;color:#fff;display:flex;gap:16px;align-items:center;padding:10px 20px;flex-wrap:wrap;position:sticky;top:0;z-index:1000}
 nav.top b{margin-right:8px}nav.top a{color:#d6d3d1;text-decoration:none;font-size:13.5px}nav.top a:hover,nav.top a.on{color:#fff}
-.wrap{max-width:1500px;margin:0 auto;padding:18px 20px 40px}
+.wrap{max-width:1760px;margin:0 auto;padding:18px 20px 40px}
 h1{font-size:22px;margin:4px 0 2px}.sub{color:var(--mu);margin:0 0 14px;max-width:1000px}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--ln);margin-bottom:16px}
 .tabs button{border:0;background:none;padding:10px 16px;font:600 14px Inter;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent}
@@ -23,7 +23,7 @@ h1{font-size:22px;margin:4px 0 2px}.sub{color:var(--mu);margin:0 0 14px;max-widt
 .kpi .v{font-size:24px;font-weight:700}.kpi .l{font-size:12px;color:var(--mu)}
 .kpi.sel{outline:2px solid var(--ink)}
 .kpi.RED .v{color:var(--r)}.kpi.AMBER .v{color:var(--a)}.kpi.GREEN .v{color:var(--g)}.kpi.BLUE .v{color:var(--b)}
-.grid2{display:grid;grid-template-columns:minmax(380px,40%) 1fr;gap:14px}
+.grid2{display:grid;grid-template-columns:minmax(340px,30%) 1fr;gap:14px}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px}
 #map{height:620px;border-radius:10px}
 .maperr{height:620px;display:flex;align-items:center;justify-content:center;color:var(--mu);text-align:center;padding:20px}
@@ -65,6 +65,17 @@ h2.sec{font-size:15px;margin:4px 0 10px}
 .tl{position:relative;height:44px;background:#faf9f7;border:1px solid var(--ln);border-radius:8px;margin-bottom:6px}
 .tl .dot{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;transform:translateX(-50%);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
 .tl .ax{position:absolute;bottom:-17px;font-size:10.5px;color:var(--mu);transform:translateX(-50%)}
+.slotcol{min-width:230px;max-width:270px}
+.tchip{display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 7px;margin-bottom:4px}
+.t-LATE{background:var(--rbg);color:var(--r)}.t-EARLY{background:var(--bbg);color:var(--b)}.t-NO_BOOKING{background:var(--abg);color:var(--a)}.t-YARD_WAIT{background:#e0e7ff;color:#3730a3}
+.opt{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;padding:3px 4px;border-radius:6px;cursor:pointer;margin:1px 0}
+.opt:hover{background:#faf9f7}.opt.sel{background:#ecfdf5;outline:1px solid #86efac}.opt input{margin-top:3px}
+.opt .w{color:var(--mu);font-size:11px;display:block}.opt b{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.rec{color:var(--g);font-weight:700;font-size:10.5px}.apr{color:var(--a);font-weight:700;font-size:10.5px}.strd{color:var(--r);font-weight:700;font-size:10.5px}
+.edit{background:#faf9f7;border:1px solid var(--ln);border-radius:8px;padding:8px;margin-top:6px;font-size:12px}
+.edit select,.edit input{font:12.5px 'JetBrains Mono',monospace;padding:4px;border:1px solid var(--ln);border-radius:6px;max-width:100%}
+.err{color:var(--r);font-size:11.5px;margin-top:4px}.sent{font-size:11.5px;color:var(--wa);font-weight:600;margin-top:4px}
+.linkbtn{border:0;background:none;color:#1d4ed8;font:600 12px Inter;cursor:pointer;padding:2px 0}
 @media(max-width:1100px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.cgrid{grid-template-columns:1fr 1fr}.strip{display:none}}
 </style></head><body>
 <nav class="top"><b>SetuHaul</b><a href="index.html">Home</a><a href="design.html">Design</a><a href="prototype.html">Prototype</a><a class="on" href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER &amp; data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="readout.html">Readout</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav>
@@ -83,7 +94,7 @@ h2.sec{font-size:15px;margin:4px 0 10px}
    <div class="legend"><span><i style="background:var(--r)"></i>Red: will miss / no slot / lost</span><span><i style="background:var(--a)"></i>Amber: at risk, act now</span><span><i style="background:var(--g)"></i>Green: on time</span><span><i style="background:var(--b)"></i>Unloading</span><span>◆ Jaipur DC</span><span>dashed = GPS silent, last fix</span></div></div>
   <div class="card" style="overflow:auto">
    <div class="legend"><b style="color:var(--ink)">ETA strip:</b><span><i style="background:#cbd5e1"></i>booked slot</span><span>│ planned</span><span><i style="background:#a8a29e;border-radius:50%"></i>driver said</span><span><i style="background:#0f766e;border-radius:50%"></i>GPS predicts</span><span><i style="background:#1c1917;width:2px"></i>now</span></div>
-   <table><thead><tr><th>Status</th><th>Driver · truck</th><th>Planned / driver / GPS ETA</th><th class="strip">ETA vs slot</th><th>Booking</th><th>Act</th></tr></thead><tbody id="rows"></tbody></table>
+   <table><thead><tr><th>Status</th><th>Driver · truck</th><th>Planned / driver / GPS ETA</th><th class="strip">ETA vs slot</th><th>Booking</th><th class="slotcol">Possible slot <span class="why" style="text-transform:none;letter-spacing:0">(late / early / none)</span></th><th>Act</th></tr></thead><tbody id="rows"></tbody></table>
   </div>
  </div>
 </section>
@@ -104,6 +115,7 @@ h2.sec{font-size:15px;margin:4px 0 10px}
 <section id="rules" style="display:none"><div class="card" style="max-width:900px">
  <h2 class="sec">Rules, evaluated top to bottom; first match wins</h2><table><thead><tr><th>#</th><th>Colour</th><th>Condition</th></tr></thead><tbody id="rtab"></tbody></table>
  <p class="why" style="margin-top:12px">Dock-ready time = GPS-predicted arrival + gate-to-dock time. If GPS is silent, the driver's declared ETA plus a confidence buffer is used instead, and the FASTag toll watchdog checks whether the truck crossed the next plaza when expected. Thresholds (tolerance, yard wait, slip, GPS-silent minutes) are variables in <code>rules/rules.yaml → control_tower</code>. The GPS is polled on demand only (see the location ladder in the solution design), so the colour updates on each fix, ETA message or booking change.</p>
+ <p class="why"><b>Possible slots.</b> For a truck that is late (dock-ready more than 15 min into its window), early (dock-ready 30 min or more before its window), waiting in the yard past its window, or without a booking, the column next to Act lists slots it can really take now: the same feasibility rules as the driver chat (dock type, reefer, weight, breakdowns, slots already taken, 21:00 rule), using the GPS-predicted arrival when GPS is live. The first is the look-ahead recommendation (best for every truck at the facility); slots that would leave another truck with no dock are never suggested. The coordinator can pick another, or Modify to any feasible slot and any start inside its window; the WhatsApp message follows the choice. Nothing is booked until the driver replies YES, and the booking is re-checked then.</p>
  <p class="why">WhatsApp buttons open <code>wa.me</code> with a pre-written message the coordinator can edit before sending. In production the same templates go through the WhatsApp Business API as approved message templates, and every send is logged on the shipment.</p>
 </div></section>
 </div>
@@ -194,27 +206,81 @@ function render(){
    <td><b>${esc(r.driver)}</b> <span class="pri ${r.priority}">${r.priority}</span><div class="mono" style="color:var(--mu)">${r.sid} · ${esc(r.origin)} · ${PH[r.phase]}${r.phase==='IN_TRANSIT'?` · ${r.remaining_km} km`:''}</div><div class="why">${r.reasons.map(esc).join(' · ')}</div></td>
    <td>${eta}${r.slip_min>0&&act?`<div class="why">+${r.slip_min} min vs plan</div>`:''}</td>
    <td class="strip">${act?strip(r,axis):''}</td>
-   <td class="mono">${r.booking?esc(r.booking)+`<div class="why">${(r.booking_status||'').replace('_',' ').toLowerCase()}</div>`:'<span class="why">none</span>'}${r.next_best?`<div class="why">best now: ${esc(r.next_best)}</div>`:''}</td>
-   <td>${act?`<button class="btn wa" data-wa="${r.sid}">WhatsApp</button><div style="height:5px"></div><a class="btn" href="tel:${r.phone.replace(/[^+\d]/g,'')}">Call</a>`:''}</td></tr>`}).join('');
- document.querySelectorAll('tr.row').forEach(tr=>tr.onclick=e=>{if(e.target.closest('.btn'))return;focus=focus===tr.dataset.sid?null:tr.dataset.sid;render()});
+   <td class="mono">${r.booking?esc(r.booking)+`<div class="why">${(r.booking_status||'').replace('_',' ').toLowerCase()}</div>`:'<span class="why">none</span>'}${r.next_best&&!r.slots?`<div class="why">best now: ${esc(r.next_best)}</div>`:''}</td>
+   <td class="slotcol">${slotCell(r)}</td>
+   <td>${act?`<button class="btn wa" data-wa="${r.sid}">${r.timing&&pick(r)?'Propose on WhatsApp':'WhatsApp'}</button><div style="height:5px"></div><a class="btn" href="tel:${r.phone.replace(/[^+\d]/g,'')}">Call</a>`:''}</td></tr>`}).join('');
+ wireSlots(all);
+ document.querySelectorAll('tr.row').forEach(tr=>tr.onclick=e=>{if(e.target.closest('.btn,.slotcol'))return;focus=focus===tr.dataset.sid?null:tr.dataset.sid;render()});
  document.querySelectorAll('[data-wa]').forEach(b=>b.onclick=e=>{e.stopPropagation();openWA(all.find(r=>r.sid===b.dataset.wa))});
  drawMap(all);
+}
+
+// ---------- possible slots (coordinator proposes and can modify)
+const TLAB={LATE:'LATE',EARLY:'EARLY',NO_BOOKING:'NO BOOKING',YARD_WAIT:'WAITING IN YARD'};
+let PROP={}, EDIT=null;
+try{PROP=JSON.parse(localStorage.getItem('setuhaul_props')||'{}')}catch(e){PROP={}}
+const save=()=>{try{localStorage.setItem('setuhaul_props',JSON.stringify(PROP))}catch(e){}};
+const key=r=>T+'|'+r.sid;
+function pick(r){ if(!r.slots)return null; const p=PROP[key(r)]; if(p)return p;
+ const d=r.slots.suggest[0]||r.slots.keep; return d?{...d,custom:false}:null }
+const hm=x=>String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0');
+function optRow(r,o,p,label){ const on=p&&p.slot_id===o.slot_id&&p.start===o.start;
+ return `<label class="opt ${on?'sel':''}"><input type="radio" name="o-${r.sid}" data-sid="${r.sid}" data-slot="${o.slot_id}" data-start="${o.start}" ${on?'checked':''}>
+  <span><b>${o.dock} ${o.start}</b> ${label||''}${o.tag==='recommended'?' <span class="rec">recommended</span>':''}${o.approval?' <span class="apr">needs approval</span>':''}${o.strands?' <span class="strd">leaves another truck without a dock</span>':''}
+  <span class="w">slot ${o.window} · done ~${o.end}</span></span></label>`}
+function slotCell(r){
+ if(!r.timing||!r.slots) return '<span class="why">—</span>';
+ const sl=r.slots, p=pick(r);
+ let h=`<span class="tchip t-${r.timing}">${TLAB[r.timing]}</span><div class="why">dock-ready ~${sl.dock_ready} (${esc(sl.eta_source)})</div>`;
+ if(!sl.suggest.length&&!sl.keep) return h+'<div class="err">No feasible slot today: escalate</div>';
+ h+=sl.suggest.map(o=>optRow(r,o,p)).join('');
+ if(sl.keep) h+=optRow(r,sl.keep,p,'<span class="why">keep current</span>');
+ if(p&&p.custom) h+=optRow(r,p,p,'<span class="apr">modified</span>');
+ h+=`<button class="linkbtn" data-edit="${r.sid}">${EDIT===r.sid?'Close editor':'✎ Modify'}</button>`;
+ if(EDIT===r.sid){ const all=sl.all.length?sl.all:sl.suggest, cur0=p&&all.find(o=>o.slot_id===p.slot_id)||all[0];
+  h+=`<div class="edit"><div>Dock and slot</div><select data-esel="${r.sid}">${all.map(o=>`<option value="${o.slot_id}" ${o.slot_id===cur0.slot_id?'selected':''}>${o.dock} ${o.window} · from ${o.start}${o.approval?' · approval':''}${o.strands?' · strands a truck':''}</option>`).join('')}</select>
+  <div style="margin-top:6px">Start time</div><input type="time" step="300" data-etime="${r.sid}" value="${p&&p.slot_id===cur0.slot_id?p.start:cur0.start}" min="${cur0.start}" max="${cur0.latest}">
+  <div class="why">Allowed ${cur0.start}–${cur0.latest}: not before the truck can reach the dock or the dock is free, and inside the slot window.</div>
+  <div class="err" id="err-${r.sid}"></div><button class="btn" style="margin-top:6px" data-apply="${r.sid}">Use this slot</button></div>`}
+ if(p&&p.sent) h+=`<div class="sent">✓ Proposed ${p.dock} ${p.start} at ${p.sent} · waiting for the driver's YES</div>`;
+ return h }
+function wireSlots(all){
+ const find=sid=>all.find(r=>r.sid===sid);
+ document.querySelectorAll('.slotcol input[type=radio]').forEach(i=>i.onchange=()=>{const r=find(i.dataset.sid), sl=r.slots;
+  const o=[...sl.suggest,...(sl.keep?[sl.keep]:[]),...sl.all,...(PROP[key(r)]?[PROP[key(r)]]:[])].find(o=>o.slot_id===i.dataset.slot&&o.start===i.dataset.start);
+  PROP[key(r)]={...o,custom:!!(PROP[key(r)]&&PROP[key(r)].custom&&PROP[key(r)].slot_id===o.slot_id&&PROP[key(r)].start===o.start)};save();render()});
+ document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=e=>{e.stopPropagation();EDIT=EDIT===b.dataset.edit?null:b.dataset.edit;render()});
+ document.querySelectorAll('[data-esel]').forEach(sel=>sel.onchange=()=>{const r=find(sel.dataset.esel), o=r.slots.all.find(x=>x.slot_id===sel.value)||r.slots.suggest.find(x=>x.slot_id===sel.value);
+  const ti=document.querySelector(`[data-etime="${r.sid}"]`);ti.min=o.start;ti.max=o.latest;ti.value=o.start;
+  ti.parentNode.querySelector('.why').textContent=`Allowed ${o.start}–${o.latest}: not before the truck can reach the dock or the dock is free, and inside the slot window.`});
+ document.querySelectorAll('[data-apply]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=find(b.dataset.apply);
+  const sel=document.querySelector(`[data-esel="${r.sid}"]`), ti=document.querySelector(`[data-etime="${r.sid}"]`);
+  const o=r.slots.all.find(x=>x.slot_id===sel.value)||r.slots.suggest.find(x=>x.slot_id===sel.value), v=ti.value;
+  if(!v||m2(v)<m2(o.start)||m2(v)>m2(o.latest)){$('#err-'+r.sid).textContent=`Pick a start between ${o.start} and ${o.latest}.`;return}
+  const dur=m2(o.end)-m2(o.start);
+  PROP[key(r)]={...o,start:v,end:hm(m2(v)+dur),tag:'',custom:v!==o.start||!r.slots.suggest.some(x=>x.slot_id===o.slot_id)};EDIT=null;save();render()});
 }
 
 // ---------- WhatsApp
 let cur=null, lang='en';
 function tplKey(r){ if(r.gps_silent_min) return 'SILENT'; if(r.phase==='IN_YARD') return 'YARD'; return r.status==='RED'?'RED':r.status==='GREEN'?'GREEN':'AMBER' }
-function fill(r){ const k=tplKey(r), t=D.templates[k][lang], first=r.driver.split(' ')[0];
+function fill(r){ const p=r.timing&&pick(r), first=r.driver.split(' ')[0];
+ if(p){ const k=r.timing==='EARLY'&&r.phase==='IN_YARD'?'PROPOSE_EARLY_YARD':{LATE:'PROPOSE_LATE',EARLY:'PROPOSE_EARLY',NO_BOOKING:'PROPOSE_NEW',YARD_WAIT:'PROPOSE_YARD'}[r.timing];
+  $('#mtpl').textContent='template: '+k+(p.custom?' · modified by coordinator':'')+(lang==='hi'?' · Hindi':' · English');
+  return D.templates[k][lang].replace('{name}',first).replace('{sid}',r.sid).replace(/\{booking\}/g,r.booking||'').replace('{ready}',r.slots.dock_ready)
+   .replace('{dock}',p.dock).replace('{start}',p.start).replace('{window}',p.window).replace('{gate}',hm(m2(p.start)-15)) }
+ const k=tplKey(r), t=D.templates[k][lang];
  const nxt=r.next_best?(lang==='en'?`The best slot available now is ${r.next_best}. `:`अभी सबसे अच्छा स्लॉट ${r.next_best} है। `):'';
  $('#mtpl').textContent='template: '+k+(lang==='hi'?' · Hindi':' · English');
  return t.replace('{name}',first).replace('{sid}',r.sid).replace(/\{booking\}/g,r.booking||(lang==='en'?'your slot':'आपका स्लॉट')).replace('{slip}',Math.max(0,r.slip_min)).replace('{mins}',r.gps_silent_min).replace('{next}',nxt) }
 function upd(){ $('#msend').href='https://wa.me/'+cur.phone.replace(/\D/g,'')+'?text='+encodeURIComponent($('#mtext').value) }
-function openWA(r){ cur=r; $('#mt').textContent='WhatsApp '+r.driver; $('#ms').innerHTML=`${r.phone} · ${r.sid} · <span class="chip ${r.status}">${LABEL[r.status]}</span> ${esc(r.reasons[0]||'')}`;
+function openWA(r){ cur=r; const p=r.timing&&pick(r); $('#mt').textContent=(p?'Propose a slot to ':'WhatsApp ')+r.driver;
+ $('#ms').innerHTML=`${r.phone} · ${r.sid} · <span class="chip ${r.status}">${LABEL[r.status]}</span> ${esc(r.reasons[0]||'')}`+(p?`<div style="margin-top:6px"><b>Proposal:</b> dock ${p.dock} at ${p.start} (slot ${p.window})${p.approval?' · <span class="apr">needs warehouse approval</span>':''}. Nothing is booked yet: when the driver replies YES the slot is booked through the capacity layer, re-checked first (it may have gone).</div>`:'');
  $('#mtext').value=fill(r); upd(); $('#mb').classList.add('on') }
 $('#mtext').oninput=upd;
 $('#lang').onclick=e=>{if(!e.target.dataset.l)return;lang=e.target.dataset.l;document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b===e.target));$('#mtext').value=fill(cur);upd()};
 $('#mclose').onclick=()=>$('#mb').classList.remove('on');$('#mb').onclick=e=>{if(e.target.id==='mb')$('#mb').classList.remove('on')};
-$('#msend').addEventListener('click',()=>setTimeout(()=>$('#mb').classList.remove('on'),300));
+$('#msend').addEventListener('click',()=>{const p=cur.timing&&pick(cur);if(p){PROP[key(cur)]={...p,sent:T};save()}setTimeout(()=>{$('#mb').classList.remove('on');render()},300)});
 
 // ---------- conversations
 const OC={'Booked':'#15803d','Pending approval':'#d97706','Escalated':'#b91c1c','Current booking kept':'#0f766e','Closed':'#78716c','Options shown, no booking':'#a8a29e'};

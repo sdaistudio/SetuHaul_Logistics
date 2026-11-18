@@ -117,6 +117,9 @@ control_tower:
   yard_wait_amber_min: 30         # waiting in the yard longer than this -> AMBER
   yard_wait_red_min: 60
   critical_slip_red_min: 60       # CRITICAL/HIGH load slipping more than this vs plan -> RED
+  early_min: 30                   # dock-ready this much before its slot starts -> EARLY: offer earlier idle slots
+  slot_suggestions: 3             # possible slots shown next to Act (late / early / no booking)
+  slot_choices_max: 14            # slots the coordinator can pick from when modifying a proposal
   gps_stale_min: 20               # no fix for 20 min -> GPS silent
   avg_truck_speed_kmph: 45        # only for drawing progress when GPS is silent
   rules:                          # first matching rule wins; evaluated in this order

@@ -25,7 +25,9 @@ sys.path.insert(0, str(ROOT))
 warnings.simplefilter("ignore")
 
 from setuhaul.db import connect, prepare_working_copy  # noqa: E402
+from setuhaul.eta import EtaEstimate  # noqa: E402
 from setuhaul.feasibility import Constraints, evaluate_all, rank_options  # noqa: E402
+from setuhaul.solver import rank_for_driver  # noqa: E402
 from setuhaul.location import toll_watchdog  # noqa: E402
 from setuhaul.rules import R  # noqa: E402
 from setuhaul.timeutil import hhmm, parse  # noqa: E402
@@ -64,6 +66,58 @@ def point_at(pts, seg, frac):
             return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f], total - d
         d -= s
     return pts[-1], 0
+
+
+def slot_options(conn, sh, t, phase, gps_eta, b_eta, conf, bk, ready, timing):
+    """Feasible slots this truck can take now (deterministic feasibility R1-R8, same as the chat).
+    Suggestions follow the look-ahead order (best for the whole facility), then earliest start;
+    the coordinator may pick any feasible slot and any start inside its window."""
+    sid = sh["shipment_id"]
+    if phase == "IN_YARD":
+        eta = EtaEstimate(point=t, confidence="HIGH", source="gate check-in", at_facility=True)
+    elif gps_eta:
+        eta = EtaEstimate(point=gps_eta, confidence="HIGH", source="GPS")
+    else:
+        eta = EtaEstimate(point=b_eta, confidence=conf, source="driver/plan")
+    evals, _ = evaluate_all(conn, sid, t, Constraints(), eta)
+    feas = sorted((e for e in evals if e.feasible), key=lambda e: (e.planned_start, e.dock_code))
+    cur = bk["slot_id"] if bk else None
+    if timing == "EARLY":                       # only slots that start before the current booking
+        feas = [e for e in feas if e.slot_id != cur and e.planned_start < parse(bk["slot_start_ts"])]
+    elif cur:
+        feas = [e for e in feas if e.slot_id != cur]
+    order = feas
+    try:
+        ranked = rank_for_driver(conn, sid, t, eta, Constraints(), [e.slot_id for e in feas])
+        by = {e.slot_id: e for e in feas}
+        least = min((len(r.others_unscheduled) for r in ranked), default=0)
+        good = [by[r.slot_id] for r in ranked if len(r.others_unscheduled) == least]
+        strand = {r.slot_id for r in ranked if len(r.others_unscheduled) > least}
+        order = good + [e for e in feas if e not in good]
+    except Exception:  # noqa: BLE001
+        strand = set()
+    sugg, seen = [], set()
+    for e in order:
+        k = hhmm(e.planned_start)
+        if k in seen or e.slot_id in strand:
+            continue
+        seen.add(k)
+        sugg.append(e)
+        if len(sugg) >= CT["slot_suggestions"]:
+            break
+    def item(e, tag=""):
+        return {"slot_id": e.slot_id, "dock": e.dock_code, "window": f"{hhmm(e.slot_start)}-{hhmm(e.slot_end)}",
+                "start": hhmm(e.planned_start), "end": hhmm(e.planned_end), "latest": hhmm(e.slot_end - timedelta(minutes=5)),
+                "approval": e.needs_approval, "strands": e.slot_id in strand, "tag": tag}
+    out = {"eta": hhmm(eta.point), "eta_source": eta.source, "dock_ready": hhmm(ready),
+           "suggest": [item(e, "recommended" if i == 0 else "") for i, e in enumerate(sugg)],
+           "all": [item(e) for e in sorted(feas, key=lambda e: (e.planned_start, e.dock_code))[: CT["slot_choices_max"]]],
+           "keep": None}
+    if bk and timing in ("EARLY", "LATE", "YARD_WAIT"):
+        me = next((e for e in evals if e.slot_id == cur), None)
+        if me and me.feasible:
+            out["keep"] = item(me, "keep current")
+    return out
 
 
 def main():
@@ -216,7 +270,32 @@ def main():
                     status = "GREY"; reasons.append("not departed yet")
                 if s["priority_code"] in ("CRITICAL", "HIGH") and slip > CT["critical_slip_red_min"] and status == "AMBER":
                     status = "RED"; reasons.append(f"{s['priority_code']} load slipping {slip} min vs plan")
+            # ---- possible slots for trucks running late or early (or with no booking)
+            timing, slots = None, None
+            if phase in ("IN_TRANSIT", "IN_YARD") and status != "GREY":
+                ss0 = parse(bk["slot_start_ts"]) if bk else None
+                se0 = parse(bk["slot_end_ts"]) if bk else None
+                early = timedelta(minutes=CT["early_min"])
+                if not bk:
+                    timing = "NO_BOOKING"
+                elif phase == "IN_YARD":
+                    if ss0 - t >= early:
+                        timing = "EARLY"                       # at the gate well before its slot
+                    elif t >= se0 or status == "RED":
+                        timing = "YARD_WAIT"                   # window passed while waiting / dock down
+                elif ss0 - ready >= early:
+                    timing = "EARLY"
+                elif ready > ss0 + timedelta(minutes=CT["on_time_tolerance_min"]):
+                    timing = "LATE"
+                if timing:
+                    slots = slot_options(conn, s, t, phase, gps_eta, b_eta, conf, bk, ready, timing)
+                    # one answer everywhere: the "best slot now" hint is the recommended possible slot
+                    rec = slots["suggest"][0] if slots["suggest"] else None
+                    old_best, next_best = next_best, (f"{rec['dock']} {rec['start']}" if rec else None)
+                    if old_best and next_best:
+                        reasons = [x.replace(f"best slot now {old_best}", f"best slot now {next_best}") for x in reasons]
             rows.append({
+                "timing": timing, "slots": slots,
                 "sid": sid, "driver": s["driver_name"], "driver_id": s["driver_id"], "phone": s["phone"],
                 "priority": s["priority_code"], "origin": s["origin_city"], "dest": s["destination_facility_id"],
                 "phase": phase, "status": status, "reasons": reasons, "pos": [round(pos[0], 5), round(pos[1], 5)],
@@ -273,6 +352,16 @@ def main():
                   "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC से। {sid} योजना से लगभग {slip} मिनट पीछे दिख रही है। क्या आप {booking} के लिए समय पर हैं? अपना ETA भेजें ताकि हम स्लॉट रख सकें या बदल सकें।"},
         "GREEN": {"en": "Hi {name}, SetuHaul Jaipur DC. You are on time for {booking}. Please report at the gate 15 minutes before. Drive safe.",
                   "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। आप {booking} के लिए समय पर हैं। कृपया 15 मिनट पहले गेट पर पहुँचें। सुरक्षित चलाएं।"},
+        "PROPOSE_LATE": {"en": "Hi {name}, SetuHaul Jaipur DC. With your truck ({sid}) reaching the dock around {ready}, your {booking} slot will not work. We can offer dock {dock} at about {start} (slot {window}). Please be at the gate by {gate}. Reply YES to accept, or call the coordinator.",
+                         "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। आपकी गाड़ी ({sid}) लगभग {ready} तक डॉक पर पहुँचेगी, इसलिए {booking} स्लॉट नहीं चलेगा। हम डॉक {dock} लगभग {start} बजे (स्लॉट {window}) दे सकते हैं। कृपया {gate} तक गेट पर पहुँचें। मंज़ूर हो तो YES भेजें, या कोऑर्डिनेटर को कॉल करें।"},
+        "PROPOSE_EARLY": {"en": "Hi {name}, SetuHaul Jaipur DC. You are early for your {booking} slot. A dock is free earlier: dock {dock} at about {start} (slot {window}). Please be at the gate by {gate}. Reply YES to take it, or keep your current slot.",
+                          "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। आप अपने {booking} स्लॉट से पहले पहुँच रहे हैं। पहले एक डॉक खाली है: डॉक {dock}, लगभग {start} बजे (स्लॉट {window})। कृपया {gate} तक गेट पर पहुँचें। लेना हो तो YES भेजें, नहीं तो पुराना स्लॉट रहेगा।"},
+        "PROPOSE_EARLY_YARD": {"en": "Hi {name}, SetuHaul Jaipur DC. You are in the yard ahead of your {booking} slot. A dock is free earlier: we can call you to dock {dock} at about {start}. Reply YES to take it, or keep your current slot.",
+                               "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। आप अपने {booking} स्लॉट से पहले यार्ड में हैं। पहले एक डॉक खाली है: हम आपको लगभग {start} बजे डॉक {dock} पर बुला सकते हैं। लेना हो तो YES भेजें, नहीं तो पुराना स्लॉट रहेगा।"},
+        "PROPOSE_YARD": {"en": "Hi {name}, SetuHaul Jaipur DC. Sorry for the wait in the yard. Your dock is now planned as dock {dock} at about {start} (slot {window}). Please stay in the yard; we will call you to the dock. Reply YES if this works.",
+                         "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। यार्ड में इंतज़ार के लिए माफ़ी। अब आपका डॉक {dock}, लगभग {start} बजे (स्लॉट {window}) तय है। कृपया यार्ड में रुकें, हम डॉक पर बुलाएँगे। ठीक हो तो YES भेजें।"},
+        "PROPOSE_NEW": {"en": "Hi {name}, SetuHaul Jaipur DC. Your truck ({sid}) has no dock booking yet. We can offer dock {dock} at about {start} (slot {window}). Please be at the gate by {gate}. Reply YES to accept, or call the coordinator.",
+                        "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। आपकी गाड़ी ({sid}) की अभी कोई डॉक बुकिंग नहीं है। हम डॉक {dock} लगभग {start} बजे (स्लॉट {window}) दे सकते हैं। कृपया {gate} तक गेट पर पहुँचें। मंज़ूर हो तो YES भेजें, या कोऑर्डिनेटर को कॉल करें।"},
         "SILENT": {"en": "Hi {name}, SetuHaul Jaipur DC. We have not received your truck's location for {mins} minutes. Are you okay? Please share your live location on WhatsApp or reply with where you are.",
                    "hi": "नमस्ते {name}, सेतुहॉल जयपुर DC। {mins} मिनट से आपकी गाड़ी की लोकेशन नहीं मिली। सब ठीक है? कृपया WhatsApp पर लाइव लोकेशन भेजें या बताएं आप कहाँ हैं।"},
         "YARD": {"en": "Hi {name}, SetuHaul Jaipur DC. Thank you for waiting in the yard. Your dock is being arranged; we will call you to the dock shortly.",
