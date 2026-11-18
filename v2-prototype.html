@@ -1,0 +1,1086 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>03 Working prototype — SetuHaul – Logistics Management</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul – Logistics Management</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · <a href="v2/03_SetuHaul_Working_Prototype.docx">download the Word file</a></p><p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 3</strong></p>
+<p><strong>Working Prototype</strong></p>
+<p>A runnable Driver-Exception Agent on the supplied database:
+conversation workflow, deterministic tools, a capacity layer with
+database guards, and a facility scheduling tool</p>
+<p>About 2,400 lines of Python using only the standard library and
+SQLite (charts use matplotlib). It runs end to end on a copy of the
+supplied snapshot in under a second for the scenario day. This document
+explains the architecture, every tool, the data added to the schema, the
+booking transaction line by line, the language layer and its LLM
+fallback, how to run it, and the path to production.</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.0 | 18 November 2026</p>
+<p>Audience: FDE Academy reviewers; SetuHaul engineering lead</p>
+<p><strong>Contents</strong></p>
+<p><strong>1. What we built, in one page</strong></p>
+<p><strong>2. Architecture</strong></p>
+<blockquote>
+<p>One turn, step by step</p>
+</blockquote>
+<p><strong>3. The tools</strong></p>
+<p><strong>4. What we added to the database</strong></p>
+<p><strong>5. The booking transaction, line by line</strong></p>
+<p><strong>6. Feasibility and the facility plan</strong></p>
+<p><strong>7. The language layer and the LLM fallback</strong></p>
+<p><strong>8. How to run, and what it produces</strong></p>
+<p><strong>9. From prototype to production</strong></p>
+<blockquote>
+<p>Same guards in Postgres</p>
+<p>Scale path</p>
+</blockquote>
+<p><strong>10. Security and privacy</strong></p>
+<h1 id="what-we-built-in-one-page">1. What we built, in one page</h1>
+<p>The prototype is the <strong>real decision logic</strong>, not a
+mock. Every number in deliverables 4 and 5 comes from running it.</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 54%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Part</strong></th>
+<th><strong>What it does</strong></th>
+<th><strong>File</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Conversation workflow</td>
+<td>A fixed state machine that turns one WhatsApp message into one
+reply, calling tools in a known order</td>
+<td>setuhaul/workflow.py</td>
+</tr>
+<tr class="even">
+<td>Language layer</td>
+<td>Detects English, Hinglish or Hindi; turns words into a fact sheet
+with evidence</td>
+<td>setuhaul/nlu.py</td>
+</tr>
+<tr class="odd">
+<td>ETA resolver</td>
+<td>Chooses the ETA to plan on, its confidence and the late edge</td>
+<td>setuhaul/eta.py</td>
+</tr>
+<tr class="even">
+<td>Feasibility engine</td>
+<td>Builds each dock's busy timeline and lists the slots a truck can
+really use</td>
+<td>setuhaul/timeline.py</td>
+</tr>
+<tr class="odd">
+<td>Capacity layer</td>
+<td>Commits, holds, approvals, cancellations and swaps, each in one
+transaction</td>
+<td>setuhaul/capacity.py</td>
+</tr>
+<tr class="even">
+<td>Database guards</td>
+<td>Hold indexes, overlap trigger, compatibility trigger, history
+table</td>
+<td>setuhaul/db.py</td>
+</tr>
+<tr class="odd">
+<td>Scheduling tool</td>
+<td>Plans all trucks at a facility; earmarks; health checks; what-ifs;
+swap proposals</td>
+<td>setuhaul/planner.py</td>
+</tr>
+<tr class="even">
+<td>Escalation router</td>
+<td>Picks the right person and channel, skips vacant roles and broken
+channels</td>
+<td>setuhaul/escalation.py</td>
+</tr>
+<tr class="odd">
+<td>Reply catalogue and output guard</td>
+<td>Reviewed replies in three languages; blocks any dock or time not in
+the evidence</td>
+<td>setuhaul/replies.py</td>
+</tr>
+<tr class="even">
+<td>Clock and policy</td>
+<td>Explicit as-of time; every business number in one file</td>
+<td>setuhaul/clock.py, config.py</td>
+</tr>
+<tr class="odd">
+<td>World replay</td>
+<td>Rewinds the snapshot to 08:20 and replays the day's events at their
+own times</td>
+<td>setuhaul/world.py</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Run it</strong> (Python 3.11 or later; nothing to install for
+the core):</p>
+<blockquote>
+<p>python3 -I run_scenarios.py out/ # deliverable 4: the scripted day,
+13 cases (~1 s)</p>
+<p>python3 -I run_integrity.py out/ # deliverable 5: 12 tests + 50-race
+proof (~15 s)</p>
+<p>python3 -I run_scheduler.py out/ # facility plan, 7 policies incl.
+the exact engine, Gantt charts (~80 s; also tries all 40,320 orders as a
+benchmark)</p>
+<p>python3 -I scripts/audit.py data/setuhaul_freight_operations.db out/
+# deliverable 1</p>
+</blockquote>
+<p>Each run starts from a fresh copy of the supplied database, so
+results are identical every time. We checked this by running twice and
+comparing the metrics files.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | What the prototype is like</strong></p>
+<p>Think of a railway reservation counter. The clerk (workflow) listens
+to the passenger, looks things up in fixed registers (tools), and only
+stamps a ticket after checking the master chart in one go, so no one
+else can stamp the same berth in that moment (the transaction). The
+clerk never invents a berth number: every number on the ticket must come
+from the chart (the output guard).</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="architecture">2. Architecture</h1>
+<p><img
+src="media/03_SetuHaul_Working_Prototype/media/381ab16516c1fca268e8ec6d0d6ccde4859bcf39.png"
+title="Production shape of the prototype. Everything inside the dashed box is one small container. The prototype runs the same modules against SQLite."
+style="width:6.5in;height:2.78125in"
+alt="Production shape of the prototype. Everything inside the dashed box is one small container. The prototype runs the same modules against SQLite." /></p>
+<p><em>Production shape of the prototype. Everything inside the dashed
+box is one small container. The prototype runs the same modules against
+SQLite.</em></p>
+<p><strong>Why this shape.</strong> Peak load is about one message a
+minute across two facilities. The hard problem is not scale; it is
+<strong>correctness under concurrency</strong>, and that lives in the
+database. So we keep one process, one database and one write path, and
+put the effort into guards and tests. Deliverable 2 (D15) records the
+cost comparison.</p>
+<p><strong>What runs where</strong></p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 45%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Layer</strong></th>
+<th><strong>Pilot</strong></th>
+<th><strong>Prototype stand-in</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Inbound</td>
+<td>WhatsApp Business Cloud API webhook, signature verified</td>
+<td>workflow.handle(phone, text, as_of, external_id)</td>
+</tr>
+<tr class="even">
+<td>Ordering</td>
+<td>Per-driver queue: one turn at a time per driver (FOR UPDATE SKIP
+LOCKED)</td>
+<td>Per-conversation busy flag; a second turn raises ConcurrentTurn</td>
+</tr>
+<tr class="odd">
+<td>Decisions</td>
+<td>Workflow and tools (Python)</td>
+<td>Same code</td>
+</tr>
+<tr class="even">
+<td>Words</td>
+<td>Rules; Claude Haiku as fallback with strict JSON</td>
+<td>Rules; fallback asks a clarifying question (no network)</td>
+</tr>
+<tr class="odd">
+<td>System of record</td>
+<td>Managed Postgres with EXCLUDE constraint</td>
+<td>SQLite with BEGIN IMMEDIATE and triggers</td>
+</tr>
+<tr class="even">
+<td>Outbound</td>
+<td>Outbox table drained by a sender (WhatsApp, SMS, e-mail, phone
+task)</td>
+<td>outbox table; scenario prints it</td>
+</tr>
+<tr class="odd">
+<td>Time</td>
+<td>Real clock, injected</td>
+<td>Explicit as_of on every call</td>
+</tr>
+<tr class="even">
+<td>Humans</td>
+<td>Coordinator console (approve, reject, swap, queue)</td>
+<td>capacity.decide(), capacity.swap()</td>
+</tr>
+</tbody>
+</table>
+<h2 id="one-turn-step-by-step">One turn, step by step</h2>
+<p><img
+src="media/03_SetuHaul_Working_Prototype/media/c024fa8fd18af4a600f4a2aa37d1bbade1799784.png"
+title="Every inbound message follows the same ten steps. Red steps can stop the flow."
+style="width:6.5in;height:1.46875in"
+alt="Every inbound message follows the same ten steps. Red steps can stop the flow." /></p>
+<p><em>Every inbound message follows the same ten steps. Red steps can
+stop the flow.</em></p>
+<ol type="1">
+<li><p><strong>Identify.</strong> The sender's phone number gives the
+driver. Unknown numbers get no reply and are logged for
+operations.</p></li>
+<li><p><strong>Dedupe.</strong> Same message ID, or the same driver and
+same normalised text of 4 or more words within 10 minutes, means no
+second reply and no second ETA record.</p></li>
+<li><p><strong>Language.</strong> Script share and word list. Short
+replies keep the conversation's language.</p></li>
+<li><p><strong>Read facts.</strong> Regular expressions produce a Facts
+record (intent, ETA, window, confidence, limits, choice, hints) and keep
+the matched text as evidence.</p></li>
+<li><p><strong>Safety words</strong> stop all scheduling talk and page
+the shift manager by phone.</p></li>
+<li><p><strong>Which shipment.</strong> The evidence ladder in
+deliverable 2 (D2); ask only if it cannot decide.</p></li>
+<li><p><strong>Record.</strong> Write the ETA, the window and the
+driver's limits; re-plan the facility; refresh earmarks.</p></li>
+<li><p><strong>Current booking still works?</strong> If yes, tell the
+driver to keep it. If not, look for options.</p></li>
+<li><p><strong>Options or escalate.</strong> Up to three feasible
+options, or a hand-off if there are none.</p></li>
+<li><p><strong>Reply.</strong> Pick from the catalogue, fill in values,
+pass the output guard, write to the outbox.</p></li>
+</ol>
+<p>Every turn returns the list of tools it called. That list is printed
+in the scenario transcript, so the transcript is also the audit
+trail:</p>
+<blockquote>
+<p>{"t": "08:23", "who": "DRV003", "text": "1", "state": "BOOKED",</p>
+<p>"tools": ["read_message:CHOOSE", "book:CONFIRMED APT-N0001"],</p>
+<p>"reply": "Booked: Dock D4 at Jaipur DC, start 8:35 AM. You're already
+checked in;</p>
+<p>the yard team will call you to Dock D4. Booking ref APT-N0001."}</p>
+</blockquote>
+<h1 id="the-tools">3. The tools</h1>
+<p>The workflow can call only these. Each is a plain Python function
+with typed inputs, no free text in, and a structured result out.</p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 26%" />
+<col style="width: 20%" />
+<col style="width: 21%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Tool</strong></th>
+<th><strong>Function</strong></th>
+<th><strong>Reads</strong></th>
+<th><strong>Writes</strong></th>
+<th><strong>Guarantees</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Resolve ETA</td>
+<td>eta.resolve(con, shipment, as_of)</td>
+<td>eta_updates, facility_checkins, shipments, other trips of the
+vehicle</td>
+<td>nothing</td>
+<td>Planned gate arrival, release time, confidence, plausibility
+flags</td>
+</tr>
+<tr class="even">
+<td>Record ETA</td>
+<td>inside workflow (one transaction)</td>
+<td>conversation</td>
+<td>eta_updates, eta_windows, driver_constraints</td>
+<td>Rows dated as-of; source = DRIVER</td>
+</tr>
+<tr class="odd">
+<td>Feasible options</td>
+<td>timeline.options(con, sid, as_of, limit, constraints,
+earliest_start)</td>
+<td>slots, docks, rules, dock events, check-ins, bookings, holds,
+earmarks</td>
+<td>nothing</td>
+<td>Only slots passing all 15 checks; earliest start per slot; reason
+per rejection</td>
+</tr>
+<tr class="even">
+<td>Commit</td>
+<td>capacity.commit(con, sid, slot, as_of, idem_key)</td>
+<td>everything above</td>
+<td>appointments, dock_reservations, appointment_events, outbox,
+audit_log</td>
+<td>Re-check and insert in one BEGIN IMMEDIATE; idempotent</td>
+</tr>
+<tr class="odd">
+<td>Hold for approval</td>
+<td>capacity.hold_for_approval(...)</td>
+<td>same</td>
+<td>slot_holds, escalations</td>
+<td>One live hold per slot and per shipment (indexes)</td>
+</tr>
+<tr class="even">
+<td>Approve or reject</td>
+<td>capacity.decide(con, hold_id, approve, coordinator, as_of)</td>
+<td>hold</td>
+<td>appointments or hold status</td>
+<td>Approval is re-checked; it can still fail safely</td>
+</tr>
+<tr class="odd">
+<td>Expire holds</td>
+<td>capacity.sweep(con, as_of)</td>
+<td>holds</td>
+<td>hold status, outbox</td>
+<td>Expired holds release the slot and tell the driver</td>
+</tr>
+<tr class="even">
+<td>Cancel shipment</td>
+<td>capacity.cancel_shipment(...)</td>
+<td>appointments</td>
+<td>appointments, events</td>
+<td>Capacity freed at once</td>
+</tr>
+<tr class="odd">
+<td>Plan facility</td>
+<td>planner.plan_facility(con, fid, as_of, policy)</td>
+<td>all trucks needing a door</td>
+<td>nothing</td>
+<td>Proposes only; never books</td>
+</tr>
+<tr class="even">
+<td>Re-plan + earmark</td>
+<td>planner.replan(con, fid, as_of)</td>
+<td>plan</td>
+<td>slot_earmarks</td>
+<td>Soft protection, 20 minutes</td>
+</tr>
+<tr class="odd">
+<td>Health check</td>
+<td>planner.health(con, fid, as_of)</td>
+<td>every live booking</td>
+<td>nothing</td>
+<td>OK, AT_RISK, CERTAIN_MISS or INVALID per booking</td>
+</tr>
+<tr class="even">
+<td>What-if</td>
+<td>planner.what_if(con, sid, as_of)</td>
+<td>timelines</td>
+<td>nothing</td>
+<td>Which constraint, if relaxed, would create a slot</td>
+</tr>
+<tr class="odd">
+<td>Swap proposal</td>
+<td>planner.swap_proposal(con, sid, as_of)</td>
+<td>bookings</td>
+<td>nothing (trial is rolled back)</td>
+<td>Exact new times; refuses swaps that break a driver limit</td>
+</tr>
+<tr class="even">
+<td>Swap</td>
+<td>capacity.swap(con, high, low, as_of, actor)</td>
+<td>both bookings</td>
+<td>both bookings, events, outbox</td>
+<td>Both move in one transaction or neither moves</td>
+</tr>
+<tr class="odd">
+<td>Escalate</td>
+<td>escalation.escalate(con, reason, urgency, sid, did, as_of,
+handoff)</td>
+<td>facility_contacts, escalation_rules</td>
+<td>escalations, outbox</td>
+<td>Vacant roles and failed channels skipped; SLA set</td>
+</tr>
+<tr class="even">
+<td>Reply</td>
+<td>replies.t(key, lang, **values) then replies.guard(text,
+evidence)</td>
+<td>catalogue</td>
+<td>outbox</td>
+<td>Dock codes and times must appear in the evidence</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>FDE NOTE | Why tools and not an agent loop</strong></p>
+<p>The brief asks whether this is a workflow or an agent. The steps are
+known in advance and the cost of a wrong step is a double booking, so we
+use a <strong>workflow</strong>: the code decides the next step, and the
+model is used only to read words. This follows Anthropic's own guidance
+in <em>Building effective agents</em>: use the simplest pattern that
+works, and add autonomy only where the path cannot be known in
+advance.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="what-we-added-to-the-database">4. What we added to the
+database</h1>
+<p>The supplied schema has no holds, no time intervals, no history and
+only two uniqueness guards (audit F08, F09). We add the following
+without changing any supplied table, so the client's own reports keep
+working.</p>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 35%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Table or object</strong></th>
+<th><strong>Purpose</strong></th>
+<th><strong>Guard it gives</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>slot_holds + 2 partial unique indexes</td>
+<td>A slot waiting for a coordinator</td>
+<td>At most one live hold per slot and per shipment</td>
+</tr>
+<tr class="even">
+<td>dock_reservations + trg_no_overlap</td>
+<td>Every booking, hold, truck-in-dock and dock event as a time
+interval</td>
+<td>No overlapping time on one door</td>
+</tr>
+<tr class="odd">
+<td>trg_appt_guard</td>
+<td>Checks every new active booking</td>
+<td>No booking for a cancelled shipment, wrong site, overweight load,
+wrong door type or closed slot</td>
+</tr>
+<tr class="even">
+<td>trg_active_must_be_current</td>
+<td>Fixes the gap in the supplied index</td>
+<td>An active booking must be the current one</td>
+</tr>
+<tr class="odd">
+<td>appointment_events</td>
+<td>Append-only history</td>
+<td>A past double booking can be seen (F08)</td>
+</tr>
+<tr class="even">
+<td>conversations, inbound_messages</td>
+<td>Thread state and dedupe</td>
+<td>One reply per message</td>
+</tr>
+<tr class="odd">
+<td>idempotency_keys</td>
+<td>Result of each commit by key</td>
+<td>A retried commit returns the first result</td>
+</tr>
+<tr class="even">
+<td>eta_windows, driver_constraints</td>
+<td>A range ETA and the driver's limits (earliest start, latest
+gate-out)</td>
+<td>Limits are re-applied at every commit</td>
+</tr>
+<tr class="odd">
+<td>slot_earmarks</td>
+<td>Planner's protected capacity</td>
+<td>Lower-priority drivers cannot take it</td>
+</tr>
+<tr class="even">
+<td>escalations, outbox, audit_log</td>
+<td>Hand-offs, outbound messages, every decision</td>
+<td>Nothing is sent outside a transaction</td>
+</tr>
+</tbody>
+</table>
+<p>The overlap trigger, verbatim from db.py:</p>
+<blockquote>
+<p>CREATE TRIGGER IF NOT EXISTS trg_no_overlap</p>
+<p>BEFORE INSERT ON dock_reservations</p>
+<p>WHEN NEW.live = 1 AND NEW.kind IN ('BOOKING','HOLD')</p>
+<p>BEGIN</p>
+<p>SELECT RAISE(ABORT, 'DOCK_INTERVAL_OVERLAP')</p>
+<p>WHERE EXISTS (SELECT 1 FROM dock_reservations r</p>
+<p>WHERE r.live = 1 AND r.dock_id = NEW.dock_id</p>
+<p>AND julianday(r.start_ts) &lt; julianday(NEW.end_ts)</p>
+<p>AND julianday(NEW.start_ts) &lt; julianday(r.end_ts));</p>
+<p>END;</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | How the overlap test works</strong></p>
+<p>Two time blocks clash if each one starts before the other ends.
+10:00-11:00 and 10:50-11:30 clash (10:00 &lt; 11:30 and 10:50 &lt;
+11:00). 10:00-11:00 and 11:00-11:30 do not (11:00 is not before 11:00).
+That one line of logic is the whole rule.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="the-booking-transaction-line-by-line">5. The booking
+transaction, line by line</h1>
+<p>This is the most important code in the system. It is
+capacity.commit() and _commit_core(), shortened only by removing
+logging.</p>
+<blockquote>
+<p>def commit(con, shipment_id, slot_id, as_of, source, actor, idem_key,
+approved=False):</p>
+<p>with write_txn(con): # (1) BEGIN IMMEDIATE</p>
+<p>prior = _idem_get(con, idem_key) # (2) seen this request before?</p>
+<p>if prior:</p>
+<p>return prior</p>
+<p>res = _commit_core(...) # (3) re-check and write</p>
+<p>_idem_put(con, idem_key, res, as_of) # (4) remember the result</p>
+<p>return res # (5) COMMIT on leaving the block</p>
+<p>def _commit_core(con, shipment_id, slot_id, as_of, source, actor,
+approved):</p>
+<p>lim, earliest = driver_limits(con, shipment_id, as_of) # (6)</p>
+<p>opts, _ = T.options(con, shipment_id, as_of, limit=None,</p>
+<p>respect_earmarks=not approved, constraints=lim,</p>
+<p>earliest_start=earliest) # (7)</p>
+<p>match = [o for o in opts if o["slot_id"] == slot_id]</p>
+<p>if not match:</p>
+<p>return {"ok": False, "code": "OPTION_GONE",</p>
+<p>"why": _why_gone(con, shipment_id, slot_id, as_of)} # (8)</p>
+<p>o = match[0]</p>
+<p>if o["needs_approval"] and not approved:</p>
+<p>return {"ok": False, "code": "NEEDS_APPROVAL", "option": o} # (9)</p>
+<p>for dead in o["releases"]:</p>
+<p>_cancel(con, dead, "Released by planner: truck cannot reach this
+window")</p>
+<p>outbox(con, ..., "DISPATCH_NOTICE", ...) # (10)</p>
+<p>old = current_appointment(con, shipment_id)</p>
+<p>if old:</p>
+<p>_cancel(con, old["appointment_id"], "Rescheduled") # (11)</p>
+<p>refresh_guard_rows(con, facility, as_of, exclude=(shipment_id,)) #
+(12)</p>
+<p>try:</p>
+<p>INSERT INTO appointments ... 'CONFIRMED', is_current = 1 ... #
+(13)</p>
+<p>INSERT INTO dock_reservations ... (dock, start, occupancy_end) #
+(14)</p>
+<p>except sqlite3.IntegrityError as ex:</p>
+<p>raise GuardTripped(str(ex)) # (15)</p>
+<p>_event(...); outbox(coordinator, "BOOKING_NOTICE"); _audit(...) #
+(16)</p>
+<p>DELETE FROM slot_earmarks WHERE shipment_id = ? OR slot_id = ? #
+(17)</p>
+<p>return {"ok": True, "code": "CONFIRMED", "appointment_id": ...}</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 31%" />
+<col style="width: 34%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Line</strong></th>
+<th><strong>What it does</strong></th>
+<th><strong>Why it matters</strong></th>
+<th><strong>In plain words</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>BEGIN IMMEDIATE takes SQLite's single write lock before reading
+anything</td>
+<td>A second commit waits here, so two "check then insert" sequences can
+never interleave. This is what makes the re-check trustworthy.</td>
+<td>The counter has one rubber stamp, and you must hold it before you
+look at the chart</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Looks up the idempotency key (the driver's WhatsApp message ID)</td>
+<td>WhatsApp redelivers webhooks; networks retry. The same tap must not
+book twice.</td>
+<td>If the passenger shows the same token twice, give back the same
+ticket</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Runs the real check and write</td>
+<td>Everything below happens inside the lock</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Stores the result under the key, inside the same transaction</td>
+<td>If the transaction rolls back, the key is not stored either, so a
+retry runs again cleanly</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Leaving the with block commits; any exception rolls back
+everything</td>
+<td>All or nothing: no half-made booking</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Reads the driver's stored limits (for example, leave by 19:30)</td>
+<td>Limits given in an earlier message still apply; a swap or approval
+cannot break them</td>
+<td>The note the passenger gave earlier is pinned to the file</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Re-runs the full feasibility check, now, with the lock held</td>
+<td>The option may be 10 minutes old. A breakdown, another booking or an
+earmark may have appeared since.</td>
+<td>Check the chart again just before stamping</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Refuses with a reason code: taken, held, protected or no longer
+fits</td>
+<td>The driver gets a plain explanation and fresh options in the same
+reply</td>
+<td>"Sorry, that berth just went; here are three others"</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Stops if a rule needs a person (start after 21:00, data
+conflict)</td>
+<td>The workflow then creates a hold with a deadline instead</td>
+<td>Some tickets need the station master's signature</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Releases bookings whose trucks certainly cannot arrive in time (dead
+bookings), and tells their dispatcher</td>
+<td>A dead booking must not block a truck that can use the slot; the
+dispatcher must hear why</td>
+<td>An empty reserved seat on a departed train is released, and the
+agent is told</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Retires the shipment's old booking</td>
+<td>The supplied index allows only one current active booking per
+shipment; this keeps it true</td>
+<td>Cancel the old ticket before issuing the new one</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Refreshes the "busy" intervals: trucks in docks, kept bookings, dock
+events</td>
+<td>The overlap trigger checks against up-to-date reality, including
+overruns</td>
+<td>Update the chart with who is still sitting in the seats</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Inserts the booking. trg_appt_guard and trg_active_must_be_current
+run here</td>
+<td>If the code has a bug, the database still refuses a wrong door,
+overweight load or closed slot</td>
+<td>A second clerk checks the stamp</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Inserts the time interval. trg_no_overlap runs here</td>
+<td>If two bookings would overlap on one door, the database refuses</td>
+<td>A third check: no two people on one seat at one time</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>Turns a database refusal into a typed error, never shown raw to a
+driver</td>
+<td>The workflow answers "that option is no longer available" and alerts
+operations</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Writes history, notifies the coordinator, logs the decision</td>
+<td>Every change is visible later</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>Removes earmarks that this booking has consumed</td>
+<td>Protection never outlives its purpose</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="feasibility-and-the-facility-plan">6. Feasibility and the
+facility plan</h1>
+<p><strong>Feasibility</strong> (timeline.py) builds, for each door, a
+sorted list of busy intervals: live bookings (unload + 10-min
+changeover), holds, trucks in a dock (until expected end, plus a
+10-minute buffer once they overrun), and dock events. For a shipment it
+tries each OPEN slot on a compatible door and finds the <strong>earliest
+start</strong> inside the slot window that fits the unload without
+touching any busy interval and respects the driver's limits. Each
+rejected slot keeps a reason code, which is how the no-slot hand-off
+lists exactly why each door failed.</p>
+<p><strong>The facility plan</strong> (planner.py) treats trucks as jobs
+and doors as machines. It runs list scheduling: trucks are taken in an
+order and each gets its earliest feasible door. The first answer is a
+priority list with pairwise repair (swap two jobs in the order; keep the
+swap if the objective improves) until nothing improves. The engine of
+record, planner.exact, then runs a branch and bound over truck orders,
+warm-started by that answer: a branch is cut when the trucks already
+placed, plus each remaining truck's best possible placement on the door
+time still free, cannot beat the best plan found. It stops at a node
+count (config.EXACT_NODE_LIMIT, 200,000), not a clock, so runs are
+reproducible, and reports PROVEN_OPTIMAL when the tree is exhausted. On
+the 09:45 snapshot it proves the plan optimal after 5,425 of 40,320
+orders. planner.explain gives each truck a one-line reason. With 8 or
+fewer jobs every order is also tried as a benchmark. The objective is
+compared in strict order: trucks left with no door, then
+priority-weighted wait (minutes x 8/4/2/1), then the number of changes
+to what drivers were told.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>FDE NOTE | Upgrade path for the scheduler</strong></p>
+<p>The exact search is comfortable for one facility with a few dozen
+trucks a day; if the node budget runs out it returns the best plan found
+and says so, and priority + repair is always available as the first
+answer. When SetuHaul adds facilities or new constraint types (shared
+yard space, labour crews per shift), the documented step is Google
+OR-Tools CP-SAT with interval variables and AddNoOverlap per door. The
+tool interface stays the same: it proposes, the capacity layer
+commits.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="the-language-layer-and-the-llm-fallback">7. The language layer
+and the LLM fallback</h1>
+<p><strong>Rules first.</strong> nlu.extract() handles the brief's
+messages and our Hinglish and Hindi variants with no model call: clock
+times (11:30, 7 baje, 7 ke baad, 7 बजे), durations (one hour, dedh
+ghanta, डेढ़ घंटा), ranges, order references, hints (evening, heavy,
+reefer), choices (1, 2, 3, "pehla"), declines, safety words and urgency
+claims. Each value keeps the exact text it came from.</p>
+<p><strong>Model only when the rules return UNKNOWN or a time they
+cannot place.</strong> The production design calls Claude Haiku with no
+tools and no database access, and requires this JSON shape. Code
+validates it; anything outside the shape is treated as UNKNOWN and the
+driver is asked.</p>
+<blockquote>
+<p>{</p>
+<p>"type": "object",</p>
+<p>"additionalProperties": false,</p>
+<p>"required": ["intent", "eta", "limits", "shipment_hint", "choice",
+"safety", "evidence"],</p>
+<p>"properties": {</p>
+<p>"intent": {"enum": ["REPORT_DELAY", "EARLY_ARRIVAL", "ASK_OPTIONS",
+"CHECK_STATUS",</p>
+<p>"CHOOSE", "DECLINE", "ASK_HUMAN", "SAFETY", "UNKNOWN"]},</p>
+<p>"eta": {"type": ["object", "null"], "additionalProperties":
+false,</p>
+<p>"properties": {</p>
+<p>"kind": {"enum": ["CLOCK", "DELAY", "WINDOW", "VAGUE"]},</p>
+<p>"clock": {"type": ["string", "null"], "pattern":
+"^([01][0-9]|2[0-3]):[0-5][0-9]$"},</p>
+<p>"delay_min": {"type": ["integer", "null"], "minimum": 0, "maximum":
+720},</p>
+<p>"window": {"type": ["array", "null"], "items": {"type": "string"},
+"maxItems": 2},</p>
+<p>"hedged": {"type": "boolean"}}},</p>
+<p>"limits": {"type": "object", "additionalProperties": false,</p>
+<p>"properties": {"earliest_start": {"type": ["string", "null"]},</p>
+<p>"latest_gate_out": {"type": ["string", "null"]}}},</p>
+<p>"shipment_hint": {"enum": ["MORNING", "EVENING", "HEAVY", "REEFER",
+null]},</p>
+<p>"choice": {"type": ["integer", "null"], "minimum": 1, "maximum":
+3},</p>
+<p>"safety": {"type": "boolean"},</p>
+<p>"evidence": {"type": "object", "additionalProperties": {"type":
+"string"}}</p>
+<p>}</p>
+<p>}</p>
+</blockquote>
+<p><strong>Checks in code after the model replies:</strong> every time
+must lie between as-of minus 1 hour and as-of plus 24 hours; every
+evidence string must appear in the driver's message; intent SAFETY is
+also checked against the safety word list, and either source triggers
+escalation. The model's output can change what we <em>ask</em>, never
+what we <em>book</em>.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | The model's job</strong></p>
+<p>The model is a translator, not a manager. It may say "the driver
+means 7 in the evening", and code then checks that 7 PM is a sensible
+time and that the words "shaam 7" are really in the message. The model
+never picks a dock.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Replies</strong> come from a catalogue of 34 reviewed
+templates, each written in English, Hinglish (Latin script) and Hindi
+(Devanagari). The <strong>output guard</strong> extracts every dock code
+and clock time from the outgoing text and refuses to send unless each
+appears in the evidence for this turn. The word "booked" may appear only
+after a commit returned CONFIRMED. During development the guard blocked
+one reply: the no-slot message named doors D3 and D5, but the turn's
+evidence did not yet include the per-door rejection reasons. We added
+the reasons to the evidence. The guard was right to stop the
+message.</p>
+<h1 id="how-to-run-and-what-it-produces">8. How to run, and what it
+produces</h1>
+<p><strong>Requirements.</strong> Python 3.11 or later and its built-in
+sqlite3. Tested on Python 3.13.18 with SQLite 3.53.1. matplotlib (tested
+3.11.2) is used only by run_scheduler.py for the Gantt charts. No other
+packages, no network.</p>
+<p><strong>Folder layout of the zip</strong></p>
+<blockquote>
+<p>setuhaul_prototype/</p>
+<p>README.md</p>
+<p>data/setuhaul_freight_operations.db supplied snapshot (read-only;
+runs use a copy)</p>
+<p>setuhaul/ the package (13 modules)</p>
+<p>tests/test_integrity.py 12 tests</p>
+<p>run_scenarios.py run_integrity.py run_scheduler.py</p>
+<p>scripts/audit.py the 36 data checks</p>
+<p>out/ results used in deliverables 1, 4 and 5</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 45%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Command</strong></th>
+<th><strong>Output files</strong></th>
+<th><strong>Used in</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>python3 -I scripts/audit.py data/setuhaul_freight_operations.db
+out/</td>
+<td>audit_results.json, audit_queries.sql</td>
+<td>Deliverable 1</td>
+</tr>
+<tr class="even">
+<td>python3 -I run_scenarios.py out/</td>
+<td>scenario_run.json (every turn, tool list, reply),
+scenario_metrics.json, scenario_world.db</td>
+<td>Deliverable 4</td>
+</tr>
+<tr class="odd">
+<td>python3 -I run_integrity.py out/</td>
+<td>integrity_results.json, console summary</td>
+<td>Deliverable 5</td>
+</tr>
+<tr class="even">
+<td>python3 -I run_scheduler.py out/</td>
+<td>scheduler_results.json, gantt_fcfs.png, gantt_ours.png</td>
+<td>Deliverables 2 and 4</td>
+</tr>
+</tbody>
+</table>
+<p>-I (isolated mode) stops Python from importing stray files in the
+working folder; the runners add their own folder to the path.</p>
+<p><strong>Prototype limits, stated plainly</strong></p>
+<ul>
+<li><p>No live WhatsApp or LLM call (no network in the build
+environment). The adapters are the documented next step.</p></li>
+<li><p>SQLite has one writer at a time. That is enough for the pilot
+volume and makes the proof simple; production uses Postgres (next
+section).</p></li>
+<li><p>Coordinator actions are function calls, not a screen.</p></li>
+<li><p>Travel times between sites are not in the data, so the "divert"
+recommendation says so instead of guessing.</p></li>
+</ul>
+<h1 id="from-prototype-to-production">9. From prototype to
+production</h1>
+<h2 id="same-guards-in-postgres">Same guards in Postgres</h2>
+<blockquote>
+<p>CREATE EXTENSION IF NOT EXISTS btree_gist;</p>
+<p>CREATE TABLE dock_reservations (</p>
+<p>reservation_id text PRIMARY KEY,</p>
+<p>dock_id text NOT NULL REFERENCES docks(dock_id),</p>
+<p>during tstzrange NOT NULL,</p>
+<p>kind text NOT NULL CHECK (kind IN
+('BOOKING','HOLD','KEPT_BOOKING','IN_DOCK','DOCK_EVENT')),</p>
+<p>ref_id text,</p>
+<p>live boolean NOT NULL DEFAULT true,</p>
+<p>created_at timestamptz NOT NULL DEFAULT now(),</p>
+<p>CONSTRAINT no_overlap_bookings</p>
+<p>EXCLUDE USING gist (dock_id WITH =, during WITH &amp;&amp;)</p>
+<p>WHERE (live AND kind IN ('BOOKING','HOLD'))</p>
+<p>);</p>
+<p>CREATE UNIQUE INDEX ux_live_hold_per_slot ON slot_holds(slot_id)</p>
+<p>WHERE hold_status IN ('ACTIVE','PENDING_APPROVAL');</p>
+<p>CREATE UNIQUE INDEX ux_live_hold_per_shipment ON
+slot_holds(shipment_id)</p>
+<p>WHERE hold_status IN ('ACTIVE','PENDING_APPROVAL');</p>
+<p>-- in the commit transaction, before the re-check:</p>
+<p>SELECT pg_advisory_xact_lock(hashtext(:facility_id));</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 26%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Concern</strong></th>
+<th><strong>SQLite prototype</strong></th>
+<th><strong>Postgres production</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Serialising commits</td>
+<td>BEGIN IMMEDIATE: one writer for the whole database</td>
+<td>pg_advisory_xact_lock per facility: commits at Jaipur and Gurugram
+run in parallel, two commits at one facility queue</td>
+</tr>
+<tr class="even">
+<td>Bookings and holds never overlap</td>
+<td>trg_no_overlap</td>
+<td>EXCLUDE USING gist: the database's own constraint, safe even without
+the lock</td>
+</tr>
+<tr class="odd">
+<td>Booking vs dock event or truck in dock</td>
+<td>Same trigger</td>
+<td>A BEFORE INSERT trigger with the same overlap test (the exclusion
+constraint compares only rows in its WHERE clause)</td>
+</tr>
+<tr class="even">
+<td>Compatibility, current flag</td>
+<td>Triggers</td>
+<td>Same triggers in PL/pgSQL</td>
+</tr>
+<tr class="odd">
+<td>Per-driver ordering</td>
+<td>In-process flag</td>
+<td>Queue table with SELECT ... FOR UPDATE SKIP LOCKED</td>
+</tr>
+<tr class="even">
+<td>Time</td>
+<td>ISO text, julianday()</td>
+<td>timestamptz, tstzrange</td>
+</tr>
+</tbody>
+</table>
+<p>The integrity suite (deliverable 5) is written against the capacity
+functions, not SQLite internals, so it runs unchanged against Postgres.
+That is the acceptance test for the migration.</p>
+<h2 id="scale-path">Scale path</h2>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 17%" />
+<col style="width: 39%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Stage</strong></th>
+<th><strong>Volume</strong></th>
+<th><strong>Shape</strong></th>
+<th><strong>Monthly cost (list price)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pilot</td>
+<td>2 facilities, about 40 trucks a day</td>
+<td>1 small container + managed Postgres (smallest tier)</td>
+<td>About US$22-30 + WhatsApp</td>
+</tr>
+<tr class="even">
+<td>Region</td>
+<td>10-20 facilities</td>
+<td>2 containers behind a load balancer; Postgres with a read replica
+for the console</td>
+<td>About US$80-150</td>
+</tr>
+<tr class="odd">
+<td>National</td>
+<td>100+ facilities</td>
+<td>Doc A's AWS design: queue, serverless workers, Aurora, RDS
+Proxy</td>
+<td>Doc A's floor of about US$170 a month before traffic, then
+usage</td>
+</tr>
+</tbody>
+</table>
+<p>WhatsApp is billed per message. From 1 October 2026 each business
+number gets 1,000 free service messages a month, then about ₹0.145 each;
+proactive check-ins are utility templates, billed per message. At pilot
+volume the messaging cost is a few hundred rupees a month.</p>
+<h1 id="security-and-privacy">10. Security and privacy</h1>
+<ul>
+<li><p><strong>Identity from the channel, not the text.</strong> The
+driver is the verified phone number on the webhook. A message saying "I
+am DRV004" changes nothing.</p></li>
+<li><p><strong>Webhook signatures verified</strong>; unknown numbers get
+no data.</p></li>
+<li><p><strong>Least privilege.</strong> The model gets the driver's
+message text only: no phone number, no name, no database. Prompts and
+outputs are logged without phone numbers.</p></li>
+<li><p><strong>Drivers see only their own shipments.</strong> Replies
+never mention another driver, carrier or customer; a refusal says
+"another truck", never which.</p></li>
+<li><p><strong>Personal data kept short.</strong> We propose keeping
+message bodies 90 days for disputes, then only the extracted facts.
+Phone numbers are masked in logs and in every exported file.</p></li>
+<li><p><strong>India's DPDP Act 2023.</strong> Drivers are told at first
+contact what is collected and why (scheduling their unload), and how to
+reach a person. The client's legal team should confirm the notice text
+and retention period (review pack, Q33).</p></li>
+<li><p><strong>Prompt injection.</strong> Driver text is data. It cannot
+reach a tool except through the fact sheet, whose fields are typed and
+range-checked.</p></li>
+</ul>
+</div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Change log after the review — SetuHaul – Logistics Management</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul – Logistics Management</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><h1>Change log: the 18 November 2026 review</h1>
+<p>Source: the colleague's review pack (<code>deliverables/00_SetuHaul_Review_Pack.docx</code>),
+the six hand-ins and the prototype. "v2" means this folder; "add-ons" means the
+rest of the repository (Demo 2, facility flow, solver, evals, website), which we
+keep as the scale path and updated to agree with the review.</p>
+<h2>Decisions taken on the review</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Which version is the hand-in?</td>
+<td>The colleague's prototype and seven documents (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/v2/"><code>v2/</code></a>). Our earlier site is archived at <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main//v1/"><code>/v1/</code></a> and in commit <code>492a08d</code>.</td>
+</tr>
+<tr>
+<td>Which scheduling engine?</td>
+<td>Exact branch and bound (proven optimal), with priority list + repair as the first, explainable answer and a reason per truck. Both are benchmarked against exhaustive search.</td>
+</tr>
+</tbody>
+</table>
+<h2>The 12 reconciled changes</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Change</th>
+<th>In v2</th>
+<th>In our add-ons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Pick = book in one checked transaction; no "Reply YES"</td>
+<td>Built in</td>
+<td>Demo 2: sending a slot books it and the WhatsApp text confirms it; "Reply YES" removed (EN and Hindi)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Long unloads are intervals that may run past the slot end; never two slots</td>
+<td>Built in</td>
+<td>Already so (start-window model)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Database trigger forbids overlapping time on a dock</td>
+<td>Built in (SQLite stand-in for Postgres EXCLUDE)</td>
+<td>Postgres schema in <a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/infra/"><code>infra/</code></a> already has EXCLUDE</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Earmarks for HIGH/CRITICAL and deadline-limited trucks</td>
+<td>Built in; now driven by the exact plan</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Coordinator-approved atomic swaps</td>
+<td>Built in</td>
+<td>Facility flow already uses coordinator approval</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Booking health monitor</td>
+<td>Built in</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ETA plausibility checks</td>
+<td>Built in</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Time-travel replay from 08:20</td>
+<td>Built in</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Rules first; Claude Haiku only when rules fail</td>
+<td>Built in</td>
+<td>Already so (fallback off by default)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Lean pilot: one container + managed Postgres, about US$22–30/month</td>
+<td>Documented</td>
+<td>Solution design now says pilot first; AWS design is the scale path</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Pending deadline = min(15 min, slot start − 30 min)</td>
+<td>Built in</td>
+<td><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/setuhaul/capacity.py"><code>setuhaul/capacity.py</code></a> <code>pending_deadline()</code>, with a 5-min floor; <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/rules.yaml"><code>rules.yaml</code></a> updated; driver message shows the real minutes</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Weights 8:4:2:1 with a sensitivity test</td>
+<td>Built in</td>
+<td>Noted; plan identical under all three weight sets</td>
+</tr>
+</tbody>
+</table>
+<h2>Review of Doc A (our earlier design)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Finding</th>
+<th>What we did</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>~12 AWS services, about US$170/month floor</td>
+<td>Pilot-first note in the solution design; AWS kept as the scale path</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>Race proof only on SQLite with one writer</td>
+<td>v2 races 10 threads, each with its own connection, 50 times, with a negative control that shows the test can fail, and an overlap trigger that binds every writer. Still SQLite: running the same test on managed Postgres is the first pilot task</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>Audit A03 counted 7 long unloads; 4 are real</td>
+<td>Fixed: minutes now rounded, not truncated (<a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/audit/data_audit.sql"><code>audit/data_audit.sql</code></a>); findings and problem definition updated</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>Audit missed behaviour-changing issues</td>
+<td>Covered by the v2 audit (deliverable 01)</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Branch and bound hard to explain</td>
+<td>Kept an exact engine (the brief asks for an optimal deterministic solver), but its score is now three plain measures and each truck gets a written reason; priority + repair is shown first. Decision register D8, review pack A5 and §6, prototype §6 and scenario run updated</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Weights never validated</td>
+<td>8:4:2:1 with sensitivity test; client question kept open</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Fixed 20-min pending TTL</td>
+<td>Replaced (change 11)</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>Start window vs no-show rule</td>
+<td>Settled in v2 decision register</td>
+</tr>
+<tr>
+<td>A9</td>
+<td>Priority protected only by ranking and swaps</td>
+<td>Earmarks (change 4)</td>
+</tr>
+<tr>
+<td>A10</td>
+<td>Simulated location data</td>
+<td>Still simulated; labelled as such</td>
+</tr>
+<tr>
+<td>A11</td>
+<td>80% on 20 messages has a wide range</td>
+<td>Evaluation report now shows n and a 95% Wilson interval for every rate (80% on 20 is about 58–92%)</td>
+</tr>
+<tr>
+<td>A12</td>
+<td>18 web pages vs 6 hand-ins</td>
+<td>Home page now leads with the v2 hand-ins; other pages are listed as add-ons</td>
+</tr>
+</tbody>
+</table>
+<p>Doc B items (B1–B10) are addressed inside v2 by the reconciled decisions above
+(no LLM on every message, pick = book, no two-slot unloads, a reproducible worked
+example, no impossible reefer fallback, plain state machine).</p>
+<h2>Edits to the colleague's documents</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Edit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>00 Review pack (v1.1)</td>
+<td>Results row, A5 recommendation, §6 Planner row and question 37 now describe the exact engine and its proof (5,425 of 40,320 orders)</td>
+</tr>
+<tr>
+<td>02 Decision register</td>
+<td>Policy table gains the engine row; D8 method and rejected alternatives rewritten</td>
+</tr>
+<tr>
+<td>03 Working prototype</td>
+<td>Run line (7 policies) and §6 planner description and FDE note</td>
+</tr>
+<tr>
+<td>04 Scenario run (v1.1)</td>
+<td>Policy table gains the EXACT row; race turn at 09:36 now reads "reserved for a higher-priority load" with option D1 14:00; priority-protection check now records that refusal</td>
+</tr>
+<tr>
+<td>01, 05, 06</td>
+<td>Unchanged</td>
+</tr>
+</tbody>
+</table>
+<h2>Prototype code changes (<code>v2/prototype</code>)</h2>
+<ul>
+<li><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/planner.py"><code>planner.py</code></a>: <code>schedule()</code> split into <code>_context</code> / <code>_best</code> / <code>_commit</code> (same behaviour); added <code>exact()</code>, <code>explain()</code>, policy <code>EXACT</code>; <code>plan_facility()</code> uses <code>ENGINE = "EXACT"</code> by default.</li>
+<li><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/config.py"><code>config.py</code></a>: <code>EXACT_NODE_LIMIT = 200_000</code>.</li>
+<li><a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/run_scheduler.py"><code>run_scheduler.py</code></a>: prints the engine's proof status and reasons; adds <code>engine</code> to <a href="https://github.com/sdaistudio/SetuHaul_Logistics/blob/main/scheduler_results.json"><code>scheduler_results.json</code></a>.</li>
+<li><a href="https://github.com/sdaistudio/SetuHaul_Logistics/tree/main/out/"><code>out/</code></a>: scheduler and scenario outputs regenerated. Integrity outputs kept as received (the race counts are random per run and do not use the planner).</li>
+<li>12/12 tests pass.</li>
+</ul></div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

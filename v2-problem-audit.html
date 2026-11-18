@@ -1,0 +1,3169 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>01 Problem definition and data audit — SetuHaul – Logistics Management</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul – Logistics Management</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · <a href="v2/01_SetuHaul_Problem_Definition_and_Data_Audit.docx">download the Word file</a></p><p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 1</strong></p>
+<p><strong>Problem Definition Sheet and Data Audit</strong></p>
+<p>What we know, what we estimate, what we assume and what we cannot
+know, with 36 data issues each proven by a query</p>
+<p>The data is evidence, not truth. This sheet separates facts from
+estimates, assumptions and unknowns, sizes the problem, and lists every
+data issue with the query that proves it and the design rule it
+created.</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.0 | 18 November 2026</p>
+<p>Audience: FDE Academy reviewers, SetuHaul head of operations,
+warehouse planners</p>
+<p><strong>Contents</strong></p>
+<p><strong>1. The problem in one paragraph</strong></p>
+<p><strong>2. Who is involved, and what each needs during an
+exception</strong></p>
+<p><strong>3. Scale and sizing</strong></p>
+<p><strong>4. Facts, estimates, assumptions and unknowns</strong></p>
+<blockquote>
+<p>4.1 Facts (true in the snapshot; checked by query)</p>
+<p>4.2 Estimates (numbers that will be wrong; we state how sure we
+are)</p>
+<p>4.3 Assumptions (we chose these; each needs client sign-off)</p>
+<p>4.4 Unknowns (the snapshot cannot tell us)</p>
+</blockquote>
+<p><strong>5. What the data tells us about the current
+process</strong></p>
+<p><strong>6. Data audit</strong></p>
+<blockquote>
+<p>6.1 Method</p>
+<p>6.2 All findings at a glance</p>
+<p>6.3 What the supplied guards cover, and what we added</p>
+<p>6.4 Data model additions (we add tables; the snapshot is never
+modified)</p>
+</blockquote>
+<p><strong>Appendix A. Each finding with its proof query and
+result</strong></p>
+<h1 id="the-problem-in-one-paragraph">1. The problem in one
+paragraph</h1>
+<p>When a wave of delays hits, 20-35 drivers message SetuHaul within
+half an hour, while the number of usable replacement dock slots stays
+small. Each driver needs a quick, clear answer in their own language:
+either a slot their truck can actually make, or an honest "a person will
+call you". Underneath, <strong>no slot may ever be promised
+twice</strong>, scarce capacity must go by business priority and
+existing promises rather than typing speed, and every hard rule must
+hold. The hard rules: dock type, weight, breakdowns, operating hours and
+the driver's own deadline.</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>DECISION | How might we...</strong></p>
+<p>...give drivers a conversational way to report delays, ask questions
+and consider revised appointments, while many simultaneous requests meet
+limited warehouse capacity, without infeasible or conflicting promises?
+(The brief's problem statement. We keep it unchanged and measure against
+it.)</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="who-is-involved-and-what-each-needs-during-an-exception">2. Who
+is involved, and what each needs during an exception</h1>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Party</strong></th>
+<th><strong>What they know</strong></th>
+<th><strong>What they need from us</strong></th>
+<th><strong>Where it shows in the design</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Driver</td>
+<td>Where the truck is, what broke, how late, their next pickup</td>
+<td>Clear choices, short messages, a promise that holds</td>
+<td>Reply buttons, at most 2 questions, "Booked" only after commit</td>
+</tr>
+<tr class="even">
+<td>Dispatcher / carrier</td>
+<td>Which driver and truck, availability</td>
+<td>Revised plan, released bookings, escalation status</td>
+<td>Dispatch notices when a booking is released (outbox)</td>
+</tr>
+<tr class="odd">
+<td>SetuHaul operations</td>
+<td>Shipment plan, customer commitments, open exceptions</td>
+<td>One consistent view of many requests</td>
+<td>Booking health monitor, facility plan, audit trail</td>
+</tr>
+<tr class="even">
+<td>Warehouse planner / coordinator</td>
+<td>Dock capacity, labour, local rules</td>
+<td>Feasible arrivals, no overbooking, only real decisions</td>
+<td>Approval queue with deadlines, swap proposals with facts</td>
+</tr>
+<tr class="odd">
+<td>Consignee / customer</td>
+<td>Inventory or production dependency</td>
+<td>Reliable revised arrival time</td>
+<td>Out of the pilot's scope (the data has no customer SLAs, Q26)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="scale-and-sizing">3. Scale and sizing</h1>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 10%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Figure (from the brief)</strong></th>
+<th><strong>Value</strong></th>
+<th><strong>What we derive from it</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Loads per day</td>
+<td>280-360</td>
+<td>About 12-15 an hour across the network</td>
+</tr>
+<tr class="even">
+<td>Facilities / dock doors</td>
+<td>6 / 32</td>
+<td>About 357 truck-starts a day of capacity (32 doors x 13 hours x 60 /
+70 min)</td>
+</tr>
+<tr class="odd">
+<td>Receiving appointments per day</td>
+<td>190-240</td>
+<td>Normal door utilisation of roughly 55-65%</td>
+</tr>
+<tr class="even">
+<td>Exception messages, normal day</td>
+<td>15-25</td>
+<td>About 1-2 an hour</td>
+</tr>
+<tr class="odd">
+<td>Exception messages in a 30-minute spike</td>
+<td>20-35</td>
+<td>About 1 a minute: tiny for computers, large for 5 coordinators</td>
+</tr>
+<tr class="even">
+<td>Coordinators per shift</td>
+<td>5</td>
+<td>If 1 in 5 exceptions needs a person, a spike gives each coordinator
+1-2 cases. If half need a person, each gets 2-4 cases at once, too many
+to decide well.</td>
+</tr>
+<tr class="odd">
+<td>Live GPS feeds</td>
+<td>0</td>
+<td>Every ETA is an estimate with a confidence level</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>FDE NOTE | The number that drives the design</strong></p>
+<p>Computing load is not the constraint: one small server handles a
+message a minute easily. <strong>Coordinator attention</strong> is. That
+is why the design aims to resolve about 80% of cases without a person
+(we measured 10 of 13), and sends a person only the decisions rules
+cannot make, each with the options already computed.</p></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>IN PLAIN WORDS | In plain words</strong></p>
+<p>The hard part is not the computer keeping up. It is making sure five
+busy people at the warehouse are only phoned about the few cases that
+really need a human, like a hospital triage desk that handles routine
+bookings itself and pages a doctor only for emergencies.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="facts-estimates-assumptions-and-unknowns">4. Facts, estimates,
+assumptions and unknowns</h1>
+<h2 id="facts-true-in-the-snapshot-checked-by-query">4.1 Facts (true in
+the snapshot; checked by query)</h2>
+<table>
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Fact</strong></th>
+<th><strong>Evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2 facilities, 9 docks, 21 shipments, 106 slots, 20 appointments</td>
+<td>Table counts</td>
+</tr>
+<tr class="even">
+<td>Jaipur has 4 standard doors (D1, D3 rated 20 t; D2, D4 rated 25 t),
+1 reefer (D5, 22 t), 1 heavy (D6, 35 t)</td>
+<td>docks</td>
+</tr>
+<tr class="odd">
+<td>Standard and reefer slots are 60 minutes; heavy slots are 90
+minutes</td>
+<td>appointment_slots</td>
+</tr>
+<tr class="even">
+<td>Unloads take 45-90 minutes; four bookings have unloads longer than
+their slot</td>
+<td>shipments, F04</td>
+</tr>
+<tr class="odd">
+<td>D3 is broken 09:15-13:00; D5 is under planned maintenance
+18:00-22:00</td>
+<td>dock_status_events</td>
+</tr>
+<tr class="even">
+<td>The database allows one active booking per slot and one current
+active booking per shipment, and nothing more</td>
+<td>Partial unique indexes, F09</td>
+</tr>
+<tr class="odd">
+<td>Jaipur rules: early check-in up to 60 min; no-show after 30 min;
+reefer loads use D5; loads over 25 t use the heavy dock; no new start
+after 21:00 without approval</td>
+<td>facility_rules</td>
+</tr>
+<tr class="even">
+<td>Several current bookings are already impossible: overweight (2), on
+a broken dock (1), missed by the ETA (3)</td>
+<td>F01, F02, F06</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="estimates-numbers-that-will-be-wrong-we-state-how-sure-we-are">4.2
+Estimates (numbers that will be wrong; we state how sure we are)</h2>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 26%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Estimate</strong></th>
+<th><strong>Source</strong></th>
+<th><strong>How we handle it</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Driver ETA ("around 11:20", "late by one hour", "between 12:30 and
+13:00")</td>
+<td>eta_updates, chat</td>
+<td>Confidence HIGH / MEDIUM / LOW; plan on the late edge (HIGH +0,
+MEDIUM +15, LOW +30 min)</td>
+</tr>
+<tr class="even">
+<td>Original plan ETA</td>
+<td>shipments.original_eta_ts</td>
+<td>Treated as MEDIUM, never HIGH (F17)</td>
+</tr>
+<tr class="odd">
+<td>Expected unload time</td>
+<td>shipments.expected_unload_min</td>
+<td>Used as planned; an overrun past the expected end adds 10-minute
+buffers (F34)</td>
+</tr>
+<tr class="even">
+<td>Detention and dwell cost</td>
+<td>None in the data</td>
+<td>Proxy: priority-weighted waiting minutes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="assumptions-we-chose-these-each-needs-client-sign-off">4.3
+Assumptions (we chose these; each needs client sign-off)</h2>
+<table>
+<colgroup>
+<col style="width: 60%" />
+<col style="width: 27%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Assumption</strong></th>
+<th><strong>Value</strong></th>
+<th><strong>Grey-area question</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A slot is a start window; the truck must gate in by slot start +
+grace</td>
+<td>30 min grace at Jaipur</td>
+<td>Q1</td>
+</tr>
+<tr class="even">
+<td>An unload may run past its slot end if the dock is free</td>
+<td>Interval check on each dock</td>
+<td>Q2</td>
+</tr>
+<tr class="odd">
+<td>Gate-to-dock time from the road; call time from the yard</td>
+<td>15 min; 10 min</td>
+<td>Q5</td>
+</tr>
+<tr class="even">
+<td>Changeover between trucks</td>
+<td>10 min</td>
+<td>Q4</td>
+</tr>
+<tr class="odd">
+<td>A start at exactly 21:00 needs approval</td>
+<td>Strict reading of RULE005</td>
+<td>Q3</td>
+</tr>
+<tr class="even">
+<td>max_vehicle_weight_kg is a payload limit</td>
+<td>Matches RULE004 and the data</td>
+<td>Q9</td>
+</tr>
+<tr class="odd">
+<td>Standard loads never use the heavy or reefer door without a
+coordinator</td>
+<td>Flex dock off</td>
+<td>Q10</td>
+</tr>
+<tr class="even">
+<td>Doors are used for receiving only</td>
+<td>No outbound capacity modelled</td>
+<td>Q11</td>
+</tr>
+<tr class="odd">
+<td>Waiting weights by priority</td>
+<td>8 : 4 : 2 : 1</td>
+<td>Q24</td>
+</tr>
+</tbody>
+</table>
+<h2 id="unknowns-the-snapshot-cannot-tell-us">4.4 Unknowns (the snapshot
+cannot tell us)</h2>
+<ul>
+<li><p><strong>Where trucks really are.</strong> There is no GPS, and
+two ETAs are physically impossible (F11, F13).</p></li>
+<li><p><strong>What "now" is.</strong> Rows run from 07:10 to 16:30
+(F15). We solve this with an explicit as_of time and a replay that
+rewinds the snapshot to 08:20.</p></li>
+<li><p><strong>Real dock productivity and labour.</strong> Whether a
+free door has a crew and a forklift (Q12).</p></li>
+<li><p><strong>Outbound use of the same doors</strong> (Q11).</p></li>
+<li><p><strong>Commercial terms.</strong> Detention free time and rates,
+customer cut-offs, penalties (Q25, Q26).</p></li>
+<li><p><strong>Decisions made by phone outside the system.</strong> For
+example, who approved APT1014A's pending request.</p></li>
+<li><p><strong>Tomorrow's slots.</strong> None are published
+(F23).</p></li>
+</ul>
+<h1 id="what-the-data-tells-us-about-the-current-process">5. What the
+data tells us about the current process</h1>
+<p>The audit is not just a list of bad rows. Read together, the findings
+describe how the current process fails:</p>
+<ol type="1">
+<li><p><strong>Nobody re-checks a promise after it is made.</strong> The
+reefer booking was made on 1 August at 12:00. Maintenance on its only
+possible door was planned two hours later. Nothing flagged the clash for
+three days (F07). Breakdowns leave slots marked OPEN (F02), and ETA
+updates leave dead bookings holding capacity (F06).</p></li>
+<li><p><strong>The chat path books without checking.</strong> The
+current chat flow created a pending booking of a 21 t load on a 20 t
+door (F30).</p></li>
+<li><p><strong>History is overwritten.</strong> Two confirmed bookings
+shared one slot for three days, and the table can no longer show it
+(F08).</p></li>
+<li><p><strong>Plans ignore that a truck can only be in one
+place.</strong> Three trucks are scheduled on a second trip while still
+on their first (F12, F14); one "departed" while still inside Jaipur DC
+(F13); one driver drives two trucks (F11).</p></li>
+<li><p><strong>Messages fall through.</strong> Three drivers got no
+reply (F27), a retry created a duplicate thread (F25, F26), a pending
+request was never sent (F28), and the escalation e-mail went to an
+address nobody owns (F29).</p></li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>CHANGE FROM THE EXISTING DESIGNS | What each pattern
+changed in our design</strong></p>
+<p>1 became the <strong>booking health monitor</strong> (re-check on
+every event). 2 became <strong>one booking service</strong> that is the
+only writer. 3 became <strong>appointment_events</strong>, an
+append-only history. 4 became <strong>plausibility-checked
+ETAs</strong>. 5 became the <strong>outbox, dedupe, reply-time alarm and
+channel-aware routing</strong>.</p></td>
+</tr>
+</tbody>
+</table>
+<h1 id="data-audit">6. Data audit</h1>
+<h2 id="method">6.1 Method</h2>
+<ul>
+<li><p>Every finding has one SQL query, run read-only on the supplied
+database. Results are pasted from the run, not typed.</p></li>
+<li><p>Minute arithmetic uses ROUND(...). Truncating with CAST(... AS
+INT) turns 60 minutes into 59, which inflates "unload longer than slot"
+from 4 to 7 (a correction to the earlier audit).</p></li>
+<li><p>Findings 1-36 merge Doc A's A01-A20 and Doc B's D1-D17, and add
+new ones. The "Also found by" column credits the earlier work.</p></li>
+<li><p>Severity: <strong>Critical</strong> means it can cause a double
+booking or a false promise. <strong>High</strong> means a wrong answer
+to a driver or coordinator. <strong>Medium</strong> means a wrong number
+or a missing safeguard. <strong>Low</strong> means hygiene.</p></li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Severity</strong></th>
+<th><strong>Count</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Critical</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>High</td>
+<td>15</td>
+</tr>
+<tr class="odd">
+<td>Medium</td>
+<td>13</td>
+</tr>
+<tr class="even">
+<td>Low</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td><strong>36</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>RISK | Fix these eight before go-live</strong></p>
+<p>F01 (overweight bookings), F02 (slots open on a broken door), F07
+(reefer booking dead since 1 Aug), F08 (no booking history), F09
+(indexes leave seven gaps), F14 (no-shows caused by the plan), F29
+(escalation channel broken), F32 (meaning of the weight
+column).</p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="all-findings-at-a-glance">6.2 All findings at a glance</h2>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 11%" />
+<col style="width: 38%" />
+<col style="width: 9%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>ID</strong></th>
+<th><strong>Severity</strong></th>
+<th><strong>Area</strong></th>
+<th><strong>Finding</strong></th>
+<th><strong>Rows</strong></th>
+<th><strong>Also found by</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>F01</td>
+<td>Critical</td>
+<td>Capacity</td>
+<td>Active bookings on docks rated below the load weight</td>
+<td>2</td>
+<td>Doc A A01, Doc A A07, Doc B D1, Doc B D2</td>
+</tr>
+<tr class="even">
+<td>F02</td>
+<td>Critical</td>
+<td>Capacity</td>
+<td>Dock events are not reflected in slot status</td>
+<td>3</td>
+<td>Doc A A02, Doc B D5</td>
+</tr>
+<tr class="odd">
+<td>F03</td>
+<td>Medium</td>
+<td>Capacity</td>
+<td>docks.dock_status stays ACTIVE during a breakdown or
+maintenance</td>
+<td>2</td>
+<td>Doc B D6</td>
+</tr>
+<tr class="even">
+<td>F04</td>
+<td>High</td>
+<td>Capacity</td>
+<td>Planned unload is longer than the booked slot</td>
+<td>4</td>
+<td>Doc A A03, Doc B D3</td>
+</tr>
+<tr class="odd">
+<td>F05</td>
+<td>High</td>
+<td>Capacity</td>
+<td>Booked work already collides on the same dock (cascade proof)</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F06</td>
+<td>High</td>
+<td>Capacity</td>
+<td>Current bookings that the latest ETA already misses (phantom
+capacity)</td>
+<td>3</td>
+<td>Doc A A04, Doc B D4</td>
+</tr>
+<tr class="odd">
+<td>F07</td>
+<td>Critical</td>
+<td>Capacity</td>
+<td>SHP1015's original booking was infeasible from the day maintenance
+was planned</td>
+<td>1</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F08</td>
+<td>Critical</td>
+<td>Capacity</td>
+<td>A historic double booking: two CONFIRMED bookings on one slot for
+three days</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="odd">
+<td>F09</td>
+<td>Critical</td>
+<td>Capacity</td>
+<td>The two supplied unique indexes leave seven bad bookings
+possible</td>
+<td>8</td>
+<td>Doc A A20, Doc B D17</td>
+</tr>
+<tr class="even">
+<td>F10</td>
+<td>Medium</td>
+<td>Capacity</td>
+<td>v_slot_availability has no notion of time, weight, events or
+holds</td>
+<td>8</td>
+<td>Doc A A12, Doc B D7</td>
+</tr>
+<tr class="odd">
+<td>F11</td>
+<td>High</td>
+<td>Fleet</td>
+<td>One driver on two moving trucks</td>
+<td>1</td>
+<td>Doc A A05, Doc B D9</td>
+</tr>
+<tr class="even">
+<td>F12</td>
+<td>High</td>
+<td>Fleet</td>
+<td>One vehicle on several live shipments</td>
+<td>3</td>
+<td>Doc A A06, Doc B D10</td>
+</tr>
+<tr class="odd">
+<td>F13</td>
+<td>High</td>
+<td>Fleet</td>
+<td>A truck leaves Neemrana while it is still inside Jaipur DC</td>
+<td>1</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F14</td>
+<td>High</td>
+<td>Fleet</td>
+<td>Downstream trips are infeasible, so a 'no-show' is really a planning
+error</td>
+<td>3</td>
+<td>Doc A A17 (partly), new root cause</td>
+</tr>
+<tr class="odd">
+<td>F15</td>
+<td>High</td>
+<td>Time</td>
+<td>No single snapshot time: rows run from 07:10 to 16:30</td>
+<td>5</td>
+<td>Doc A A08, Doc B D16</td>
+</tr>
+<tr class="even">
+<td>F16</td>
+<td>Medium</td>
+<td>Time</td>
+<td>latest_eta_ts differs from the plan with no ETA record behind
+it</td>
+<td>4</td>
+<td>Doc A A10, Doc B D11</td>
+</tr>
+<tr class="odd">
+<td>F17</td>
+<td>Medium</td>
+<td>Time</td>
+<td>The ETA view labels the original plan as HIGH confidence</td>
+<td>10</td>
+<td>Doc A A11</td>
+</tr>
+<tr class="even">
+<td>F18</td>
+<td>Medium</td>
+<td>Time</td>
+<td>An ETA range cannot be stored; it is squeezed into one point</td>
+<td>1</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="odd">
+<td>F19</td>
+<td>Medium</td>
+<td>Time</td>
+<td>Trucks inside the grace period are labelled LATE</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F20</td>
+<td>Medium</td>
+<td>Time</td>
+<td>The 21:00 last-start rule conflicts with slots that start at
+21:00</td>
+<td>5</td>
+<td>Doc A A15</td>
+</tr>
+<tr class="odd">
+<td>F21</td>
+<td>Medium</td>
+<td>Time</td>
+<td>Rules are duplicated, missing or wider than the slot grid</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F22</td>
+<td>Low</td>
+<td>Time</td>
+<td>The reefer rule names dock D5 in free text; rule values are untyped
+text</td>
+<td>6</td>
+<td>Doc A A16, new</td>
+</tr>
+<tr class="odd">
+<td>F23</td>
+<td>Medium</td>
+<td>Time</td>
+<td>Slots exist only for 4 August: no next-day capacity</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F24</td>
+<td>Low</td>
+<td>Time</td>
+<td>Slots have no updated_at: a 4 Aug breakdown appears on rows
+'created' 1 Aug</td>
+<td>7</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="odd">
+<td>F25</td>
+<td>High</td>
+<td>Messaging</td>
+<td>A messaging retry is stored as a new message, exception and
+thread</td>
+<td>2</td>
+<td>Doc A A09, Doc B D12</td>
+</tr>
+<tr class="even">
+<td>F26</td>
+<td>Medium</td>
+<td>Messaging</td>
+<td>One driver, several threads: context is split</td>
+<td>2</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="odd">
+<td>F27</td>
+<td>High</td>
+<td>Messaging</td>
+<td>Three driver messages never got a reply</td>
+<td>3</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F28</td>
+<td>High</td>
+<td>Messaging</td>
+<td>Pending confirmation requests that never reached the warehouse</td>
+<td>2</td>
+<td>Doc B D13</td>
+</tr>
+<tr class="odd">
+<td>F29</td>
+<td>High</td>
+<td>Messaging</td>
+<td>The escalation channel itself is broken</td>
+<td>2</td>
+<td>Doc A A13, Doc A A14, Doc B D14, Doc B D15</td>
+</tr>
+<tr class="even">
+<td>F30</td>
+<td>High</td>
+<td>Messaging</td>
+<td>The existing chat booking path made an incompatible booking</td>
+<td>1</td>
+<td>Doc A A07</td>
+</tr>
+<tr class="odd">
+<td>F31</td>
+<td>Medium</td>
+<td>Messaging</td>
+<td>Driver time limits are stored without saying what they limit</td>
+<td>1</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F32</td>
+<td>High</td>
+<td>Semantics</td>
+<td>'max_vehicle_weight_kg' is compared with cargo weight</td>
+<td>5</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="odd">
+<td>F33</td>
+<td>Low</td>
+<td>Semantics</td>
+<td>Only one check-in per shipment is allowed</td>
+<td>1</td>
+<td>New (in neither existing design)</td>
+</tr>
+<tr class="even">
+<td>F34</td>
+<td>Medium</td>
+<td>Semantics</td>
+<td>An unload overrun is recorded as a 'capacity reduction' and in
+free-text notes</td>
+<td>1</td>
+<td>Doc A A19</td>
+</tr>
+<tr class="odd">
+<td>F35</td>
+<td>Medium</td>
+<td>Semantics</td>
+<td>No-show booking is closed but its shipment is still ASSIGNED</td>
+<td>1</td>
+<td>Doc A A17</td>
+</tr>
+<tr class="even">
+<td>F36</td>
+<td>High</td>
+<td>Semantics</td>
+<td>Moving shipments with no current appointment</td>
+<td>2</td>
+<td>Doc A A18</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-the-supplied-guards-cover-and-what-we-added">6.3 What the
+supplied guards cover, and what we added</h2>
+<p>The brief says the database already enforces two rules and asks what
+they do not cover. We tried eight bad bookings on a throw-away copy:</p>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 12%" />
+<col style="width: 33%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Bad booking attempted</strong></th>
+<th><strong>Supplied indexes</strong></th>
+<th><strong>Our guard</strong></th>
+<th><strong>Layer</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Book a BLOCKED slot (D3 10:00)</td>
+<td>Accepted</td>
+<td>Rejected: SLOT_NOT_OPEN</td>
+<td>DB trigger</td>
+</tr>
+<tr class="even">
+<td>Book a Gurugram slot for a Jaipur shipment</td>
+<td>Accepted</td>
+<td>Rejected: WRONG_FACILITY</td>
+<td>DB trigger</td>
+</tr>
+<tr class="odd">
+<td>Book a 31 t heavy load on a 20 t standard door</td>
+<td>Accepted</td>
+<td>Rejected: DOCK_WEIGHT_EXCEEDED</td>
+<td>DB trigger</td>
+</tr>
+<tr class="even">
+<td>Book a cancelled shipment</td>
+<td>Accepted</td>
+<td>Rejected: SHIPMENT_NOT_BOOKABLE</td>
+<td>DB trigger</td>
+</tr>
+<tr class="odd">
+<td>Active booking with is_current = 0 (escapes the per-shipment
+index)</td>
+<td>Accepted</td>
+<td>Rejected: ACTIVE_APPOINTMENT_MUST_BE_CURRENT</td>
+<td>DB trigger</td>
+</tr>
+<tr class="even">
+<td>Overlap across slots (75-min unload into the next window)</td>
+<td>Accepted</td>
+<td>Rejected: DOCK_INTERVAL_OVERLAP</td>
+<td>DB trigger on intervals</td>
+</tr>
+<tr class="odd">
+<td>Book a slot that already ended</td>
+<td>Accepted</td>
+<td>Rejected by the feasibility re-check at commit (needs the as-of
+time)</td>
+<td>Code, in the write transaction</td>
+</tr>
+<tr class="even">
+<td>Second active booking on an occupied slot</td>
+<td><strong>Rejected</strong> (unique index)</td>
+<td>Rejected</td>
+<td>Index, kept as the last line</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="data-model-additions-we-add-tables-the-snapshot-is-never-modified">6.4
+Data model additions (we add tables; the snapshot is never
+modified)</h2>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 55%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Table or object</strong></th>
+<th><strong>Purpose</strong></th>
+<th><strong>Finding it answers</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>slot_holds + two partial unique indexes</td>
+<td>A hold while a coordinator decides; one live hold per slot and per
+shipment</td>
+<td>F28</td>
+</tr>
+<tr class="even">
+<td>dock_reservations + trg_no_overlap</td>
+<td>Time intervals per dock; no overlap (the SQLite stand-in for
+Postgres EXCLUDE)</td>
+<td>F04, F05, F09</td>
+</tr>
+<tr class="odd">
+<td>trg_appt_guard, trg_active_must_be_current</td>
+<td>Database-level compatibility and status checks on every new active
+booking</td>
+<td>F01, F09, F30</td>
+</tr>
+<tr class="even">
+<td>appointment_events</td>
+<td>Append-only history of every booking state change</td>
+<td>F08, F24</td>
+</tr>
+<tr class="odd">
+<td>conversations</td>
+<td>One versioned conversation per driver</td>
+<td>F26</td>
+</tr>
+<tr class="even">
+<td>inbound_messages, idempotency_keys</td>
+<td>Dedupe retries; replay-safe commits</td>
+<td>F25</td>
+</tr>
+<tr class="odd">
+<td>eta_windows, driver_constraints</td>
+<td>ETA ranges; typed driver limits (gate-out, unload end, start)</td>
+<td>F18, F31</td>
+</tr>
+<tr class="even">
+<td>slot_earmarks</td>
+<td>Soft protection of scarce capacity for priority or deadline-limited
+trucks</td>
+<td>Decision 7</td>
+</tr>
+<tr class="odd">
+<td>escalations, outbox, audit_log</td>
+<td>Complete hand-offs, reliable sends, audit trail</td>
+<td>F27, F29</td>
+</tr>
+</tbody>
+</table>
+<h1
+id="appendix-a.-each-finding-with-its-proof-query-and-result">Appendix
+A. Each finding with its proof query and result</h1>
+<p>Every query below ran against setuhaul_freight_operations.db exactly
+as supplied (read-only). The same queries are in audit/audit_queries.sql
+in the code package. Times are shown as HH:MM on 4 August unless another
+date is given.</p>
+<h2 id="f01.-active-bookings-on-docks-rated-below-the-load-weight">F01.
+Active bookings on docks rated below the load weight</h2>
+<p><strong>Severity:</strong> Critical | <strong>Area:</strong> Capacity
+| <strong>Also found by:</strong> Doc A A01, Doc A A07, Doc B D1, Doc B
+D2</p>
+<p><strong>Why it matters.</strong> Two promises that cannot be kept:
+the truck would be refused at the dock.</p>
+<p><strong>Design response.</strong> Feasibility rule F2 (weight) on
+every option and again inside the commit transaction; re-plan both
+trucks.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, a.appointment_status, s.shipment_id,
+s.load_weight_kg, d.dock_code, d.max_vehicle_weight_kg</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id)</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON
+d.dock_id=sl.dock_id</p>
+<p>WHERE a.appointment_status IN
+('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS') AND s.load_weight_kg
+&gt; d.max_vehicle_weight_kg</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 13%" />
+<col style="width: 14%" />
+<col style="width: 9%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>appointment status</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>load weight kg</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>max vehicle weight kg</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1014A</td>
+<td>PENDING_CONFIRMATION</td>
+<td>SHP1014</td>
+<td>21000</td>
+<td>D1</td>
+<td>20000</td>
+</tr>
+<tr class="even">
+<td>APT1005</td>
+<td>CONFIRMED</td>
+<td>SHP1005</td>
+<td>20500</td>
+<td>D3</td>
+<td>20000</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f02.-dock-events-are-not-reflected-in-slot-status">F02. Dock
+events are not reflected in slot status</h2>
+<p><strong>Severity:</strong> Critical | <strong>Area:</strong> Capacity
+| <strong>Also found by:</strong> Doc A A02, Doc B D5</p>
+<p><strong>Why it matters.</strong> A slot on a broken dock still looks
+OPEN, so a naive availability check would offer it.</p>
+<p><strong>Design response.</strong> Derive slot usability from
+dock_status_events at the as-of time; never trust slot_status alone.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT e.dock_event_id, e.event_type, d.dock_code, e.event_start_ts,
+e.event_end_ts, sl.slot_id, sl.slot_start_ts, sl.slot_status</p>
+<p>FROM dock_status_events e JOIN appointment_slots sl ON
+sl.dock_id=e.dock_id</p>
+<p>JOIN docks d ON d.dock_id=e.dock_id</p>
+<p>WHERE sl.slot_status='OPEN' AND sl.slot_start_ts &lt;
+COALESCE(e.event_end_ts,'9999') AND sl.slot_end_ts &gt;
+e.event_start_ts</p>
+<p>ORDER BY e.dock_event_id, sl.slot_start_ts</p>
+</blockquote>
+<p><strong>Result</strong> (3 rows)</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 20%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 10%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>dock event id</strong></th>
+<th><strong>event type</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>event start ts</strong></th>
+<th><strong>event end ts</strong></th>
+<th><strong>slot id</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>slot status</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DEVT001</td>
+<td>BREAKDOWN</td>
+<td>D3</td>
+<td>09:15</td>
+<td>13:00</td>
+<td>SLOT-JAI-030</td>
+<td>09:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="even">
+<td>DEVT003</td>
+<td>CAPACITY_REDUCTION</td>
+<td>D2</td>
+<td>08:00</td>
+<td>09:20</td>
+<td>SLOT-JAI-015</td>
+<td>08:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="odd">
+<td>DEVT003</td>
+<td>CAPACITY_REDUCTION</td>
+<td>D2</td>
+<td>08:00</td>
+<td>09:20</td>
+<td>SLOT-JAI-016</td>
+<td>09:00</td>
+<td>OPEN</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f03.-docks.dock_status-stays-active-during-a-breakdown-or-maintenance">F03.
+docks.dock_status stays ACTIVE during a breakdown or maintenance</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Capacity |
+<strong>Also found by:</strong> Doc B D6</p>
+<p><strong>Why it matters.</strong> Any screen that reads dock_status
+shows a broken dock as working.</p>
+<p><strong>Design response.</strong> Treat dock_status as a static
+attribute; compute live status from events at as-of.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT d.dock_code, d.dock_status, e.event_type, e.event_start_ts,
+e.event_end_ts</p>
+<p>FROM docks d JOIN dock_status_events e USING(dock_id)</p>
+<p>WHERE e.event_type IN ('BREAKDOWN','MAINTENANCE') AND
+d.dock_status='ACTIVE'</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 19%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>dock code</strong></th>
+<th><strong>dock status</strong></th>
+<th><strong>event type</strong></th>
+<th><strong>event start ts</strong></th>
+<th><strong>event end ts</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D3</td>
+<td>ACTIVE</td>
+<td>BREAKDOWN</td>
+<td>09:15</td>
+<td>13:00</td>
+</tr>
+<tr class="even">
+<td>D5</td>
+<td>ACTIVE</td>
+<td>MAINTENANCE</td>
+<td>18:00</td>
+<td>22:00</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f04.-planned-unload-is-longer-than-the-booked-slot">F04. Planned
+unload is longer than the booked slot</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Capacity |
+<strong>Also found by:</strong> Doc A A03, Doc B D3</p>
+<p><strong>Why it matters.</strong> Each of these spills into the next
+window on the same dock; delays cascade.</p>
+<p><strong>Design response.</strong> Model dock occupancy as time
+intervals (start + unload + changeover), not as one slot per truck.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, s.shipment_id, d.dock_code,
+sl.slot_start_ts, sl.slot_end_ts,</p>
+<p>CAST(ROUND((julianday(sl.slot_end_ts)-julianday(sl.slot_start_ts))*1440)
+AS INT) AS slot_min, s.expected_unload_min</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id)</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON
+d.dock_id=sl.dock_id</p>
+<p>WHERE a.appointment_status NOT IN ('CANCELLED','REJECTED')</p>
+<p>AND s.expected_unload_min &gt;
+ROUND((julianday(sl.slot_end_ts)-julianday(sl.slot_start_ts))*1440)</p>
+<p>ORDER BY sl.slot_start_ts</p>
+</blockquote>
+<p><strong>Result</strong> (4 rows)</p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 10%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 10%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>slot end ts</strong></th>
+<th><strong>slot min</strong></th>
+<th><strong>expected unload min</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1002</td>
+<td>SHP1002</td>
+<td>D2</td>
+<td>08:00</td>
+<td>09:00</td>
+<td>60</td>
+<td>70</td>
+</tr>
+<tr class="even">
+<td>APT1005</td>
+<td>SHP1005</td>
+<td>D3</td>
+<td>09:00</td>
+<td>10:00</td>
+<td>60</td>
+<td>75</td>
+</tr>
+<tr class="odd">
+<td>APT1009</td>
+<td>SHP1009</td>
+<td>D4</td>
+<td>11:00</td>
+<td>12:00</td>
+<td>60</td>
+<td>75</td>
+</tr>
+<tr class="even">
+<td>APT1014A</td>
+<td>SHP1014</td>
+<td>D1</td>
+<td>11:00</td>
+<td>12:00</td>
+<td>60</td>
+<td>75</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f05.-booked-work-already-collides-on-the-same-dock-cascade-proof">F05.
+Booked work already collides on the same dock (cascade proof)</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Capacity |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> The plan itself is infeasible before
+any driver is late: the next truck cannot start on time.</p>
+<p><strong>Design response.</strong> Interval check (no overlap per
+dock) in the feasibility layer and a DB trigger as the last guard.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>WITH b AS (</p>
+<p>SELECT a.appointment_id, sl.dock_id, d.dock_code, sl.slot_start_ts AS
+st,</p>
+<p>datetime(sl.slot_start_ts, '+'||s.expected_unload_min||' minutes') AS
+planned_end_utc</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id)</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON
+d.dock_id=sl.dock_id</p>
+<p>WHERE a.appointment_status IN
+('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS'))</p>
+<p>SELECT x.dock_code, x.appointment_id AS first_booking, x.st AS
+first_start,</p>
+<p>y.appointment_id AS next_booking, y.st AS next_start,</p>
+<p>CAST(ROUND((julianday(x.planned_end_utc)-julianday(y.st))*1440) AS
+INT) AS overlap_min</p>
+<p>FROM b x JOIN b y ON x.dock_id=y.dock_id AND y.st &gt; x.st</p>
+<p>WHERE julianday(x.planned_end_utc) &gt; julianday(y.st)</p>
+<p>AND NOT EXISTS (SELECT 1 FROM b z WHERE z.dock_id=x.dock_id AND z.st
+&gt; x.st AND z.st &lt; y.st)</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 21%" />
+<col style="width: 16%" />
+<col style="width: 19%" />
+<col style="width: 15%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>dock code</strong></th>
+<th><strong>first booking</strong></th>
+<th><strong>first start</strong></th>
+<th><strong>next booking</strong></th>
+<th><strong>next start</strong></th>
+<th><strong>overlap min</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D1</td>
+<td>APT1014A</td>
+<td>11:00</td>
+<td>APT1017</td>
+<td>12:00</td>
+<td>15</td>
+</tr>
+<tr class="even">
+<td>D2</td>
+<td>APT1002</td>
+<td>08:00</td>
+<td>APT1004</td>
+<td>09:00</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f06.-current-bookings-that-the-latest-eta-already-misses-phantom-capacity">F06.
+Current bookings that the latest ETA already misses (phantom
+capacity)</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Capacity |
+<strong>Also found by:</strong> Doc A A04, Doc B D4</p>
+<p><strong>Why it matters.</strong> These slots look taken but their
+trucks cannot check in within the 30-minute grace; capacity is locked
+for nothing.</p>
+<p><strong>Design response.</strong> Certain-miss rule: release the slot
+(with dispatcher notice) once even the optimistic ETA misses the grace
+window.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, s.shipment_id, sl.slot_start_ts,
+sl.slot_end_ts, e.effective_eta_ts, e.eta_confidence</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id)</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id JOIN v_latest_eta e
+USING(shipment_id)</p>
+<p>LEFT JOIN facility_checkins fc USING(shipment_id)</p>
+<p>WHERE a.appointment_status IN ('CONFIRMED','PENDING_CONFIRMATION')
+AND a.is_current=1 AND fc.gate_in_ts IS NULL</p>
+<p>AND julianday(e.effective_eta_ts) &gt; julianday(sl.slot_start_ts,
+'+30 minutes')</p>
+</blockquote>
+<p><strong>Result</strong> (3 rows)</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 15%" />
+<col style="width: 16%" />
+<col style="width: 14%" />
+<col style="width: 18%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>slot end ts</strong></th>
+<th><strong>effective eta ts</strong></th>
+<th><strong>eta confidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1006</td>
+<td>SHP1006</td>
+<td>10:00</td>
+<td>11:00</td>
+<td>11:20</td>
+<td>HIGH</td>
+</tr>
+<tr class="even">
+<td>APT1015A</td>
+<td>SHP1015</td>
+<td>17:00</td>
+<td>18:00</td>
+<td>18:30</td>
+<td>HIGH</td>
+</tr>
+<tr class="odd">
+<td>APT1017</td>
+<td>SHP1017</td>
+<td>12:00</td>
+<td>13:00</td>
+<td>12:45</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f07.-shp1015s-original-booking-was-infeasible-from-the-day-maintenance-was-planned">F07.
+SHP1015's original booking was infeasible from the day maintenance was
+planned</h2>
+<p><strong>Severity:</strong> Critical | <strong>Area:</strong> Capacity
+| <strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> Booked 1 Aug 12:00; maintenance
+planned 1 Aug 14:00 from 18:00. A 17:30 arrival + 15 min + 60 min unload
+ends 18:45. Nobody re-checked the booking for 3 days, so the reefer
+exception on 4 Aug was predictable on 1 Aug.</p>
+<p><strong>Design response.</strong> Event-driven re-validation: every
+new dock event, rule change or ETA update re-checks all affected
+bookings and raises an at-risk flag.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, a.booked_at, sl.slot_start_ts,
+sl.slot_end_ts, s.original_eta_ts, s.expected_unload_min,</p>
+<p>strftime('%H:%M', s.original_eta_ts,
+'+'||(s.expected_unload_min+15+330)||' minutes') AS
+planned_unload_end_ist,</p>
+<p>e.dock_event_id, e.event_start_ts AS maintenance_start, e.created_at
+AS maintenance_planned_at</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id)</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id</p>
+<p>JOIN dock_status_events e ON e.dock_id=sl.dock_id AND
+e.event_type='MAINTENANCE'</p>
+<p>WHERE a.appointment_id='APT1015A'</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 13%" />
+<col style="width: 5%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>booked at</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>slot end ts</strong></th>
+<th><strong>original eta ts</strong></th>
+<th><strong>expected unload min</strong></th>
+<th><strong>planned unload end ist</strong></th>
+<th><strong>dock event id</strong></th>
+<th><strong>maintenance start</strong></th>
+<th><strong>maintenance planned at</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1015A</td>
+<td>1 Aug 12:00</td>
+<td>17:00</td>
+<td>18:00</td>
+<td>17:30</td>
+<td>60</td>
+<td>18:45</td>
+<td>DEVT002</td>
+<td>18:00</td>
+<td>1 Aug 14:00</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f08.-a-historic-double-booking-two-confirmed-bookings-on-one-slot-for-three-days">F08.
+A historic double booking: two CONFIRMED bookings on one slot for three
+days</h2>
+<p><strong>Severity:</strong> Critical | <strong>Area:</strong> Capacity
+| <strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> APT1007 (confirmed 1 Aug 11:05) and
+APT1012A (confirmed 1 Aug 11:55) both held SLOT-JAI-003 until 4 Aug
+09:40. The unique index cannot see the past because the table overwrites
+status instead of logging transitions.</p>
+<p><strong>Design response.</strong> Append-only appointment_events
+(every status change with timestamp and actor); audit queries run on
+history, not just current rows.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.slot_id, a.appointment_id, a.shipment_id,
+a.appointment_status, a.confirmed_at, a.cancelled_at,
+a.cancellation_reason</p>
+<p>FROM appointments a WHERE a.slot_id IN (SELECT slot_id FROM
+appointments GROUP BY slot_id HAVING COUNT(*)&gt;1)</p>
+<p>ORDER BY a.slot_id, a.confirmed_at</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 13%" />
+<col style="width: 10%" />
+<col style="width: 15%" />
+<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>slot id</strong></th>
+<th><strong>appointment id</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>appointment status</strong></th>
+<th><strong>confirmed at</strong></th>
+<th><strong>cancelled at</strong></th>
+<th><strong>cancellation reason</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SLOT-JAI-003</td>
+<td>APT1007</td>
+<td>SHP1007</td>
+<td>CONFIRMED</td>
+<td>1 Aug 11:05</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-003</td>
+<td>APT1012A</td>
+<td>SHP1012</td>
+<td>CANCELLED</td>
+<td>1 Aug 11:55</td>
+<td>09:40</td>
+<td>Driver ETA moved beyond slot</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f09.-the-two-supplied-unique-indexes-leave-seven-bad-bookings-possible">F09.
+The two supplied unique indexes leave seven bad bookings possible</h2>
+<p><strong>Severity:</strong> Critical | <strong>Area:</strong> Capacity
+| <strong>Also found by:</strong> Doc A A20, Doc B D17</p>
+<p><strong>Why it matters.</strong> The indexes stop only 'two active
+bookings on one slot' and 'two current bookings per shipment'.</p>
+<p><strong>Design response.</strong> Booking service + feasibility
+re-check inside BEGIN IMMEDIATE + new triggers (interval overlap,
+is_current) + hold index.</p>
+<p><strong>Proof.</strong> Eight test bookings were inserted into a
+throw-away copy of the database, each inside a transaction that was
+rolled back.</p>
+<p><strong>Result</strong> (first 6 of 8 rows)</p>
+<table>
+<colgroup>
+<col style="width: 79%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>attempt</strong></th>
+<th><strong>result</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Book a BLOCKED slot (D3 10:00, leveller breakdown) for SHP1012</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+<tr class="even">
+<td>Book a Gurugram slot for a Jaipur shipment (SHP1012)</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+<tr class="odd">
+<td>Book 31 t heavy SHP1016 on 20 t standard D1 13:00</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+<tr class="even">
+<td>Book the CANCELLED shipment SHP1019</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+<tr class="odd">
+<td>Book a slot that ended before as-of (D4 08:00)</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+<tr class="even">
+<td>Active booking with is_current=0 (escapes per-shipment index):
+SHP1...</td>
+<td>ACCEPTED (gap)</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f10.-v_slot_availability-has-no-notion-of-time-weight-events-or-holds">F10.
+v_slot_availability has no notion of time, weight, events or holds</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Capacity |
+<strong>Also found by:</strong> Doc A A12, Doc B D7</p>
+<p><strong>Why it matters.</strong> At 09:45 the view still offers slots
+that started hours earlier, and would offer D3 09:00 on a broken
+dock.</p>
+<p><strong>Design response.</strong> Replace with a feasibility function
+parameterised by shipment and as-of; keep the view for cross-checks
+only.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT slot_id, dock_code, slot_start_ts, availability_status FROM
+v_slot_availability</p>
+<p>WHERE facility_id='FAC-JAI-01' AND availability_status='AVAILABLE'
+AND slot_start_ts &lt; '2026-08-04T09:45:00+05:30'</p>
+<p>ORDER BY slot_start_ts LIMIT 8</p>
+</blockquote>
+<p><strong>Result</strong> (first 6 of 8 rows)</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 14%" />
+<col style="width: 22%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>slot id</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>availability status</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SLOT-JAI-001</td>
+<td>D1</td>
+<td>08:00</td>
+<td>AVAILABLE</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-029</td>
+<td>D3</td>
+<td>08:00</td>
+<td>AVAILABLE</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-043</td>
+<td>D4</td>
+<td>08:00</td>
+<td>AVAILABLE</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-057</td>
+<td>D5</td>
+<td>08:00</td>
+<td>AVAILABLE</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-071</td>
+<td>D6</td>
+<td>08:00</td>
+<td>AVAILABLE</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-044</td>
+<td>D4</td>
+<td>09:00</td>
+<td>AVAILABLE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f11.-one-driver-on-two-moving-trucks">F11. One driver on two
+moving trucks</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Fleet |
+<strong>Also found by:</strong> Doc A A05, Doc B D9</p>
+<p><strong>Why it matters.</strong> DRV007 cannot drive VEH008 from
+Ajmer and VEH007 from Mumbai at the same time; one ETA is fiction.</p>
+<p><strong>Design response.</strong> Flag to the dispatcher; when DRV007
+chats, ask which truck he is in before using either ETA.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT driver_id, COUNT(*) AS trips,
+GROUP_CONCAT(shipment_id||'/'||vehicle_id, ', ') AS trips_and_trucks</p>
+<p>FROM shipments WHERE current_status='IN_TRANSIT' GROUP BY driver_id
+HAVING COUNT(DISTINCT vehicle_id)&gt;1</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 15%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>driver id</strong></th>
+<th><strong>trips</strong></th>
+<th><strong>trips and trucks</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRV007</td>
+<td>2</td>
+<td>SHP1007/VEH008, SHP1016/VEH007</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f12.-one-vehicle-on-several-live-shipments">F12. One vehicle on
+several live shipments</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Fleet |
+<strong>Also found by:</strong> Doc A A06, Doc B D10</p>
+<p><strong>Why it matters.</strong> The second trip of each truck
+depends on the first one finishing; the plan does not say so.</p>
+<p><strong>Design response.</strong> Store trip sequence
+(vehicle_trip_seq) and propagate delays to the next trip of the same
+truck.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT vehicle_id, GROUP_CONCAT(shipment_id||' ('||current_status||',
+departs '||substr(planned_departure_ts,12,5)||')', '; ') AS
+shipments</p>
+<p>FROM shipments WHERE current_status NOT IN
+('COMPLETED','CANCELLED')</p>
+<p>GROUP BY vehicle_id HAVING COUNT(*)&gt;1</p>
+</blockquote>
+<p><strong>Result</strong> (3 rows)</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 87%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>vehicle id</strong></th>
+<th><strong>shipments</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>VEH003</td>
+<td>SHP1003 (WAITING, departs 05:00); SHP1018 (ASSIGNED, departs
+08:00)</td>
+</tr>
+<tr class="even">
+<td>VEH004</td>
+<td>SHP1004 (WAITING, departs 03:30); SHP1020 (ASSIGNED, departs
+13:30)</td>
+</tr>
+<tr class="odd">
+<td>VEH015</td>
+<td>SHP1006 (IN_TRANSIT, departs 04:00); SHP1021 (ASSIGNED, departs
+10:00)</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f13.-a-truck-leaves-neemrana-while-it-is-still-inside-jaipur-dc">F13.
+A truck leaves Neemrana while it is still inside Jaipur DC</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Fleet |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> VEH001/DRV001 gated out of Jaipur at
+08:50 but 'departed' Neemrana (about 150 km away) at 08:15. Either the
+departure time or the vehicle on SHP1017 is wrong, so SHP1017's ETA
+cannot be trusted.</p>
+<p><strong>Design response.</strong> Physical-plausibility check on
+every ETA input (time-ordering of the same vehicle's events); a failed
+check downgrades ETA confidence to LOW.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.shipment_id AS first_trip, a.vehicle_id, fc.gate_out_ts AS
+left_jaipur_at,</p>
+<p>b.shipment_id AS next_trip, b.origin_city, b.actual_departure_ts AS
+departed_origin_at</p>
+<p>FROM shipments a JOIN facility_checkins fc ON
+fc.shipment_id=a.shipment_id</p>
+<p>JOIN shipments b ON b.vehicle_id=a.vehicle_id AND
+b.shipment_id&lt;&gt;a.shipment_id</p>
+<p>WHERE b.actual_departure_ts IS NOT NULL AND fc.gate_out_ts IS NOT
+NULL</p>
+<p>AND julianday(b.actual_departure_ts) &lt;
+julianday(fc.gate_out_ts)</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>first trip</strong></th>
+<th><strong>vehicle id</strong></th>
+<th><strong>left jaipur at</strong></th>
+<th><strong>next trip</strong></th>
+<th><strong>origin city</strong></th>
+<th><strong>departed origin at</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1001</td>
+<td>VEH001</td>
+<td>08:50</td>
+<td>SHP1017</td>
+<td>Neemrana</td>
+<td>08:15</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f14.-downstream-trips-are-infeasible-so-a-no-show-is-really-a-planning-error">F14.
+Downstream trips are infeasible, so a 'no-show' is really a planning
+error</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Fleet |
+<strong>Also found by:</strong> Doc A A17 (partly), new root cause</p>
+<p><strong>Why it matters.</strong> VEH003 is in Jaipur's yard from
+08:20, so SHP1018 could never leave Bhiwadi at 08:00: its NO_SHOW is the
+plan's fault, not the driver's. VEH015 (SHP1021, Noida 10:00) and VEH004
+(SHP1020, Kota 13:30) show the same pattern.</p>
+<p><strong>Design response.</strong> No-show classification must check
+whether the truck was physically able to come; proactive alert to
+dispatch for SHP1020/SHP1021 now.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT nxt.shipment_id AS later_trip, nxt.vehicle_id,
+nxt.origin_city, nxt.planned_departure_ts,</p>
+<p>cur.shipment_id AS truck_busy_with, cur.current_status AS
+busy_status,</p>
+<p>COALESCE(fc.gate_in_ts, cur.latest_eta_ts) AS busy_at_jaipur_from,
+a.appointment_status AS later_trip_appt</p>
+<p>FROM shipments nxt JOIN shipments cur ON
+cur.vehicle_id=nxt.vehicle_id AND
+cur.shipment_id&lt;&gt;nxt.shipment_id</p>
+<p>LEFT JOIN facility_checkins fc ON fc.shipment_id=cur.shipment_id</p>
+<p>LEFT JOIN appointments a ON a.shipment_id=nxt.shipment_id</p>
+<p>WHERE nxt.current_status='ASSIGNED' AND cur.current_status IN
+('IN_TRANSIT','WAITING')</p>
+<p>AND julianday(COALESCE(fc.gate_in_ts, cur.latest_eta_ts)) &gt;
+julianday(nxt.planned_departure_ts, '-6 hours')</p>
+</blockquote>
+<p><strong>Result</strong> (3 rows)</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 12%" />
+<col style="width: 15%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>later trip</strong></th>
+<th><strong>vehicle id</strong></th>
+<th><strong>origin city</strong></th>
+<th><strong>planned departure ts</strong></th>
+<th><strong>truck busy with</strong></th>
+<th><strong>busy status</strong></th>
+<th><strong>busy at jaipur from</strong></th>
+<th><strong>later trip appt</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1018</td>
+<td>VEH003</td>
+<td>Bhiwadi</td>
+<td>08:00</td>
+<td>SHP1003</td>
+<td>WAITING</td>
+<td>08:20</td>
+<td>NO_SHOW</td>
+</tr>
+<tr class="even">
+<td>SHP1020</td>
+<td>VEH004</td>
+<td>Kota</td>
+<td>13:30</td>
+<td>SHP1004</td>
+<td>WAITING</td>
+<td>09:25</td>
+<td>CONFIRMED</td>
+</tr>
+<tr class="odd">
+<td>SHP1021</td>
+<td>VEH015</td>
+<td>Noida</td>
+<td>10:00</td>
+<td>SHP1006</td>
+<td>IN_TRANSIT</td>
+<td>11:20</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f15.-no-single-snapshot-time-rows-run-from-0710-to-1630">F15. No
+single snapshot time: rows run from 07:10 to 16:30</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> Doc A A08, Doc B D16</p>
+<p><strong>Why it matters.</strong> There is no 'now'. A query run 'as
+of 09:45' still sees a 16:25 ETA update and a 12:35 no-show.</p>
+<p><strong>Design response.</strong> Every read takes an explicit as_of
+and ignores rows created after it (event-time filter).</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT 'eta_updates' t, MIN(created_at) mn, MAX(created_at) mx FROM
+eta_updates</p>
+<p>UNION ALL SELECT 'chat_messages', MIN(message_ts), MAX(message_ts)
+FROM chat_messages</p>
+<p>UNION ALL SELECT 'appointments', MIN(updated_at), MAX(updated_at)
+FROM appointments</p>
+<p>UNION ALL SELECT 'facility_checkins', MIN(updated_at),
+MAX(updated_at) FROM facility_checkins</p>
+<p>UNION ALL SELECT 'shipments', MIN(updated_at), MAX(updated_at) FROM
+shipments</p>
+</blockquote>
+<p><strong>Result</strong> (5 rows)</p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>t</strong></th>
+<th><strong>mn</strong></th>
+<th><strong>mx</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>eta_updates</td>
+<td>07:10</td>
+<td>16:25</td>
+</tr>
+<tr class="even">
+<td>chat_messages</td>
+<td>08:22</td>
+<td>16:24</td>
+</tr>
+<tr class="odd">
+<td>appointments</td>
+<td>08:10</td>
+<td>16:30</td>
+</tr>
+<tr class="even">
+<td>facility_checkins</td>
+<td>08:25</td>
+<td>09:30</td>
+</tr>
+<tr class="odd">
+<td>shipments</td>
+<td>08:10</td>
+<td>16:30</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f16.-latest_eta_ts-differs-from-the-plan-with-no-eta-record-behind-it">F16.
+latest_eta_ts differs from the plan with no ETA record behind it</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> Doc A A10, Doc B D11</p>
+<p><strong>Why it matters.</strong> Nobody knows who changed these ETAs
+or how sure they are.</p>
+<p><strong>Design response.</strong> Treat an unexplained ETA as MEDIUM
+confidence and log a lineage gap; every ETA change must write
+eta_updates.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT s.shipment_id, s.original_eta_ts, s.latest_eta_ts FROM
+shipments s</p>
+<p>WHERE s.latest_eta_ts &lt;&gt; s.original_eta_ts AND NOT EXISTS
+(SELECT 1 FROM eta_updates e WHERE e.shipment_id=s.shipment_id)</p>
+</blockquote>
+<p><strong>Result</strong> (4 rows)</p>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 35%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>shipment id</strong></th>
+<th><strong>original eta ts</strong></th>
+<th><strong>latest eta ts</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1002</td>
+<td>07:55</td>
+<td>07:58</td>
+</tr>
+<tr class="even">
+<td>SHP1009</td>
+<td>10:45</td>
+<td>10:50</td>
+</tr>
+<tr class="odd">
+<td>SHP1010</td>
+<td>10:50</td>
+<td>10:55</td>
+</tr>
+<tr class="even">
+<td>SHP1011</td>
+<td>10:40</td>
+<td>10:45</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f17.-the-eta-view-labels-the-original-plan-as-high-confidence">F17.
+The ETA view labels the original plan as HIGH confidence</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> Doc A A11</p>
+<p><strong>Why it matters.</strong> A plan made three days earlier is
+reported as if the driver had just confirmed it.</p>
+<p><strong>Design response.</strong> Confidence of an unconfirmed plan =
+MEDIUM, decaying to LOW as the slot approaches without a driver
+ping.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT shipment_id, effective_eta_ts, eta_source, eta_confidence FROM
+v_latest_eta</p>
+<p>WHERE eta_source='ORIGINAL_PLAN' AND eta_confidence='HIGH'</p>
+</blockquote>
+<p><strong>Result</strong> (first 6 of 10 rows)</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 25%" />
+<col style="width: 31%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>shipment id</strong></th>
+<th><strong>effective eta ts</strong></th>
+<th><strong>eta source</strong></th>
+<th><strong>eta confidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1002</td>
+<td>07:58</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+<tr class="even">
+<td>SHP1007</td>
+<td>09:50</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+<tr class="odd">
+<td>SHP1008</td>
+<td>09:45</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+<tr class="even">
+<td>SHP1009</td>
+<td>10:50</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+<tr class="odd">
+<td>SHP1010</td>
+<td>10:55</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+<tr class="even">
+<td>SHP1011</td>
+<td>10:45</td>
+<td>ORIGINAL_PLAN</td>
+<td>HIGH</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f18.-an-eta-range-cannot-be-stored-it-is-squeezed-into-one-point">F18.
+An ETA range cannot be stored; it is squeezed into one point</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> 'Between 12:30 and 13:00' became
+12:45. The planner loses the late edge it should plan against.</p>
+<p><strong>Design response.</strong> Add eta_earliest_ts /
+eta_latest_ts; plan against the late edge for LOW confidence.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT eta_update_id, shipment_id, declared_eta_ts, confidence_code,
+note FROM eta_updates WHERE note LIKE '%between%'</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 12%" />
+<col style="width: 15%" />
+<col style="width: 14%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>eta update id</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>declared eta ts</strong></th>
+<th><strong>confidence code</strong></th>
+<th><strong>note</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ETA012</td>
+<td>SHP1017</td>
+<td>12:45</td>
+<td>LOW</td>
+<td>Driver expects arrival between 12:30 and 13:00.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f19.-trucks-inside-the-grace-period-are-labelled-late">F19.
+Trucks inside the grace period are labelled LATE</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> SHP1005 (5 min) and SHP1004 (25 min)
+arrived inside the 30-minute grace, so their appointments are still
+valid. A system that reads LATE as 'missed' would wrongly push them
+back.</p>
+<p><strong>Design response.</strong> Define states precisely:
+ON_TIME_WITHIN_GRACE vs LATE_BEYOND_GRACE; only the second loses the
+appointment.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT fc.shipment_id, fc.gate_in_ts, sl.slot_start_ts,
+fc.arrival_state,</p>
+<p>CAST(ROUND((julianday(fc.gate_in_ts)-julianday(sl.slot_start_ts))*1440)
+AS INT) AS minutes_after_start,</p>
+<p>(SELECT rule_value FROM facility_rules r WHERE
+r.facility_id=fc.facility_id AND r.rule_type='NO_SHOW_GRACE_MIN') AS
+grace_min</p>
+<p>FROM facility_checkins fc JOIN appointments a ON
+a.shipment_id=fc.shipment_id AND a.is_current=1</p>
+<p>JOIN appointment_slots sl ON sl.slot_id=a.slot_id</p>
+<p>WHERE fc.arrival_state='LATE'</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 14%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 21%" />
+<col style="width: 11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>shipment id</strong></th>
+<th><strong>gate in ts</strong></th>
+<th><strong>slot start ts</strong></th>
+<th><strong>arrival state</strong></th>
+<th><strong>minutes after start</strong></th>
+<th><strong>grace min</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1004</td>
+<td>09:25</td>
+<td>09:00</td>
+<td>LATE</td>
+<td>25</td>
+<td>30</td>
+</tr>
+<tr class="even">
+<td>SHP1005</td>
+<td>09:05</td>
+<td>09:00</td>
+<td>LATE</td>
+<td>5</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f20.-the-2100-last-start-rule-conflicts-with-slots-that-start-at-2100">F20.
+The 21:00 last-start rule conflicts with slots that start at 21:00</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> Doc A A15</p>
+<p><strong>Why it matters.</strong> Five slots are published that the
+rule says need manual approval. Is 21:00 itself allowed?</p>
+<p><strong>Design response.</strong> Treat a 21:00 start as needing
+approval (strict reading) until the client confirms; label these slots
+'approval needed'.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT sl.slot_id, d.dock_code, substr(sl.slot_start_ts,12,5) AS
+starts, substr(sl.slot_end_ts,12,5) AS ends, sl.slot_status</p>
+<p>FROM appointment_slots sl JOIN docks d USING(dock_id)</p>
+<p>WHERE sl.facility_id='FAC-JAI-01' AND substr(sl.slot_start_ts,12,5)
+&gt;= '21:00' ORDER BY sl.slot_start_ts</p>
+</blockquote>
+<p><strong>Result</strong> (5 rows)</p>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>slot id</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>starts</strong></th>
+<th><strong>ends</strong></th>
+<th><strong>slot status</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SLOT-JAI-014</td>
+<td>D1</td>
+<td>21:00</td>
+<td>22:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-028</td>
+<td>D2</td>
+<td>21:00</td>
+<td>22:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-042</td>
+<td>D3</td>
+<td>21:00</td>
+<td>22:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-056</td>
+<td>D4</td>
+<td>21:00</td>
+<td>22:00</td>
+<td>OPEN</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-070</td>
+<td>D5</td>
+<td>21:00</td>
+<td>22:00</td>
+<td>BLOCKED</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f21.-rules-are-duplicated-missing-or-wider-than-the-slot-grid">F21.
+Rules are duplicated, missing or wider than the slot grid</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> Grace lives in two places (they
+agree today, but nothing keeps them in sync). Gurugram has no
+last-start, early-check-in or heavy rule. Jaipur opens at 06:00 but its
+first slot is 08:00.</p>
+<p><strong>Design response.</strong> One rule store with typed values
+and effective dates; the facility table keeps only identity.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT f.facility_id, f.open_time, f.close_time, f.checkin_grace_min
+AS grace_in_facilities,</p>
+<p>(SELECT rule_value FROM facility_rules r WHERE
+r.facility_id=f.facility_id AND r.rule_type='NO_SHOW_GRACE_MIN') AS
+grace_in_rules,</p>
+<p>(SELECT COUNT(*) FROM facility_rules r WHERE
+r.facility_id=f.facility_id) AS rule_count,</p>
+<p>(SELECT MIN(substr(slot_start_ts,12,5)) FROM appointment_slots s
+WHERE s.facility_id=f.facility_id) AS first_slot,</p>
+<p>(SELECT MAX(substr(slot_end_ts,12,5)) FROM appointment_slots s WHERE
+s.facility_id=f.facility_id) AS last_slot_end</p>
+<p>FROM facilities f</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 11%" />
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>facility id</strong></th>
+<th><strong>open time</strong></th>
+<th><strong>close time</strong></th>
+<th><strong>grace in facilities</strong></th>
+<th><strong>grace in rules</strong></th>
+<th><strong>rule count</strong></th>
+<th><strong>first slot</strong></th>
+<th><strong>last slot end</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FAC-JAI-01</td>
+<td>06:00</td>
+<td>22:00</td>
+<td>30</td>
+<td>30</td>
+<td>5</td>
+<td>08:00</td>
+<td>22:00</td>
+</tr>
+<tr class="even">
+<td>FAC-GGN-01</td>
+<td>07:00</td>
+<td>21:00</td>
+<td>20</td>
+<td>20</td>
+<td>1</td>
+<td>09:00</td>
+<td>18:00</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f22.-the-reefer-rule-names-dock-d5-in-free-text-rule-values-are-untyped-text">F22.
+The reefer rule names dock D5 in free text; rule values are untyped
+text</h2>
+<p><strong>Severity:</strong> Low | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> Doc A A16, new</p>
+<p><strong>Why it matters.</strong> If a second reefer dock is added,
+the rule text is wrong; '60', 'TRUE' and '21:00' are all stored as
+text.</p>
+<p><strong>Design response.</strong> Rules reference dock capabilities
+(supports_refrigerated) rather than dock codes; add value_type.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT rule_id, facility_id, rule_type, rule_value,
+typeof(rule_value) AS stored_as, description FROM facility_rules ORDER
+BY rule_id</p>
+</blockquote>
+<p><strong>Result</strong> (6 rows)</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 12%" />
+<col style="width: 25%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>rule id</strong></th>
+<th><strong>facility id</strong></th>
+<th><strong>rule type</strong></th>
+<th><strong>rule value</strong></th>
+<th><strong>stored as</strong></th>
+<th><strong>description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RULE001</td>
+<td>FAC-JAI-01</td>
+<td>CHECKIN_EARLY_LIMIT_MIN</td>
+<td>60</td>
+<td>text</td>
+<td>Trucks may check in up to 60 minutes before the booked slot.</td>
+</tr>
+<tr class="even">
+<td>RULE002</td>
+<td>FAC-JAI-01</td>
+<td>NO_SHOW_GRACE_MIN</td>
+<td>30</td>
+<td>text</td>
+<td>A truck may be marked no-show 30 minutes after the slot starts if
+i...</td>
+</tr>
+<tr class="odd">
+<td>RULE003</td>
+<td>FAC-JAI-01</td>
+<td>REEFER_DOCK_REQUIRED</td>
+<td>TRUE</td>
+<td>text</td>
+<td>Temperature-controlled loads must use dock D5.</td>
+</tr>
+<tr class="even">
+<td>RULE004</td>
+<td>FAC-JAI-01</td>
+<td>HEAVY_DOCK_REQUIRED_KG</td>
+<td>25000</td>
+<td>text</td>
+<td>Loads above 25,000 kg must use the heavy dock.</td>
+</tr>
+<tr class="odd">
+<td>RULE005</td>
+<td>FAC-JAI-01</td>
+<td>LAST_NEW_START_TIME</td>
+<td>21:00</td>
+<td>text</td>
+<td>No new unloading operation should start after 21:00 without manual
+...</td>
+</tr>
+<tr class="even">
+<td>RULE006</td>
+<td>FAC-GGN-01</td>
+<td>NO_SHOW_GRACE_MIN</td>
+<td>20</td>
+<td>text</td>
+<td>A truck may be marked no-show 20 minutes after the slot starts.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f23.-slots-exist-only-for-4-august-no-next-day-capacity">F23.
+Slots exist only for 4 August: no next-day capacity</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> 'First slot tomorrow morning' cannot
+be computed or offered for the reefer truck.</p>
+<p><strong>Design response.</strong> Generate a rolling 48-hour slot
+horizon from facility calendars; until then, escalation states the
+gap.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT facility_id, MIN(substr(slot_start_ts,1,10)) AS first_day,
+MAX(substr(slot_end_ts,1,10)) AS last_day, COUNT(*) AS slots</p>
+<p>FROM appointment_slots GROUP BY facility_id</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 27%" />
+<col style="width: 26%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>facility id</strong></th>
+<th><strong>first day</strong></th>
+<th><strong>last day</strong></th>
+<th><strong>slots</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FAC-GGN-01</td>
+<td>2026-08-04</td>
+<td>2026-08-04</td>
+<td>27</td>
+</tr>
+<tr class="even">
+<td>FAC-JAI-01</td>
+<td>2026-08-04</td>
+<td>2026-08-04</td>
+<td>79</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f24.-slots-have-no-updated_at-a-4-aug-breakdown-appears-on-rows-created-1-aug">F24.
+Slots have no updated_at: a 4 Aug breakdown appears on rows 'created' 1
+Aug</h2>
+<p><strong>Severity:</strong> Low | <strong>Area:</strong> Time |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> The data cannot say when a block was
+applied, so nobody can audit whether drivers were told in time.</p>
+<p><strong>Design response.</strong> Add updated_at and a slot_events
+history table.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT slot_id, slot_status, block_reason, created_at FROM
+appointment_slots WHERE slot_status='BLOCKED' ORDER BY slot_id</p>
+</blockquote>
+<p><strong>Result</strong> (first 6 of 7 rows)</p>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 14%" />
+<col style="width: 47%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>slot id</strong></th>
+<th><strong>slot status</strong></th>
+<th><strong>block reason</strong></th>
+<th><strong>created at</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SLOT-JAI-031</td>
+<td>BLOCKED</td>
+<td>Hydraulic leveller breakdown</td>
+<td>1 Aug 12:00</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-032</td>
+<td>BLOCKED</td>
+<td>Hydraulic leveller breakdown</td>
+<td>1 Aug 12:00</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-033</td>
+<td>BLOCKED</td>
+<td>Hydraulic leveller breakdown</td>
+<td>1 Aug 12:00</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-067</td>
+<td>BLOCKED</td>
+<td>Refrigeration power maintenance</td>
+<td>1 Aug 12:00</td>
+</tr>
+<tr class="odd">
+<td>SLOT-JAI-068</td>
+<td>BLOCKED</td>
+<td>Refrigeration power maintenance</td>
+<td>1 Aug 12:00</td>
+</tr>
+<tr class="even">
+<td>SLOT-JAI-069</td>
+<td>BLOCKED</td>
+<td>Refrigeration power maintenance</td>
+<td>1 Aug 12:00</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f25.-a-messaging-retry-is-stored-as-a-new-message-exception-and-thread">F25.
+A messaging retry is stored as a new message, exception and thread</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Messaging |
+<strong>Also found by:</strong> Doc A A09, Doc B D12</p>
+<p><strong>Why it matters.</strong> Without a unique key the retry could
+book twice; here only a manual is_duplicate flag caught it.</p>
+<p><strong>Design response.</strong> Inbound dedupe on (driver,
+normalised text, 10-min window) + idempotency key on every write.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT m.chat_message_id, m.thread_id, m.external_message_id,
+m.message_ts, m.is_duplicate, e.exception_id, e.dedupe_key,
+e.exception_status</p>
+<p>FROM chat_messages m LEFT JOIN driver_exceptions e ON
+e.thread_id=m.thread_id</p>
+<p>WHERE m.sender_type='DRIVER' AND m.message_text IN (SELECT
+message_text FROM chat_messages WHERE sender_type='DRIVER' GROUP BY
+message_text HAVING COUNT(*)&gt;1)</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 26%" />
+<col style="width: 11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>chat message id</strong></th>
+<th><strong>thread id</strong></th>
+<th><strong>external message id</strong></th>
+<th><strong>message ts</strong></th>
+<th><strong>is duplicate</strong></th>
+<th><strong>exception id</strong></th>
+<th><strong>dedupe key</strong></th>
+<th><strong>exception status</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MSG001</td>
+<td>THR001</td>
+<td>wa-9001</td>
+<td>09:34</td>
+<td>0</td>
+<td>EXC001</td>
+<td>DRV006-SHP1006-20260804-0934</td>
+<td>NEEDS_INFORMATION</td>
+</tr>
+<tr class="even">
+<td>MSG015</td>
+<td>THR009</td>
+<td>wa-9009</td>
+<td>09:35</td>
+<td>1</td>
+<td>EXC009</td>
+<td>DRV006-SHP1006-20260804-0934</td>
+<td>DUPLICATE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f26.-one-driver-several-threads-context-is-split">F26. One
+driver, several threads: context is split</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Messaging
+| <strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> DRV004 says 'I reached late and am
+in the yard' (THR008, 09:27), then '45 minutes late' (THR010, 09:31). In
+one thread the second message is easy to place: his morning load is
+already at the gate, so he must mean the evening one.</p>
+<p><strong>Design response.</strong> One open conversation per driver;
+threads are per exception, linked to one driver session.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT driver_id, COUNT(*) AS threads, GROUP_CONCAT(thread_id||'
+'||substr(opened_at,12,5)||' '||thread_intent, ' | ') AS detail</p>
+<p>FROM chat_threads GROUP BY driver_id HAVING COUNT(*)&gt;1</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 10%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>driver id</strong></th>
+<th><strong>threads</strong></th>
+<th><strong>detail</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRV004</td>
+<td>2</td>
+<td>THR008 09:27 CHECK_STATUS / THR010 09:31 UNKNOWN</td>
+</tr>
+<tr class="even">
+<td>DRV006</td>
+<td>2</td>
+<td>THR001 09:34 REPORT_DELAY / THR009 09:35 REPORT_DELAY</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f27.-three-driver-messages-never-got-a-reply">F27. Three driver
+messages never got a reply</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Messaging |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> The heavy-trailer driver (09:39),
+the late truck in the yard (09:27) and an ask-only driver (10:02) are
+left waiting.</p>
+<p><strong>Design response.</strong> Reply SLA monitor: any driver
+message unanswered after 60 seconds raises an alarm; auto-acknowledge at
+once.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT t.thread_id, t.driver_id, t.thread_status, m.message_ts,
+m.message_text</p>
+<p>FROM chat_threads t JOIN chat_messages m ON m.thread_id=t.thread_id
+AND m.sender_type='DRIVER' AND m.is_duplicate=0</p>
+<p>WHERE NOT EXISTS (SELECT 1 FROM chat_messages r WHERE
+r.thread_id=t.thread_id AND r.sender_type&lt;&gt;'DRIVER')</p>
+</blockquote>
+<p><strong>Result</strong> (3 rows)</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 23%" />
+<col style="width: 9%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>thread id</strong></th>
+<th><strong>driver id</strong></th>
+<th><strong>thread status</strong></th>
+<th><strong>message ts</strong></th>
+<th><strong>message text</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>THR006</td>
+<td>DRV007</td>
+<td>OPEN</td>
+<td>09:39</td>
+<td>Heavy trailer ETA 12:00. Original heavy-bay slot will be missed.
+Wh...</td>
+</tr>
+<tr class="even">
+<td>THR008</td>
+<td>DRV004</td>
+<td>WAITING_FOR_WAREHOUSE</td>
+<td>09:27</td>
+<td>I reached late and am in the yard. Has a new dock been
+assigned?</td>
+</tr>
+<tr class="odd">
+<td>THR011</td>
+<td>DRV001</td>
+<td>OPEN</td>
+<td>10:02</td>
+<td>What slots are possible after 1 PM if I reach around 12:45?</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f28.-pending-confirmation-requests-that-never-reached-the-warehouse">F28.
+Pending confirmation requests that never reached the warehouse</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Messaging |
+<strong>Also found by:</strong> Doc B D13</p>
+<p><strong>Why it matters.</strong> APT1013A has waited since 09:32 on
+an email still QUEUED; APT1014A's email was SENT but never delivered or
+answered. Both slots are locked.</p>
+<p><strong>Design response.</strong> Pending has a decision deadline
+tied to slot start; delivery is tracked; no reply by the deadline
+triggers a phone call or release.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT om.operational_message_id, om.appointment_id,
+om.delivery_status, om.sent_at, a.appointment_status, a.booked_at</p>
+<p>FROM operational_messages om JOIN appointments a
+USING(appointment_id)</p>
+<p>WHERE a.appointment_status='PENDING_CONFIRMATION'</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 16%" />
+<col style="width: 15%" />
+<col style="width: 9%" />
+<col style="width: 27%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>operational message id</strong></th>
+<th><strong>appointment id</strong></th>
+<th><strong>delivery status</strong></th>
+<th><strong>sent at</strong></th>
+<th><strong>appointment status</strong></th>
+<th><strong>booked at</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OM001</td>
+<td>APT1014A</td>
+<td>SENT</td>
+<td>09:52</td>
+<td>PENDING_CONFIRMATION</td>
+<td>09:52</td>
+</tr>
+<tr class="even">
+<td>OM002</td>
+<td>APT1013A</td>
+<td>QUEUED</td>
+<td>09:32</td>
+<td>PENDING_CONFIRMATION</td>
+<td>09:32</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f29.-the-escalation-channel-itself-is-broken">F29. The
+escalation channel itself is broken</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Messaging |
+<strong>Also found by:</strong> Doc A A13, Doc A A14, Doc B D14, Doc B
+D15</p>
+<p><strong>Why it matters.</strong> The reefer escalation (OM004) went
+to an address nobody owns and failed; the Gurugram night role is vacant
+with no email.</p>
+<p><strong>Design response.</strong> Route by role and channel health; a
+FAILED hand-off is not a hand-off; fall back to phone and to the shift
+manager.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT 'message' AS kind, om.operational_message_id AS id,
+om.recipient_address AS target, om.delivery_status AS status,</p>
+<p>CASE WHEN EXISTS (SELECT 1 FROM facility_contacts c WHERE
+c.email=om.recipient_address) THEN 'known contact' ELSE 'not in
+contacts' END AS note</p>
+<p>FROM operational_messages om WHERE om.delivery_status='FAILED'</p>
+<p>UNION ALL</p>
+<p>SELECT 'contact', contact_id, contact_role||' / '||contact_name,
+COALESCE(email,'NO EMAIL'), 'phone '||COALESCE(phone,'-')</p>
+<p>FROM facility_contacts WHERE email IS NULL OR contact_name LIKE
+'Vacant%'</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 46%" />
+<col style="width: 10%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>kind</strong></th>
+<th><strong>id</strong></th>
+<th><strong>target</strong></th>
+<th><strong>status</strong></th>
+<th><strong>note</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>message</td>
+<td>OM004</td>
+<td><a
+href="mailto:night.shift@setuhaul.example">night.shift@setuhaul.example</a></td>
+<td>FAILED</td>
+<td>not in contacts</td>
+</tr>
+<tr class="even">
+<td>contact</td>
+<td>CON005</td>
+<td>NIGHT_SHIFT_COORDINATOR / Vacant Position</td>
+<td>NO EMAIL</td>
+<td>phone +91-124-5001209</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f30.-the-existing-chat-booking-path-made-an-incompatible-booking">F30.
+The existing chat booking path made an incompatible booking</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Messaging |
+<strong>Also found by:</strong> Doc A A07</p>
+<p><strong>Why it matters.</strong> Proof that today's chat flow books
+without a compatibility check.</p>
+<p><strong>Design response.</strong> Only the booking service writes
+appointments, and it re-runs every feasibility rule.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, a.booking_source, s.shipment_id,
+s.load_weight_kg, d.dock_code, d.max_vehicle_weight_kg</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id) JOIN
+appointment_slots sl ON sl.slot_id=a.slot_id JOIN docks d ON
+d.dock_id=sl.dock_id</p>
+<p>WHERE a.booking_source='DRIVER_CHAT' AND s.load_weight_kg &gt;
+d.max_vehicle_weight_kg</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 18%" />
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 9%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>booking source</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>load weight kg</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>max vehicle weight kg</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1014A</td>
+<td>DRIVER_CHAT</td>
+<td>SHP1014</td>
+<td>21000</td>
+<td>D1</td>
+<td>20000</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f31.-driver-time-limits-are-stored-without-saying-what-they-limit">F31.
+Driver time limits are stored without saying what they limit</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Messaging
+| <strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> 13:30 is stored as
+latest_acceptable_ts, but the agent itself asked whether it is gate-out
+or unload start. The two readings differ by unload time plus exit time
+(about 60 minutes here).</p>
+<p><strong>Design response.</strong> Store the constraint type
+explicitly: LATEST_GATE_OUT, LATEST_UNLOAD_END or LATEST_START.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT e.exception_id, e.latest_acceptable_ts, m.message_text AS
+agent_question</p>
+<p>FROM driver_exceptions e JOIN chat_messages m ON
+m.thread_id=e.thread_id AND m.sender_type='AGENT'</p>
+<p>WHERE e.latest_acceptable_ts IS NOT NULL</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 20%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>exception id</strong></th>
+<th><strong>latest acceptable ts</strong></th>
+<th><strong>agent question</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EXC002</td>
+<td>13:30</td>
+<td>Understood. Should 1:30 PM be treated as the latest gate-out time
+o...</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f32.-max_vehicle_weight_kg-is-compared-with-cargo-weight">F32.
+'max_vehicle_weight_kg' is compared with cargo weight</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Semantics |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> The column says vehicle weight, the
+rule (RULE004) and both designs compare it with payload. A loaded 32-ft
+multi-axle truck weighs far more than its payload, so under the literal
+meaning every standard dock would be too weak. The data only makes sense
+if the limit is a payload limit.</p>
+<p><strong>Design response.</strong> Grey-area question for the client;
+until answered, treat the limit as a payload limit and say so.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT v.vehicle_type_code, vt.description, MAX(s.load_weight_kg) AS
+max_payload_kg,</p>
+<p>(SELECT MIN(max_vehicle_weight_kg) FROM docks WHERE
+dock_type='STANDARD') AS smallest_standard_dock_kg</p>
+<p>FROM shipments s JOIN vehicles v USING(vehicle_id) JOIN vehicle_types
+vt USING(vehicle_type_code)</p>
+<p>GROUP BY v.vehicle_type_code ORDER BY max_payload_kg DESC</p>
+</blockquote>
+<p><strong>Result</strong> (5 rows)</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 39%" />
+<col style="width: 15%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>vehicle type code</strong></th>
+<th><strong>description</strong></th>
+<th><strong>max payload kg</strong></th>
+<th><strong>smallest standard dock kg</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>HEAVY_40</td>
+<td>40-foot heavy-duty trailer</td>
+<td>31000</td>
+<td>20000</td>
+</tr>
+<tr class="even">
+<td>32FT_MXL</td>
+<td>32-foot multi-axle truck</td>
+<td>21000</td>
+<td>20000</td>
+</tr>
+<tr class="odd">
+<td>REEFER_32</td>
+<td>32-foot refrigerated truck</td>
+<td>16000</td>
+<td>20000</td>
+</tr>
+<tr class="even">
+<td>32FT_SXL</td>
+<td>32-foot single-axle truck</td>
+<td>14000</td>
+<td>20000</td>
+</tr>
+<tr class="odd">
+<td>20FT</td>
+<td>20-foot closed-body truck</td>
+<td>8000</td>
+<td>20000</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f33.-only-one-check-in-per-shipment-is-allowed">F33. Only one
+check-in per shipment is allowed</h2>
+<p><strong>Severity:</strong> Low | <strong>Area:</strong> Semantics |
+<strong>Also found by:</strong> New (in neither existing design)</p>
+<p><strong>Why it matters.</strong> A truck that is turned away and
+comes back (re-delivery, rejected load) cannot be recorded.</p>
+<p><strong>Design response.</strong> Allow multiple visits per shipment
+(visit_seq).</p>
+<p><strong>Proof.</strong> The table definition contains shipment_id
+TEXT NOT NULL UNIQUE, so a second visit by the same shipment cannot be
+stored.</p>
+<h2
+id="f34.-an-unload-overrun-is-recorded-as-a-capacity-reduction-and-in-free-text-notes">F34.
+An unload overrun is recorded as a 'capacity reduction' and in free-text
+notes</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Semantics
+| <strong>Also found by:</strong> Doc A A19</p>
+<p><strong>Why it matters.</strong> The scheduler has to guess when D2
+frees up.</p>
+<p><strong>Design response.</strong> Compute expected_free_at =
+unload_start + expected_unload (+ overrun buffer once exceeded) and
+treat it as a fixed block.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT fc.shipment_id, d.dock_code, fc.unload_start_ts,
+s.expected_unload_min, fc.unload_end_ts, fc.notes,</p>
+<p>e.event_type, e.event_start_ts, e.event_end_ts</p>
+<p>FROM facility_checkins fc JOIN shipments s USING(shipment_id) JOIN
+docks d ON d.dock_id=fc.actual_dock_id</p>
+<p>LEFT JOIN dock_status_events e ON e.dock_id=fc.actual_dock_id</p>
+<p>WHERE fc.queue_state='IN_DOCK'</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 20%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>shipment id</strong></th>
+<th><strong>dock code</strong></th>
+<th><strong>unload start ts</strong></th>
+<th><strong>expected unload min</strong></th>
+<th><strong>unload end ts</strong></th>
+<th><strong>notes</strong></th>
+<th><strong>event type</strong></th>
+<th><strong>event start ts</strong></th>
+<th><strong>event end ts</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1002</td>
+<td>D2</td>
+<td>08:08</td>
+<td>70</td>
+<td>-</td>
+<td>Unload running longer than planned.</td>
+<td>CAPACITY_REDUCTION</td>
+<td>08:00</td>
+<td>09:20</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="f35.-no-show-booking-is-closed-but-its-shipment-is-still-assigned">F35.
+No-show booking is closed but its shipment is still ASSIGNED</h2>
+<p><strong>Severity:</strong> Medium | <strong>Area:</strong> Semantics
+| <strong>Also found by:</strong> Doc A A17</p>
+<p><strong>Why it matters.</strong> The shipment has no live appointment
+and no next step.</p>
+<p><strong>Design response.</strong> A no-show opens an exception for
+dispatch automatically.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT a.appointment_id, a.appointment_status, a.is_current,
+s.shipment_id, s.current_status, s.vehicle_id</p>
+<p>FROM appointments a JOIN shipments s USING(shipment_id) WHERE
+a.appointment_status='NO_SHOW'</p>
+</blockquote>
+<p><strong>Result</strong> (1 row)</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 22%" />
+<col style="width: 11%" />
+<col style="width: 15%" />
+<col style="width: 18%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>appointment id</strong></th>
+<th><strong>appointment status</strong></th>
+<th><strong>is current</strong></th>
+<th><strong>shipment id</strong></th>
+<th><strong>current status</strong></th>
+<th><strong>vehicle id</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>APT1018</td>
+<td>NO_SHOW</td>
+<td>0</td>
+<td>SHP1018</td>
+<td>ASSIGNED</td>
+<td>VEH003</td>
+</tr>
+</tbody>
+</table>
+<h2 id="f36.-moving-shipments-with-no-current-appointment">F36. Moving
+shipments with no current appointment</h2>
+<p><strong>Severity:</strong> High | <strong>Area:</strong> Semantics |
+<strong>Also found by:</strong> Doc A A18</p>
+<p><strong>Why it matters.</strong> SHP1012 and SHP1016 are on the road
+with nothing booked; they must be in every re-plan.</p>
+<p><strong>Design response.</strong> The facility planner's job list =
+every inbound shipment, booked or not.</p>
+<p><strong>Proof query</strong></p>
+<blockquote>
+<p>SELECT s.shipment_id, s.priority_code, s.required_dock_type,
+s.current_status, e.effective_eta_ts</p>
+<p>FROM shipments s JOIN v_latest_eta e USING(shipment_id)</p>
+<p>WHERE s.current_status IN ('IN_TRANSIT','WAITING','AT_GATE')</p>
+<p>AND NOT EXISTS (SELECT 1 FROM appointments a WHERE
+a.shipment_id=s.shipment_id AND a.is_current=1 AND a.appointment_status
+IN ('PENDING_CONFIRMATION','CONFIRMED','IN_PROGRESS'))</p>
+</blockquote>
+<p><strong>Result</strong> (2 rows)</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 17%" />
+<col style="width: 23%" />
+<col style="width: 21%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>shipment id</strong></th>
+<th><strong>priority code</strong></th>
+<th><strong>required dock type</strong></th>
+<th><strong>current status</strong></th>
+<th><strong>effective eta ts</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1012</td>
+<td>NORMAL</td>
+<td>STANDARD</td>
+<td>IN_TRANSIT</td>
+<td>11:10</td>
+</tr>
+<tr class="even">
+<td>SHP1016</td>
+<td>HIGH</td>
+<td>HEAVY</td>
+<td>IN_TRANSIT</td>
+<td>12:00</td>
+</tr>
+</tbody>
+</table>
+</div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>

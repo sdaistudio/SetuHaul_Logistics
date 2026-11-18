@@ -1,0 +1,1324 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>02 Decision register — SetuHaul – Logistics Management</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet"><style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1917;--mu:#6b6560;--ln:#e5e2dc;--b:#1d5fa8;--g:#1f7a5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,sans-serif}
+.top{background:#1c1917;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.top a{color:#e7e5e4;text-decoration:none}.top a:hover{color:#fff;text-decoration:underline}.top b{color:#fff;margin-right:8px}
+.wrap{max-width:1240px;margin:auto;padding:28px 22px 70px}
+.doc{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:28px 34px}
+.doc h1{font-size:26px;margin-top:0}.doc h2{font-size:19px;margin-top:30px;border-top:1px solid var(--ln);padding-top:18px}.doc h3{font-size:16px}
+.doc table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--ln);padding:6px 9px;text-align:left;vertical-align:top}.doc th{background:#faf9f7}
+.doc code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#f1efeb;padding:1px 4px;border-radius:4px}
+.doc pre{background:#1c1917;color:#e7e5e4;padding:12px;border-radius:8px;overflow:auto}.doc pre code{background:none;color:inherit}
+.doc img{max-width:100%;border:1px solid var(--ln);border-radius:8px}.doc blockquote{border-left:3px solid var(--ln);margin:8px 0;padding:2px 14px;color:#44403c;background:#faf9f7}
+.doc a{color:var(--b)}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{color:var(--mu);max-width:820px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.card{display:block;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.card:hover{border-color:var(--g)}.card b{display:block;font-size:16px;margin-bottom:4px}.card span{color:var(--mu);font-size:13.5px}
+.card.big{border-left:5px solid var(--g)}h2.sec{font-size:17px;margin:34px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12.5px;color:var(--mu)}
+.arch{margin-top:14px;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:10px}.arch img{width:100%;height:auto}
+footer{color:var(--mu);font-size:12.5px;margin-top:30px}
+.card .dl{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--b)}.note{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px}
+.cardwrap{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;border-left:5px solid var(--b)}.cardwrap b{display:block;font-size:16px;margin-bottom:4px}.cardwrap span{color:var(--mu);font-size:13.5px;display:block}.cardwrap a{color:var(--b);font-size:13px;margin-right:12px}
+</style></head><body><nav class="top"><b>SetuHaul – Logistics Management</b><a href="index.html">Home</a><a href="index.html#v2">Hand-ins (v2)</a><a href="design.html">Design</a><a href="system-design.html">L1/L2</a><a href="prototype.html">Prototype</a><a href="demo2.html">Demo 2</a><a href="facility.html">Facility flow</a><a href="analysis.html">Analysis</a><a href="er.html">ER & data</a><a href="decisions.html">Decisions</a><a href="solver.html">Solver</a><a href="v1/index.html">v1 archive</a><a href="https://github.com/sdaistudio/SetuHaul_Logistics">GitHub</a></nav><div class="wrap"><div class="doc"><p style="margin-top:0"><a href="index.html#v2">← all hand-ins</a> · <a href="v2/02_SetuHaul_Decision_Register.docx">download the Word file</a></p><p><strong>FDE ACADEMY | MINI PROJECT 2 | SETUHAUL
+LOGISTICS</strong></p>
+<p><strong>Deliverable 2</strong></p>
+<p><strong>Decision Register</strong></p>
+<p>Our answer, reason and evidence for each of the brief's 13 decisions,
+plus 8 decisions of our own</p>
+<p>Each decision states the answer in one line, why, the evidence
+(scenario case, test or audit finding), the alternative we rejected, and
+who must sign it off. Evidence codes: C01-C14 are scenario cases
+(deliverable 4), T01-T12 are integrity tests (deliverable 5), F01-F36
+are audit findings (deliverable 1), Q1-Q37 are grey-area questions
+(review pack).</p>
+<p>Client: SetuHaul Logistics Pvt. Ltd. (FDE Academy challenge)</p>
+<p>Snapshot: 4 August 2026, Jaipur DC and Gurugram Cross-Dock
+(Asia/Kolkata)</p>
+<p>Version: 1.0 | 18 November 2026</p>
+<p>Audience: FDE Academy reviewers; SetuHaul head of operations for
+sign-off</p>
+<p><strong>Contents</strong></p>
+<p><strong>Register at a glance</strong></p>
+<p><strong>Understand</strong></p>
+<blockquote>
+<p>D1. What must we collect before we show useful options?</p>
+<p>D2. How does a conversation link to the right driver, shipment and
+appointment?</p>
+<p>D3. How do we set the revised ETA and show how sure we are?</p>
+</blockquote>
+<p><strong>Decide</strong></p>
+<blockquote>
+<p>D4. What makes a slot feasible for this shipment?</p>
+<p>D5. What does "available" mean while another driver is deciding?</p>
+</blockquote>
+<p><strong>Commit</strong></p>
+<blockquote>
+<p>D6. When does an option become a hold, request, reservation or
+confirmed booking?</p>
+<p>D7. How do we order simultaneous requests when capacity runs
+short?</p>
+<p>D8 (optional). When does the facility schedule recalculate, what is
+fixed, and what is the objective?</p>
+<p>D9. How do we handle stale options, cancellations, duplicate messages
+and retries?</p>
+</blockquote>
+<p><strong>Fail safely</strong></p>
+<blockquote>
+<p>D10. What happens when no feasible slot exists?</p>
+<p>D11. What do we say when the preferred slot is not granted?</p>
+<p>D12. Which decisions need human approval or takeover?</p>
+</blockquote>
+<p><strong>Prove</strong></p>
+<blockquote>
+<p>D13. How do we prove the system did not double-book capacity?</p>
+</blockquote>
+<p><strong>Our own decisions</strong></p>
+<blockquote>
+<p>D14. What a slot means, and how long unloads are handled</p>
+<p>D15. Architecture and cost</p>
+<p>D16. Where the LLM is used</p>
+<p>D17. Languages</p>
+<p>D18. Protected capacity (earmarks)</p>
+<p>D19. Swaps</p>
+<p>D20. Proactive monitoring and outreach</p>
+<p>D21. What "now" is</p>
+</blockquote>
+<p><strong>Policy parameters needing sign-off</strong></p>
+<h1 id="register-at-a-glance">Register at a glance</h1>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 21%" />
+<col style="width: 51%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Decision</strong></th>
+<th><strong>Our answer in one line</strong></th>
+<th><strong>Key evidence</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D1</td>
+<td>What to collect before showing options</td>
+<td>Which shipment (only if evidence can't decide), a plannable arrival
+time, and the latest leave time if the driver mentions another pickup.
+Nothing the backend already holds.</td>
+<td>C06, C09, C03; 2 questions in 13 cases</td>
+</tr>
+<tr class="even">
+<td>D2</td>
+<td>Linking a chat to driver, shipment, appointment</td>
+<td>Phone gives the driver. Shipment by an evidence ladder, otherwise
+ask with a suggestion. Appointment is the current active one.</td>
+<td>THR010 trace (C06)</td>
+</tr>
+<tr class="odd">
+<td>D3</td>
+<td>Revised ETA and confidence</td>
+<td>Gate-in beats everything, then the newest ETA record, then the plan.
+Confidence HIGH/MEDIUM/LOW, planned on the late edge,
+plausibility-checked.</td>
+<td>MSG001, MSG005, ETA012</td>
+</tr>
+<tr class="even">
+<td>D4</td>
+<td>What makes a slot feasible</td>
+<td>A 15-point check in code, re-run at commit; 6 of the points also
+enforced by database triggers</td>
+<td>SHP1014, SHP1015, SHP1016 checks</td>
+</tr>
+<tr class="odd">
+<td>D5</td>
+<td>"Available" while another driver decides</td>
+<td>Feasible for this truck now and not booked, held or protected.
+Showing reserves nothing.</td>
+<td>C03 vs C07 race</td>
+</tr>
+<tr class="even">
+<td>D6</td>
+<td>Hold, request, reservation, confirmation</td>
+<td>SHOWN, then PICKED, then CONFIRMED in one transaction, or
+HELD_FOR_APPROVAL with a deadline</td>
+<td>C01, C06, T08</td>
+</tr>
+<tr class="odd">
+<td>D7</td>
+<td>Ordering simultaneous requests</td>
+<td>First valid commit wins, but scarce capacity is earmarked for
+priority and deadline-limited trucks. Coordinator swaps never break a
+deadline.</td>
+<td>09:45 policy test; C10</td>
+</tr>
+<tr class="even">
+<td>D8</td>
+<td>When the facility schedule recalculates</td>
+<td>On every ETA update, check-in, dock event and cancellation, and
+every 15 minutes. Promises and in-dock trucks are fixed.</td>
+<td>09:16 re-plan; 09:45 replay</td>
+</tr>
+<tr class="odd">
+<td>D9</td>
+<td>Stale options, cancellations, duplicates, retries</td>
+<td>Re-check at commit; cancellations free capacity at once; dedupe;
+idempotency keys</td>
+<td>C03, C13, C07, T05</td>
+</tr>
+<tr class="even">
+<td>D10</td>
+<td>No feasible slot</td>
+<td>Never invent one. Escalate with a complete record and computed
+what-ifs. Tell the driver not to come to the dock.</td>
+<td>C14, ESC-0004</td>
+</tr>
+<tr class="odd">
+<td>D11</td>
+<td>Refusing a preferred slot</td>
+<td>Say what happened, why, and what is still possible, in the driver's
+language</td>
+<td>C03 (09:36), C10 (09:44)</td>
+</tr>
+<tr class="even">
+<td>D12</td>
+<td>Human approval or takeover</td>
+<td>Eight triggers, each routed by role and channel health with an
+SLA</td>
+<td>ESC-0001 to ESC-0004</td>
+</tr>
+<tr class="odd">
+<td>D13</td>
+<td>Proving no double booking</td>
+<td>Five defence layers; a 10-driver race repeated 50 times; negative
+controls; a stress test</td>
+<td>T01-T04, T10, T11</td>
+</tr>
+<tr class="even">
+<td>D14</td>
+<td>What a slot means</td>
+<td>A start window, gate-in by start + grace; unloads are time intervals
+that may run past the slot end</td>
+<td>F04, F05, Q1, Q2</td>
+</tr>
+<tr class="odd">
+<td>D15</td>
+<td>Architecture and cost</td>
+<td>One container plus managed Postgres for the pilot; AWS serverless as
+the scale path</td>
+<td>Review pack, section 6</td>
+</tr>
+<tr class="even">
+<td>D16</td>
+<td>Where the LLM is used</td>
+<td>Reading words only, as a fallback after rules, with a strict JSON
+schema. Replies come from a catalogue.</td>
+<td>C09, output guard</td>
+</tr>
+<tr class="odd">
+<td>D17</td>
+<td>Languages</td>
+<td>Deterministic detection; English, Hinglish (Latin script) and Hindi
+(Devanagari) templates</td>
+<td>C06, C09, C12</td>
+</tr>
+<tr class="even">
+<td>D18</td>
+<td>Protected capacity (earmarks)</td>
+<td>Soft, 20-minute protection for HIGH/CRITICAL and deadline-limited
+trucks, enforced at commit</td>
+<td>FCFS vs ours, 09:45</td>
+</tr>
+<tr class="odd">
+<td>D19</td>
+<td>Swaps</td>
+<td>Coordinator only; trialled in a rolled-back transaction; never break
+a driver limit</td>
+<td>C10 (swap refused), T12</td>
+</tr>
+<tr class="even">
+<td>D20</td>
+<td>Proactive monitoring</td>
+<td>Re-check every booking on every event; tell coordinators and drivers
+before they find out</td>
+<td>09:16 and 09:56 alerts</td>
+</tr>
+<tr class="odd">
+<td>D21</td>
+<td>What "now" is</td>
+<td>Every function takes an explicit as-of time; the scenario rewinds
+the snapshot and replays events</td>
+<td>F15, deliverable 4</td>
+</tr>
+</tbody>
+</table>
+<h1 id="understand">Understand</h1>
+<h2 id="d1.-what-must-we-collect-before-we-show-useful-options">D1. What
+must we collect before we show useful options?</h2>
+<p><strong>Answer.</strong> Ask the driver only for what the backend
+cannot know:</p>
+<ol type="1">
+<li><p><strong>Which shipment</strong>, only if the driver has several
+live trips and the evidence cannot decide (see D2).</p></li>
+<li><p><strong>An arrival time we can plan on.</strong> A clock time
+("11:30") is used directly. A delay ("late by one hour") is anchored to
+the driver's slot, or else the plan, and <strong>stated back</strong>
+with a one-tap correction rather than asked. A vague report ("thoda
+late") gets one question.</p></li>
+<li><p><strong>The latest time they must leave</strong>, only when they
+mention another pickup without giving a time.</p></li>
+</ol>
+<p>Everything else (load, dock needs, priority, current booking, rules,
+other trucks) is looked up. Optional constraints such as "after 12" are
+used when offered and never demanded. After two unanswered questions a
+person takes over.</p>
+<p><strong>Three example chats with the fields we ask for</strong></p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 24%" />
+<col style="width: 34%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Case</strong></th>
+<th><strong>Driver said</strong></th>
+<th><strong>What we asked</strong></th>
+<th><strong>Why</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C06, DRV004, 09:31</td>
+<td>"I will be late by 45 minutes."</td>
+<td>Which trip, with a suggestion: "Your other truck is already at our
+gate, so I think you mean ORD-260804-020."</td>
+<td>Two live trips; neither is in transit, so evidence cannot
+decide</td>
+</tr>
+<tr class="even">
+<td>C09, DRV010, 09:42</td>
+<td>"thoda late hoon bhai, traffic hai"</td>
+<td>"Jaipur DC kitne baje tak pahunchoge? Jaise 11:30 likhiye"</td>
+<td>No time and no number: nothing to plan on</td>
+</tr>
+<tr class="odd">
+<td>C03, DRV013, 09:19</td>
+<td>"I am late by one hour."</td>
+<td>Nothing. Stated back: "about 11:00 AM (planned 10:00 AM + 60 min).
+If that's wrong, just send the time."</td>
+<td>A wrong guess costs one correction, not a missed slot: we plan on
+the late edge</td>
+</tr>
+<tr class="even">
+<td>Brief's example</td>
+<td>"Tyre damaged... around 90 minutes late... after 7? another pickup
+tonight"</td>
+<td>"By what time must you leave our gate?"</td>
+<td>A downstream commitment with no time; it changes which slots are
+feasible</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rejected alternative.</strong> Doc B asks before acting
+whenever the ETA is imprecise. That is safe, but it costs a driver on
+the road an extra message in most cases. We ask only when the answer
+changes <em>which shipment</em> we would book, or when there is no
+number at all. <strong>Sign-off:</strong> Head of operations (Q16,
+Q17).</p>
+<h2
+id="d2.-how-does-a-conversation-link-to-the-right-driver-shipment-and-appointment">D2.
+How does a conversation link to the right driver, shipment and
+appointment?</h2>
+<p><strong>Answer.</strong> The verified WhatsApp phone number gives the
+driver; identity never comes from message text. The shipment is resolved
+by an evidence ladder and stops at the first rung that gives exactly one
+trip:</p>
+<ol type="1">
+<li><p>An order or shipment reference in the message.</p></li>
+<li><p>The conversation's shipment, if the conversation is mid-flow
+(waiting for an ETA, options shown, or a hold pending).</p></li>
+<li><p>The only live trip.</p></li>
+<li><p>A load attribute in the message ("heavy trailer", "reefer")
+matching exactly one trip.</p></li>
+<li><p>State evidence that fits the message: "already at the gate" means
+the gated-in trip; "late" means the one trip in transit and not at our
+gate.</p></li>
+<li><p>Otherwise <strong>ask</strong>, listing the trips, with an
+evidence-based suggestion.</p></li>
+</ol>
+<p>The appointment is the shipment's current active booking.</p>
+<p><strong>Message-to-rows trace for the unclear case
+(THR010)</strong></p>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 31%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Step</strong></th>
+<th><strong>Data read</strong></th>
+<th><strong>Result</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MSG016 "I will be late by 45 minutes." arrives from
++91-9000010004</td>
+<td>drivers.phone</td>
+<td>DRV004</td>
+</tr>
+<tr class="even">
+<td>Live trips of DRV004</td>
+<td>shipments</td>
+<td>SHP1004 (WAITING, gate-in 09:25) and SHP1020 (ASSIGNED, Kota 13:30,
+ETA 18:00)</td>
+</tr>
+<tr class="odd">
+<td>Any reference, attribute or single in-transit trip?</td>
+<td>message, shipments.current_status</td>
+<td>None. SHP1004 is at our gate, so a delay cannot refer to it.</td>
+</tr>
+<tr class="even">
+<td>Ask, with a suggestion</td>
+<td>reply catalogue</td>
+<td>"I think you mean ORD-260804-020"</td>
+</tr>
+<tr class="odd">
+<td>"शाम वाला" (the evening one)</td>
+<td>nlu.extract gives hint EVENING; the later of the two candidates</td>
+<td>SHP1020</td>
+</tr>
+<tr class="even">
+<td>Current appointment</td>
+<td>appointments (is_current = 1, active)</td>
+<td>APT1020, D2 18:00</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rejected alternative.</strong> Doc A resolves "heavy trailer"
+to trip 016 automatically. We do the same (an explicit attribute), but
+we also raise a non-blocking data-conflict notice because DRV007 shows
+on two moving trucks (F11).</p>
+<h2 id="d3.-how-do-we-set-the-revised-eta-and-show-how-sure-we-are">D3.
+How do we set the revised ETA and show how sure we are?</h2>
+<p><strong>Answer.</strong></p>
+<ul>
+<li><p><strong>Source order.</strong> Gate check-in (HIGH, the truck is
+here), then the newest ETA record created no later than as-of (driver,
+warehouse or operations), then the plan (MEDIUM, never HIGH:
+F17).</p></li>
+<li><p><strong>Confidence from the words.</strong> A clock time is HIGH.
+"Around", or a delay anchored to a slot, is MEDIUM. A range or a failed
+plausibility check is LOW.</p></li>
+<li><p><strong>Plan on the late edge.</strong> HIGH +0, MEDIUM +15, LOW
++30 minutes, or the end of a stated window. Release (earliest dock
+start) = late edge + 15 minutes gate-to-dock.</p></li>
+<li><p><strong>Use the early edge only to decide a certain
+miss</strong>, so we never release a slot the truck could still
+make.</p></li>
+<li><p><strong>Plausibility checks</strong> downgrade to LOW: the
+vehicle is busy on another trip (F12, F14); it "departed" before leaving
+another site (F13); it is not yet departed past its planned departure
+(the whole trip is still ahead).</p></li>
+</ul>
+<p><strong>Our rule applied to two messages</strong></p>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 19%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Message</strong></th>
+<th><strong>Read as</strong></th>
+<th><strong>Confidence</strong></th>
+<th><strong>Planned gate arrival</strong></th>
+<th><strong>Earliest dock start</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MSG001 "Reaching around 11:20. Any slot after 12?"</td>
+<td>ETA 11:20, earliest start 12:00</td>
+<td>MEDIUM ("around")</td>
+<td>11:35</td>
+<td>12:00 (driver's own limit)</td>
+</tr>
+<tr class="even">
+<td>MSG005 "I am late by one hour."</td>
+<td>Planned 10:00 + 60 = 11:00, stated back</td>
+<td>MEDIUM</td>
+<td>11:15</td>
+<td>11:30 (offered D2 at 11:30)</td>
+</tr>
+<tr class="odd">
+<td>ETA012 "between 12:30 and 13:00" (by phone, 09:55)</td>
+<td>Window 12:30-13:00</td>
+<td>LOW</td>
+<td>13:00</td>
+<td>13:15, after the slot window, so the booking is AT RISK and a
+proactive check is sent</td>
+</tr>
+</tbody>
+</table>
+<h1 id="decide">Decide</h1>
+<h2 id="d4.-what-makes-a-slot-feasible-for-this-shipment">D4. What makes
+a slot feasible for this shipment?</h2>
+<p><strong>Answer.</strong> All of these must hold. They run in
+timeline.options() when options are shown and again inside the commit
+transaction:</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 65%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>#</strong></th>
+<th><strong>Check</strong></th>
+<th><strong>Database guard too?</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Shipment is not CANCELLED or COMPLETED</td>
+<td>Yes (trigger)</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Slot is at the shipment's destination facility</td>
+<td>Yes (trigger)</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Dock type: reefer load to a reefer door; over 25 t or HEAVY to the
+heavy door; standard loads keep off the reefer and heavy doors unless a
+coordinator overrides</td>
+<td>Yes (trigger)</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Load within the door's weight limit</td>
+<td>Yes (trigger)</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Slot status is OPEN</td>
+<td>Yes (trigger)</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>No breakdown, maintenance or manual block overlaps the unload</td>
+<td>Code (events change during the day)</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>No live booking on the slot. A dead booking (certain miss or
+invalid) may be released by this commit.</td>
+<td>Unique index</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>No live hold by another truck</td>
+<td>Partial unique index</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Not earmarked for a truck of equal or higher priority</td>
+<td>Code at commit</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Start inside the window: max(slot start, release, driver's earliest)
+to before slot end</td>
+<td>Code</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Door free for unload + 10-min changeover, including trucks still
+unloading (overruns)</td>
+<td>Trigger on intervals</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Unload ends by facility close</td>
+<td>Code</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>A start at or after 21:00 needs a coordinator</td>
+<td>Code (approval)</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Driver limits: latest start, latest unload end, latest gate-out</td>
+<td>Code</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>ETA flagged as a data conflict needs a coordinator</td>
+<td>Code (approval)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Written check run on three shipments</strong> (T.options(...,
+limit=None); counts are rejected slot-checks)</p>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 11%" />
+<col style="width: 42%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Shipment</strong></th>
+<th><strong>Need</strong></th>
+<th><strong>Rejected because</strong></th>
+<th><strong>Result</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHP1014 (21 t, CRITICAL, 75 min) at 09:45</td>
+<td>Standard door rated 25 t</td>
+<td>D1, D3 over weight (2); D5 reefer-reserved (1); D6 heavy-reserved
+(1); slots already booked (3); would end after close (2)</td>
+<td>17 feasible starts on D2 and D4, earliest D4 12:45</td>
+</tr>
+<tr class="even">
+<td>SHP1015 (reefer dairy, 60 min) at 16:25</td>
+<td>D5 only</td>
+<td>Reefer door required (5 standard/heavy doors); D5 maintenance
+18:00-22:00</td>
+<td><strong>0</strong>, so escalate (D10)</td>
+</tr>
+<tr class="odd">
+<td>SHP1016 (31 t, HEAVY, 90 min) at 09:45</td>
+<td>D6 only</td>
+<td>Heavy door required (5); over weight on the standard doors (5); slot
+booked (1)</td>
+<td>6 feasible starts on D6, earliest 12:55</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="d5.-what-does-available-mean-while-another-driver-is-deciding">D5.
+What does "available" mean while another driver is deciding?</h2>
+<p><strong>Answer.</strong> A slot is <em>available to truck X now</em>
+if it passes every check in D4 for X, given everything committed, held
+or earmarked at that moment. <strong>Showing options reserves
+nothing</strong>, so two drivers can be shown the same slot. The first
+valid commit wins, and the other driver gets a plain refusal with fresh
+options in the same reply.</p>
+<p><strong>State this needs:</strong> appointments (live bookings),
+slot_holds (decisions pending), slot_earmarks (protected capacity),
+dock_status_events, facility_checkins (who is in which dock, overruns),
+the resolved ETA, the driver's limits, and an explicit as-of time.</p>
+<p><strong>Evidence.</strong> C03 vs C07 at 09:36. DRV013 was shown D4
+12:40 at 09:19; DRV006 was shown the same slot at 09:34. Both chose it
+in the same instant, on two threads. One booked; DRV013 was told "Sorry,
+Dock D4 at 12:40 PM was just taken by another truck. Nothing was booked
+for you yet," with three fresh options, and booked D1 11:30 a minute
+later.</p>
+<p><strong>Rejected alternative.</strong> Reserving on display: in a
+wave of 10 drivers each shown 3 options, display-holds would lock 30
+slot-views while drivers type.</p>
+<h1 id="commit">Commit</h1>
+<h2
+id="d6.-when-does-an-option-become-a-hold-request-reservation-or-confirmed-booking">D6.
+When does an option become a hold, request, reservation or confirmed
+booking?</h2>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 31%" />
+<col style="width: 14%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>State</strong></th>
+<th><strong>Meaning</strong></th>
+<th><strong>Who moves it</strong></th>
+<th><strong>What the driver sees</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SHOWN</td>
+<td>Read-only list, valid 15 minutes</td>
+<td>Workflow</td>
+<td>"Nothing is booked until you choose. Reply 1, 2 or 3." (WhatsApp
+reply buttons)</td>
+</tr>
+<tr class="even">
+<td>PICKED</td>
+<td>Driver tapped an option</td>
+<td>Driver</td>
+<td>Nothing yet: the commit runs in under a second</td>
+</tr>
+<tr class="odd">
+<td>CONFIRMED</td>
+<td>One transaction: idempotency check, re-check, release dead bookings,
+retire the old booking, insert, guards, history, outbox</td>
+<td>Capacity layer</td>
+<td>"Booked: Dock D2 at Jaipur DC, start 11:25 AM. Please be at the gate
+by 11:10 AM. Booking ref APT-N0003."</td>
+</tr>
+<tr class="even">
+<td>HELD_FOR_APPROVAL</td>
+<td>A rule needs a person (start at or after 21:00, data conflict).
+slot_holds row with deadline = min(15 min, start - 30 min).</td>
+<td>Capacity layer</td>
+<td>"I've asked the coordinator... This is NOT confirmed yet. You'll
+hear by 9:48 AM."</td>
+</tr>
+<tr class="odd">
+<td>CONFIRMED after approval</td>
+<td>Coordinator approves; the approval is re-checked</td>
+<td>Coordinator</td>
+<td>"Confirmed: the coordinator approved Dock D1..."</td>
+</tr>
+<tr class="even">
+<td>REJECTED / EXPIRED</td>
+<td>Coordinator rejects, the re-check fails, or the deadline passes</td>
+<td>Coordinator / sweeper</td>
+<td>Told plainly; slot returns to the pool</td>
+</tr>
+<tr class="odd">
+<td>OPTION_GONE</td>
+<td>Taken, held, protected, or no longer fits</td>
+<td>Capacity layer</td>
+<td>Plain reason + fresh options</td>
+</tr>
+</tbody>
+</table>
+<p><img
+src="media/02_SetuHaul_Decision_Register/media/ab3cb70754c69b9b2f3fe922d882440361410757.png"
+title="Lifecycle of an option. Only the green state is a promise."
+style="width:4.64583in;height:4.89583in"
+alt="Lifecycle of an option. Only the green state is a promise." /></p>
+<p><em>Lifecycle of an option. Only the green state is a
+promise.</em></p>
+<p><strong>Evidence.</strong> C01 (pick to confirmed, 08:23), C06 (held
+for approval at 09:33, approved and re-checked at 09:41), T08 (hold
+expires; slot returns), T09 (approval re-check refuses a now-infeasible
+slot).</p>
+<p><strong>Rejected alternatives.</strong> Doc B's "hold 3 minutes, then
+reply YES" (an extra turn while driving). Doc A's 5-minute hold after
+every pick (not needed: the transaction is the hold).</p>
+<h2
+id="d7.-how-do-we-order-simultaneous-requests-when-capacity-runs-short">D7.
+How do we order simultaneous requests when capacity runs short?</h2>
+<p><strong>Answer, in four rules.</strong></p>
+<ol type="1">
+<li><p><strong>The commit is first-valid-wins</strong>, serialised by
+the database write lock. That is simple and predictable for
+drivers.</p></li>
+<li><p><strong>Scarce capacity is protected before it is shown.</strong>
+After every ETA update the facility planner (D8) plans all trucks that
+need a door and <strong>earmarks</strong> the planned slot of every HIGH
+or CRITICAL truck, and of every truck whose own limit leaves it few
+choices. A lower- or equal-priority driver is not shown an earmarked
+slot, and cannot commit it.</p></li>
+<li><p><strong>Promises are kept.</strong> A confirmed booking is moved
+only by a coordinator, through a swap that is trialled first and refused
+if it breaks any driver's limit.</p></li>
+<li><p><strong>Priority comes only from
+shipments.priority_code.</strong> "Urgent" in a message is logged and
+ignored, and the driver is told why (C10).</p></li>
+</ol>
+<p><strong>Policy tested on competing trucks</strong> (09:45 snapshot, 8
+trucks needing a door; deliverable 4, "The scheduling tool")</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 19%" />
+<col style="width: 10%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Policy</strong></th>
+<th><strong>Trucks left with no dock today</strong></th>
+<th><strong>Priority-weighted wait</strong></th>
+<th><strong>CRITICAL wait</strong></th>
+<th><strong>Longest HIGH/CRITICAL wait</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>First come, first served</td>
+<td><strong>2</strong> (deadline truck SHP1012, reefer SHP1015)</td>
+<td>1,040</td>
+<td>60 min</td>
+<td>60 min</td>
+</tr>
+<tr class="even">
+<td>Earliest due date</td>
+<td>1 (SHP1015)</td>
+<td>1,200</td>
+<td>60 min</td>
+<td>60 min</td>
+</tr>
+<tr class="odd">
+<td>Strict priority</td>
+<td>1</td>
+<td>1,310</td>
+<td>0 min</td>
+<td><strong>165 min</strong> (SHP1005, already in the yard)</td>
+</tr>
+<tr class="even">
+<td><strong>Priority + repair (first answer)</strong></td>
+<td>1</td>
+<td><strong>1,120</strong></td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+<tr class="odd">
+<td><strong>Ours: exact branch and bound (engine)</strong></td>
+<td>1</td>
+<td><strong>1,120</strong></td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+<tr class="even">
+<td>Best of all 8! orders (benchmark)</td>
+<td>1</td>
+<td>1,120</td>
+<td>40 min</td>
+<td>65 min</td>
+</tr>
+</tbody>
+</table>
+<p>SHP1015 cannot be served by any policy (its only door is in
+maintenance); that is D10's job. Waits are measured from each truck's
+earliest dock start; SHP1006's 65 minutes include 25 it asked for ("any
+slot after 12").</p>
+<p><strong>Trade-off stated openly.</strong> Strict priority gives the
+CRITICAL load zero wait, but makes a HIGH truck that has been in the
+yard since 09:05 wait 165 minutes. Our plan delays the CRITICAL load by
+40 minutes and cuts that to 65. Under all three weight sets tested
+(8:4:2:1, Doc A's 100:40:15:5, Doc B's 4:2:1:0.5) the plan is the same,
+so the trade-off is robust. The head of operations can still choose
+strict priority (Q22, Q24).</p>
+<h2
+id="d8-optional.-when-does-the-facility-schedule-recalculate-what-is-fixed-and-what-is-the-objective">D8
+(optional). When does the facility schedule recalculate, what is fixed,
+and what is the objective?</h2>
+<p><strong>Answer.</strong></p>
+<ul>
+<li><p><strong>Triggers:</strong> every recorded ETA, a gate check-in, a
+dock event, a cancellation, and every 15 minutes from the
+sweeper.</p></li>
+<li><p><strong>Fixed:</strong> trucks in a dock (until expected end,
+plus overrun buffers), breakdowns and maintenance, and every booking
+that is still feasible (promises).</p></li>
+<li><p><strong>Jobs:</strong> trucks with no booking, a certain-miss
+booking or an invalid booking.</p></li>
+<li><p><strong>Objective, in plain words, in order:</strong> every truck
+that can be served today gets a door; promises are kept; least
+priority-weighted waiting; fewest changes to what drivers were
+told.</p></li>
+<li><p><strong>Method:</strong> an exact branch and bound over the order
+in which trucks are given their earliest feasible door. Its first answer
+is a priority list (most constrained first within a priority) improved
+by pairwise repair, which the coordinator sees at once. The search then
+cuts any branch that cannot beat the best plan found, and stops at a
+node count (200,000), not a clock, so every run is reproducible. On the
+09:45 snapshot it proves the plan optimal after 5,425 of 40,320 orders;
+exhaustive search agrees. Every truck gets a one-line reason (ready
+time, docks that fit, why it waits).</p></li>
+</ul>
+<p><strong>One replay.</strong> At 09:15 D3 broke down (DEVT001). At
+09:16 the health monitor found APT1005 invalid (D3 broken, and 20.5 t is
+over D3's 20 t limit). The planner proposed D4 at 09:35 for SHP1005, the
+coordinator approved at 09:17, and the truck docked at 09:35.</p>
+<p><strong>Rejected alternative.</strong> (1) The heuristic alone:
+priority + repair reached the optimum here, but nothing proves it will
+on another day; the exact search proves it at little cost. (2) Doc A's
+branch-and-bound with per-option look-ahead and opaque offer scores:
+replaced by a search whose score is the same three plain measures and
+whose result comes with reasons a planner can read. CP-SAT (OR-Tools) is
+the documented step up when facilities or constraint types grow
+(deliverable 3).</p>
+<h2
+id="d9.-how-do-we-handle-stale-options-cancellations-duplicate-messages-and-retries">D9.
+How do we handle stale options, cancellations, duplicate messages and
+retries?</h2>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 44%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Situation</strong></th>
+<th><strong>Rule</strong></th>
+<th><strong>Replayed case</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Stale option</td>
+<td>Re-checked inside the commit; refused with a plain reason and fresh
+options</td>
+<td>C03 at 09:36 (taken by another truck); T07 (breakdown after the
+option was shown)</td>
+</tr>
+<tr class="even">
+<td>Cancellation</td>
+<td>Frees capacity at once; the driver is told not to travel and given
+the dispatcher's number</td>
+<td>10:10 SHP1019 cancelled; C13 at 10:12: "Shipment ORD-260804-019 and
+its appointment were cancelled by dispatch at 10:10 AM. Please don't
+travel..."</td>
+</tr>
+<tr class="odd">
+<td>Duplicate message</td>
+<td>Same external ID, or same driver and same normalised text (4+ words)
+within 10 minutes: no second reply, no second ETA record. Short replies
+like "1" are never deduplicated.</td>
+<td>C07 at 09:35: wa-9009 (the THR009 retry) suppressed</td>
+</tr>
+<tr class="even">
+<td>Retry of a commit</td>
+<td>Idempotency key = the driver's message ID; a replay returns the
+first result</td>
+<td>T05: same key twice, one booking, replayed: true</td>
+</tr>
+</tbody>
+</table>
+<h1 id="fail-safely">Fail safely</h1>
+<h2 id="d10.-what-happens-when-no-feasible-slot-exists">D10. What
+happens when no feasible slot exists?</h2>
+<p><strong>Answer.</strong> Never invent one. Say so plainly, tell the
+driver not to come to the dock until contacted, and hand a
+<strong>complete record</strong> to the right person by a working
+channel, with options a person could unlock already computed.</p>
+<p><strong>Escalation message (C14, 16:24):</strong> "I'm sorry - I
+can't find a reefer dock at Jaipur DC that your truck can reach today
+(Dock D5 maintenance 6:00 PM-10:00 PM; no new unloading starts after
+9:00 PM without approval). I've passed your case to Neha Bansal
+(warehouse coordinator), who will contact you by 4:39 PM. Please don't
+go to the dock until they do."</p>
+<p><strong>Hand-off record ESC-0004 (summary)</strong></p>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Field</strong></th>
+<th><strong>Content</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Who and what</td>
+<td>DRV015, SHP1015 / ORD-260804-015, HIGH, reefer dairy, 15 t, 60-min
+unload, FreshBasket Jaipur</td>
+</tr>
+<tr class="even">
+<td>Driver said</td>
+<td>"Evening traffic. ETA 6:30. Can the reefer unload tonight?"</td>
+</tr>
+<tr class="odd">
+<td>ETA held</td>
+<td>18:30 HIGH, planned gate arrival 18:30, release 18:45</td>
+</tr>
+<tr class="even">
+<td>Current booking</td>
+<td>APT1015A D5 17:00, a certain miss (it was infeasible since 1 Aug;
+see F07)</td>
+</tr>
+<tr class="odd">
+<td>Options tried</td>
+<td>All five non-reefer doors rejected (REEFER_DOCK_REQUIRED); D5
+blocked by maintenance</td>
+</tr>
+<tr class="even">
+<td>Recommendations (computed)</td>
+<td>1. Ask maintenance on D5 to start at 7:55 PM instead of 6:00 PM: the
+truck could unload 6:45-7:45 PM. 2. No slots are published for tomorrow
+(F23): park overnight with the reefer unit running, take the first D5
+slot tomorrow, and check the e-way bill (it can be extended within 8
+hours of expiry). 3. Divert to Gurugram Cross-Dock D3 (reefer): it
+closes at 21:00, and road time is not in the data.</td>
+</tr>
+<tr class="odd">
+<td>Routed to</td>
+<td>CON001 Neha Bansal (warehouse coordinator) by e-mail and dashboard.
+The failed night.shift@ address (F29) is never used. Respond by
+16:39.</td>
+</tr>
+<tr class="even">
+<td>Driver told</td>
+<td>No slot today; don't go to the dock until contacted</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Correction to Doc B.</strong> Its option "start after 21:00
+with approval" cannot work: D5 is in maintenance until 22:00 and the
+site closes at 22:00.</p>
+<h2 id="d11.-what-do-we-say-when-the-preferred-slot-is-not-granted">D11.
+What do we say when the preferred slot is not granted?</h2>
+<p>Say what happened, without blame, and what is still possible, in the
+same reply. Two refusal messages from the run:</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>NOTE | Refusal 1: the slot was taken (C03,
+09:36)</strong></p>
+<p>"Sorry, Dock D4 at 12:40 PM was just taken by another truck. Nothing
+was booked for you yet. Fresh options: 1) Dock D1 - start 11:30 AM,
+unloading done by about 12:30 PM 2) Dock D2 - start 1:00 PM ... Reply 1,
+2 or 3 to book."</p></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><strong>NOTE | Refusal 2: priority was claimed in the message
+(C10, 09:44)</strong></p>
+<p>"Dock order follows the priority on the shipment record, not the
+message, so I can't move you ahead for urgency. These are the earliest
+slots that fit." (followed by the three earliest feasible
+options)</p></td>
+</tr>
+</tbody>
+</table>
+<p>A third variant exists for a slot protected by an earmark: "...is now
+reserved for a higher-priority load."</p>
+<h2 id="d12.-which-decisions-need-human-approval-or-takeover">D12. Which
+decisions need human approval or takeover?</h2>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 17%" />
+<col style="width: 23%" />
+<col style="width: 11%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Trigger (rule, not model)</strong></th>
+<th><strong>Example</strong></th>
+<th><strong>Goes to</strong></th>
+<th><strong>Respond within</strong></th>
+<th><strong>Agent behaviour meanwhile</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Safety words (accident, injury, fire, police, chot...)</td>
+<td>C12 at 10:05</td>
+<td>Shift manager, by phone + WhatsApp</td>
+<td>5 min</td>
+<td>Stops scheduling talk; advises 112</td>
+</tr>
+<tr class="even">
+<td>No feasible slot</td>
+<td>C14 at 16:24</td>
+<td>Warehouse coordinator (night role if after 18:00; vacant roles
+skipped)</td>
+<td>15 min</td>
+<td>Tells driver not to come to the dock</td>
+</tr>
+<tr class="odd">
+<td>Start at or after 21:00</td>
+<td>RULE005</td>
+<td>Coordinator approval</td>
+<td>Deadline min(15 min, start - 30)</td>
+<td>Slot held; "NOT confirmed yet"</td>
+</tr>
+<tr class="even">
+<td>ETA data conflict (vehicle on another trip)</td>
+<td>C06 (SHP1020's truck is in our yard)</td>
+<td>Coordinator approval</td>
+<td>Same</td>
+<td>Same</td>
+</tr>
+<tr class="odd">
+<td>Swap of a confirmed booking</td>
+<td>C10 (proposal searched; none admissible)</td>
+<td>Coordinator</td>
+<td>15 min</td>
+<td>Current booking stands</td>
+</tr>
+<tr class="even">
+<td>Data conflict, non-blocking</td>
+<td>DRV007 on two moving trucks (ESC-0002)</td>
+<td>Coordinator / dispatch</td>
+<td>60 min</td>
+<td>Driver served normally</td>
+</tr>
+<tr class="odd">
+<td>Two unanswered questions, or driver asks for a person</td>
+<td>Rule</td>
+<td>Coordinator</td>
+<td>30 min</td>
+<td>Stops asking</td>
+</tr>
+<tr class="even">
+<td>Output guard blocked a reply</td>
+<td>Never sent to a driver</td>
+<td>Ops alarm</td>
+<td>Immediate</td>
+<td>Generic safe reply</td>
+</tr>
+<tr class="odd">
+<td>Penalties, compensation, disputes, hazardous or regulated loads</td>
+<td>Brief's boundary list</td>
+<td>Person always</td>
+<td>n/a</td>
+<td>Agent does not discuss</td>
+</tr>
+</tbody>
+</table>
+<h1 id="prove">Prove</h1>
+<h2
+id="d13.-how-do-we-prove-the-system-did-not-double-book-capacity">D13.
+How do we prove the system did not double-book capacity?</h2>
+<p><strong>Answer: five layers, no single one trusted
+alone.</strong></p>
+<ol type="1">
+<li><p>Feasibility re-check inside one BEGIN IMMEDIATE transaction (the
+SQLite write lock).</p></li>
+<li><p>Supplied unique indexes: one active booking per slot, one current
+active booking per shipment.</p></li>
+<li><p>Partial unique indexes on live holds: one per slot, one per
+shipment.</p></li>
+<li><p>Triggers: compatibility (trg_appt_guard), status
+(trg_active_must_be_current), and <strong>no overlapping time on a
+dock</strong> (trg_no_overlap). In Postgres the last one is EXCLUDE
+USING gist (dock_id WITH =, tstzrange WITH &amp;&amp;).</p></li>
+<li><p>Idempotency keys and inbound dedupe for retries.</p></li>
+</ol>
+<p><strong>Test and result</strong> (deliverable 5): 10 drivers, one
+slot, the same instant, repeated 50 times. Every run had exactly one
+winner; 450 clean refusals; 0 raw errors reached a driver; 0 double
+bookings. With the guards removed, the same test double-booked all 10
+drivers, which shows the test is capable of failing. 8 threads x 25
+random bookings left 0 overlaps and 0 incompatible bookings. A
+deliberately broken feasibility function was stopped by the overlap
+trigger.</p>
+<h1 id="our-own-decisions">Our own decisions</h1>
+<h2 id="d14.-what-a-slot-means-and-how-long-unloads-are-handled">D14.
+What a slot means, and how long unloads are handled</h2>
+<p><strong>Answer.</strong> A slot is a <strong>start window</strong>:
+the truck may start any time inside it, and must gate in by slot start +
+grace (30 minutes at Jaipur). The door is busy from start to start +
+unload + 10-min changeover, which may run past the slot end if the door
+is free. A database trigger forbids overlapping time on one door.
+<strong>Why.</strong> The client's own plan books SHP1016 (ETA 10:30)
+into a 09:30 heavy slot and SHP1015 (ETA 17:30) into a 17:00 slot. That
+only works if slots are windows. Booking two whole slots for a 75-minute
+unload (Doc B) wastes 45 door-minutes each time.
+<strong>Sign-off:</strong> Warehouse planner (Q1, Q2, Q4).</p>
+<h2 id="d15.-architecture-and-cost">D15. Architecture and cost</h2>
+<p><strong>Answer.</strong> Pilot on one small container (FastAPI
+wrapper around this workflow) plus managed Postgres, at about US$22-30 a
+month. The same engine runs in tests and production. Doc A's AWS
+serverless design is the documented path when more facilities need more
+writers (deliverable 3, section 9). <strong>Why.</strong> About one
+message a minute at peak. The fixed floor of the serverless stack is
+about US$170 a month before traffic. The integrity proof must run on the
+engine we deploy.</p>
+<h2 id="d16.-where-the-llm-is-used">D16. Where the LLM is used</h2>
+<p><strong>Answer.</strong> Only to <strong>read</strong> a message the
+rules cannot parse, returning a strict JSON fact sheet that code
+validates (times within as-of -1 h to +24 h, known intents only). The
+LLM never chooses a shipment, a slot, a priority or a next step, and
+never writes to the database. Replies come from a reviewed catalogue in
+three languages, and the output guard checks every dock and time against
+the evidence. <strong>Evidence.</strong> All 13 scenario cases and the
+Hindi/Hinglish variants were read by rules, with no LLM. During
+development the output guard stopped one reply that named doors not yet
+in the evidence. <strong>Cost.</strong> At Claude Haiku 5.5 list prices
+(US$0.10 / 0.50 per million input / output tokens), even calling the LLM
+on every message would cost cents a month. We choose rules first for
+<strong>determinism and testability</strong>, not cost.</p>
+<h2 id="d17.-languages">D17. Languages</h2>
+<p><strong>Answer.</strong> Detection uses the Unicode script share
+(Devanagari over 30% means Hindi), then a Hinglish word list (2 or more
+hits means Hinglish), otherwise English. Short replies ("1", "ok") keep
+the conversation's language. Templates exist in English, Hinglish (Latin
+script, as drivers type) and Hindi (Devanagari). Times are always
+12-hour with AM/PM, and dock codes are kept literally because drivers
+screenshot them.</p>
+<h2 id="d18.-protected-capacity-earmarks">D18. Protected capacity
+(earmarks)</h2>
+<p><strong>Answer.</strong> An earmark is a soft, 20-minute protection
+of one slot for one planned truck. It is created by the planner for
+HIGH/CRITICAL trucks and for any truck with a driver limit, enforced
+when options are shown and at commit, and never a promise to the
+protected driver. <strong>Why.</strong> It closes the gap between "first
+come" and "priority" without the cost of look-ahead. In the 09:45 policy
+test, first-come-first-served left the deadline truck SHP1012 with no
+door that let it leave by 13:30; our plan served it, and in the live run
+each HIGH or CRITICAL driver's first option was the planner's slot.</p>
+<h2 id="d19.-swaps">D19. Swaps</h2>
+<p><strong>Answer.</strong> After a HIGH/CRITICAL truck books a slot
+more than 30 minutes after its release, the planner searches
+lower-priority bookings it could take. Each candidate swap is
+<strong>executed inside a transaction that is always rolled
+back</strong>, so the coordinator sees exact new times. Swaps that break
+any driver limit are refused. A proposal needs a gain of at least 30
+minutes and 100 weighted points. If approved, both bookings move in
+<strong>one</strong> transaction, and both drivers are told.
+<strong>Evidence.</strong> In C10, the search found SHP1012's slot, but
+moving SHP1012 would break its 13:30 gate-out, so the swap was refused
+and the CRITICAL load kept 12:20. T12 shows a failed swap changes
+nothing.</p>
+<h2 id="d20.-proactive-monitoring-and-outreach">D20. Proactive
+monitoring and outreach</h2>
+<p><strong>Answer.</strong> Every dock event, ETA update, check-in and
+cancellation re-checks all affected bookings: CERTAIN_MISS releases with
+a dispatcher notice; INVALID re-plans; AT_RISK sends the driver a
+WhatsApp utility template ("Are you on track? 1) On time 2) Running late
+3) Need help"). <strong>Evidence.</strong> At 09:16 the reefer booking
+was flagged infeasible, seven hours before the driver's message. At
+09:45 SHP1018's booking was released: its truck had not left the origin,
+so its earliest arrival (13:20) was past the slot's check-in limit, and
+its dispatcher was told. At 09:56 SHP1017's booking was flagged at risk
+and a check-in was sent.</p>
+<h2 id="d21.-what-now-is">D21. What "now" is</h2>
+<p><strong>Answer.</strong> Every function takes as_of. Rows created
+after as-of are invisible to it. The scenario rewinds a copy of the
+snapshot to 08:20 and replays each later row at its own time.
+<strong>Why.</strong> Rows in the snapshot run from 07:10 to 16:30
+(F15). A query "at 09:45" that sees a 16:25 ETA is answering a different
+question.</p>
+<h1 id="policy-parameters-needing-sign-off">Policy parameters needing
+sign-off</h1>
+<p>These values live in one file (setuhaul/config.py). Changing one
+changes the whole system; nothing is hard-coded elsewhere.</p>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 17%" />
+<col style="width: 38%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Parameter</strong></th>
+<th><strong>Value</strong></th>
+<th><strong>Meaning</strong></th>
+<th><strong>Who signs off</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GATE_TO_DOCK_MIN</td>
+<td>15</td>
+<td>Gate checks and yard drive, for a truck from the road</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="even">
+<td>YARD_TO_DOCK_MIN</td>
+<td>10</td>
+<td>Call-to-dock for a truck already in the yard</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="odd">
+<td>DOCK_CHANGEOVER_MIN</td>
+<td>10</td>
+<td>Between one truck leaving and the next starting</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="even">
+<td>OVERRUN_BUFFER_MIN</td>
+<td>10</td>
+<td>Extra time assumed once an unload passes its expected end</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="odd">
+<td>ETA buffers HIGH / MEDIUM / LOW</td>
+<td>0 / 15 / 30 min</td>
+<td>Late edge we plan on</td>
+<td>Head of operations</td>
+</tr>
+<tr class="even">
+<td>OFFER_VALID_MIN</td>
+<td>15</td>
+<td>An option older than this is re-checked before booking</td>
+<td>Product owner</td>
+</tr>
+<tr class="odd">
+<td>Approval deadline</td>
+<td>min(15 min, start - 30 min)</td>
+<td>When a held option expires</td>
+<td>Warehouse coordinator lead</td>
+</tr>
+<tr class="even">
+<td>EARMARK_TTL_MIN</td>
+<td>20</td>
+<td>How long protected capacity stays protected</td>
+<td>Head of operations</td>
+</tr>
+<tr class="odd">
+<td>MAX_OPTIONS_SHOWN</td>
+<td>3</td>
+<td>Fits WhatsApp's three reply buttons</td>
+<td>Product owner</td>
+</tr>
+<tr class="even">
+<td>MAX_CLARIFICATIONS</td>
+<td>2</td>
+<td>Then a person takes over</td>
+<td>Head of operations</td>
+</tr>
+<tr class="odd">
+<td>WAIT_WEIGHT</td>
+<td>CRITICAL 8, HIGH 4, NORMAL 2, LOW 1</td>
+<td>Cost of a minute of waiting by priority</td>
+<td>Head of operations</td>
+</tr>
+<tr class="even">
+<td>Swap thresholds</td>
+<td>30 min gain and 100 weighted points</td>
+<td>When a swap is worth asking a coordinator</td>
+<td>Head of operations</td>
+</tr>
+<tr class="odd">
+<td>ALLOW_STANDARD_ON_HEAVY / REEFER</td>
+<td>Off</td>
+<td>Flex-dock policy</td>
+<td>Warehouse planner</td>
+</tr>
+<tr class="even">
+<td>DUPLICATE_WINDOW_MIN / MIN_WORDS</td>
+<td>10 / 4</td>
+<td>Retry detection</td>
+<td>Product owner</td>
+</tr>
+</tbody>
+</table>
+</div><footer>SetuHaul Logistics · FDE Academy challenge · source: <a href="https://github.com/sdaistudio/SetuHaul_Logistics">https://github.com/sdaistudio/SetuHaul_Logistics</a></footer></div></body></html>
